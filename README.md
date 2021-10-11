@@ -1,5 +1,5 @@
 # Nebula Exchange 2.0
- [中文版](https://github.com/vesoft-inc/nebula-spark-utils/blob/master/nebula-exchange/README-CN.md)
+ [中文版](https://github.com/vesoft-inc/nebula-exchange/blob/master/nebula-exchange/README-CN.md)
 
 Nebula Exchange (Exchange for short) is an Apache Spark application. It is used to migrate cluster data in bulk from Spark to Nebula Graph in a distributed environment. It supports migration of batch data and streaming data in various formats.
 
@@ -10,12 +10,12 @@ Exchange 2.0 only supports Nebula Graph 2.0 . If you want to import data for Neb
 1. Package latest Exchange
 
     ```bash
-    $ git clone https://github.com/vesoft-inc/nebula-spark-utils.git
-    $ cd nebula-spark-utils/nebula-exchange
+    $ git clone https://github.com/vesoft-inc/nebula-exchange.git
+    $ cd nebula-exchange/nebula-exchange
     $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true
     ```
 
-    After the packaging, you can see the newly generated nebula-exchange-2.5-SNAPSHOT.jar under the nebula-spark-utils/nebula-exchange/target/ directory.
+    After the packaging, you can see the newly generated nebula-exchange-2.5-SNAPSHOT.jar under the nebula-exchange/nebula-exchange/target/ directory.
 2. Download from Maven repository
 
    release version:
@@ -67,4 +67,4 @@ There are the version correspondence between Nebula Exchange and Nebula:
 3. Supports importing data from other Hive sources besides Hive on Spark.
 4. Supports recording and retrying the INSERT statement after failures during data import.
 
-Refer to [application.conf](https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange/src/main/resources/application.conf) as an example to edit the configuration file.
+Refer to [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf) as an example to edit the configuration file.

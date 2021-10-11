@@ -1,5 +1,5 @@
 # 欢迎使用 Nebula Exchange 2.0         
-[English](https://github.com/vesoft-inc/nebula-spark-utils/blob/master/nebula-exchange/README.md)
+[English](https://github.com/vesoft-inc/nebula-exchange/blob/master/nebula-exchange/README.md)
 
 Nebula Exchange 2.0（简称为 Exchange 2.0）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到 Nebula Graph 中，能支持多种不同格式的批式数据和流式数据的迁移。
 
@@ -47,7 +47,7 @@ Nebula Exchange 和 Nebula 的版本匹配关系如下:
 
 *2. Exchange 2.0 新增 null、Date、DateTime、Time 类型数据的导入（ DateTime 是 UTC 时区，非 Local time）。*
 
-*3. Exchange 2.0 支持 Hive on Spark 以外的 Hive 数据源，需在配置文件中配置 Hive 源，具体配置示例参考 [application.conf](https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange/src/main/resources/application.conf) 中 Hive 的配置。*
+*3. Exchange 2.0 支持 Hive on Spark 以外的 Hive 数据源，需在配置文件中配置 Hive 源，具体配置示例参考 [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf) 中 Hive 的配置。*
 
 *4. Exchange 2.0 将导入失败的 INSERT 语句进行落盘，存于配置文件的 error/output 路径中。*
 
