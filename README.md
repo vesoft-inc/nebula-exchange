@@ -1,5 +1,5 @@
 # Nebula Exchange 2.0
- [中文版](https://github.com/vesoft-inc/nebula-exchange/blob/master/nebula-exchange/README-CN.md)
+ [中文版](https://github.com/vesoft-inc/nebula-exchange/blob/v2.5/README-CN.md)
 
 Nebula Exchange (Exchange for short) is an Apache Spark application. It is used to migrate cluster data in bulk from Spark to Nebula Graph in a distributed environment. It supports migration of batch data and streaming data in various formats.
 
@@ -66,5 +66,6 @@ There are the version correspondence between Nebula Exchange and Nebula:
 2. Supports importing data of the Null, Date, DateTime, and Time types(DateTime uses UTC, not local time).
 3. Supports importing data from other Hive sources besides Hive on Spark.
 4. Supports recording and retrying the INSERT statement after failures during data import.
+5. Supports SST import, but not support property's default value yet.
 
 Refer to [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf) as an example to edit the configuration file.
