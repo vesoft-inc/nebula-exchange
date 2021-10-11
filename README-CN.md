@@ -1,5 +1,5 @@
 # 欢迎使用 Nebula Exchange 2.0         
-[English](https://github.com/vesoft-inc/nebula-spark-utils/blob/master/nebula-exchange/README.md)
+[English](https://github.com/vesoft-inc/nebula-exchange/blob/master/nebula-exchange/README.md)
 
 Nebula Exchange 2.0（简称为 Exchange 2.0）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到 Nebula Graph 中，能支持多种不同格式的批式数据和流式数据的迁移。
 
@@ -12,15 +12,32 @@ Exchange 2.0 仅支持 Nebula Graph 2.x。
 1. 编译打包最新的 Exchange。
 
     ```bash
-    $ git clone https://github.com/vesoft-inc/nebula-spark-utils.git
-    $ cd nebula-spark-utils/nebula-exchange
+    $ git clone https://github.com/vesoft-inc/nebula-exchange.git
+    $ cd nebula-exchange/nebula-exchange
     $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true
     ```
 
-    编译打包完成后，可以在 nebula-spark-utils/nebula-exchange/target/ 目录下看到 nebula-exchange-2.0-SNAPSHOT.jar 文件。
+    编译打包完成后，可以在 nebula-exchange/nebula-exchange/target/ 目录下看到 nebula-exchange-2.5-SNAPSHOT.jar 文件。
 2. 在 Maven 远程仓库下载
-    
+
+    正式版本:
     https://repo1.maven.org/maven2/com/vesoft/nebula-exchange/
+
+    快照版本:
+    https://oss.sonatype.org/content/repositories/snapshots/com/vesoft/nebula-exchange/
+
+## 版本匹配
+
+Nebula Exchange 和 Nebula 的版本对应关系如下:
+
+| Nebula Exchange Version | Nebula Version |
+|:-----------------------:|:--------------:|
+|       2.0.0             |  2.0.0, 2.0.1  |
+|       2.0.1             |  2.0.0, 2.0.1  |
+|       2.1.0             |  2.0.0, 2.0.1  |
+|       2.5.0             |  2.5.0, 2.5.1  |
+|       2.5.1             |  2.5.0, 2.5.1  |
+|     2.5-SNAPSHOT        |     nightly    |
 ## 使用说明
 
 特性 & 注意事项：
@@ -29,15 +46,15 @@ Exchange 2.0 仅支持 Nebula Graph 2.x。
 
 *2. Exchange 2.0 新增 null、Date、DateTime、Time 类型数据的导入（ DateTime 是 UTC 时区，非 Local time）。*
 
-*3. Exchange 2.0 支持 Hive on Spark 以外的 Hive 数据源，需在配置文件中配置 Hive 源，具体配置示例参考 [application.conf](https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange/src/main/resources/application.conf) 中 Hive 的配置。*
+*3. Exchange 2.0 支持 Hive on Spark 以外的 Hive 数据源，需在配置文件中配置 Hive 源，具体配置示例参考 [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf) 中 Hive 的配置。*
 
 *4. Exchange 2.0 将导入失败的 INSERT 语句进行落盘，存于配置文件的 error/output 路径中。*
 
-*5. 配置文件参考 [application.conf](https://github.com/vesoft-inc/nebula-spark-utils/tree/master/nebula-exchange/src/main/resources/application.conf )。*
+*5. 配置文件参考 [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf )。*
 
 *6. Exchange 2.0 的导入命令：*
 ```
-$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange-2.0.0.jar -c /path/to/application.conf
+$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange-2.5.0.jar -c /path/to/application.conf
 ```
 如果数据源有HIVE，则导入命令最后还需要加 `-h` 表示启用HIVE数据源。
 
@@ -48,7 +65,7 @@ $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --files application.conf \
 --conf spark.driver.extraClassPath=./ \
 --conf spark.executor.extraClassPath=./ \
-nebula-exchange-2.0.0.jar \
+nebula-exchange-2.5.0.jar \
 -c application.conf
 ```
 
