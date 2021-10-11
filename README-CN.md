@@ -1,5 +1,5 @@
 # 欢迎使用 Nebula Exchange 2.0         
-[English](https://github.com/vesoft-inc/nebula-exchange/blob/master/nebula-exchange/README.md)
+[English](https://github.com/vesoft-inc/nebula-exchange/blob/master/README.md)
 
 Nebula Exchange 2.0（简称为 Exchange 2.0）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到 Nebula Graph 中，能支持多种不同格式的批式数据和流式数据的迁移。
 
@@ -50,9 +50,11 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 
 *4. Exchange 2.0 将导入失败的 INSERT 语句进行落盘，存于配置文件的 error/output 路径中。*
 
-*5. 配置文件参考 [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf )。*
+*5. Exchange 2.5.0 支持SST导入，但不支持属性的 default 值。*
 
-*6. Exchange 2.0 的导入命令：*
+*6. 配置文件参考 [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf )。*
+
+*7. Exchange 2.0 的导入命令：*
 ```
 $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange-2.5.0.jar -c /path/to/application.conf
 ```
