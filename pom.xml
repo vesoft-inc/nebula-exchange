@@ -14,9 +14,9 @@
     </properties>
 
     <!-- More Project Information -->
-    <name>nebula-spark</name>
-    <description>Nebula Spark Utils</description>
-    <url>https://github.com/vesoft-inc/nebula-spark-utils</url>
+    <name>nebula-exchange</name>
+    <description>Nebula Exchange </description>
+    <url>https://github.com/vesoft-inc/nebula-exchange</url>
     <scm>
         <connection>scm:git:https://github.com/vesoft-inc/nebula</connection>
         <url>https://github.com/vesoft-inc/nebula</url>
@@ -35,7 +35,7 @@
         <developer>
             <id>nebula</id>
             <name>Nebula Graph</name>
-            <email>nebula-spark-utils@vesoft-inc.com</email>
+            <email>nebula-exchange@vesoft-inc.com</email>
             <organization>vesoft</organization>
             <roles>
                 <role>architect</role>
