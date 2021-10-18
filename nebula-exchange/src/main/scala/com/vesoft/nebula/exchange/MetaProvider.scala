@@ -30,7 +30,7 @@ class MetaProvider(addresses: List[HostAndPort], timeout: Int, retry: Int)
     address.append(new HostAddress(addr.getHostText, addr.getPort))
   }
 
-  private val metaClient = new MetaClient(address.asJava)
+  private val metaClient = new MetaClient(address.asJava,timeout,retry,retry)
   metaClient.connect()
 
   def getPartNumber(space: String): Int = {
