@@ -57,7 +57,9 @@ class NebulaUtilsSuite {
                             "col9",
                             "col10",
                             "col11",
-                            "col12")
+                            "col12",
+                            "col13",
+                            "col14")
     val sourceFields = List("col1",
                             "col2",
                             "col3",
@@ -69,7 +71,9 @@ class NebulaUtilsSuite {
                             "col9",
                             "col10",
                             "col11",
-                            "col12")
+                            "col12",
+                            "col13",
+                            "col14")
     val label               = "person"
     val dataSinkConfigEntry = NebulaSinkConfigEntry(SinkCategory.SST, List("127.0.0.1:9669"))
     val sourceConfig = TagConfigEntry(label,
@@ -102,6 +106,8 @@ class NebulaUtilsSuite {
     assert(map("col10") == PropertyType.BOOL.getValue)
     assert(map("col11") == PropertyType.DOUBLE.getValue)
     assert(map("col12") == PropertyType.FLOAT.getValue)
+    assert(map("col13") == PropertyType.TIME.getValue)
+    assert(map("col14") == PropertyType.GEOGRAPHY.getValue)
   }
 
   @Test
