@@ -23,20 +23,25 @@ import org.apache.spark.sql.types.{
 import org.junit.Test
 
 class ProcessorSuite extends Processor {
-  val values = List("Bob",
-                    "fixedBob",
-                    12,
-                    200,
-                    1000,
-                    100000,
-                    "2021-01-01",
-                    "2021-01-01T12:00:00",
-                    "12:00:00",
-                    "2021-01-01T12:00:00",
-                    true,
-                    12.01,
-                    22.12,
-                    null)
+  val values = List(
+    "Bob",
+    "fixedBob",
+    12,
+    200,
+    1000,
+    100000,
+    "2021-01-01",
+    "2021-01-01T12:00:00",
+    "12:00:00",
+    "2021-01-01T12:00:00",
+    true,
+    12.01,
+    22.12,
+    null,
+    "POINT(3 8)",
+    "LINESTRING(3 8, 4.7 73.23)",
+    "POLYGON((0 1, 1 2, 2 3, 0 1))"
+  )
   val schema: StructType = StructType(
     List(
       StructField("col1", StringType, nullable = true),
@@ -52,7 +57,10 @@ class ProcessorSuite extends Processor {
       StructField("col11", BooleanType, nullable = true),
       StructField("col12", DoubleType, nullable = true),
       StructField("col13", DoubleType, nullable = true),
-      StructField("col14", StringType, nullable = true)
+      StructField("col14", StringType, nullable = true),
+      StructField("col15", StringType, nullable = true),
+      StructField("col16", StringType, nullable = true),
+      StructField("col17", StringType, nullable = true)
     ))
   val row = new GenericRowWithSchema(values.toArray, schema)
   val map = Map(
@@ -69,7 +77,10 @@ class ProcessorSuite extends Processor {
     "col11" -> PropertyType.BOOL.getValue,
     "col12" -> PropertyType.DOUBLE.getValue,
     "col13" -> PropertyType.FLOAT.getValue,
-    "col14" -> PropertyType.STRING.getValue
+    "col14" -> PropertyType.STRING.getValue,
+    "col15" -> PropertyType.GEOGRAPHY.getValue,
+    "col16" -> PropertyType.GEOGRAPHY.getValue,
+    "col17" -> PropertyType.GEOGRAPHY.getValue
   )
 
   @Test
@@ -90,6 +101,14 @@ class ProcessorSuite extends Processor {
     assert(extraValueForClient(row, "col12", map).toString.toDouble > 12.00)
     assert(extraValueForClient(row, "col13", map).toString.toDouble > 22.10)
     assert(extraValueForClient(row, "col14", map) == null)
+    assert(
+      extraValueForClient(row, "col15", map).toString.equals("ST_GeogFromText(\"POINT(3 8)\")"))
+    assert(
+      extraValueForClient(row, "col16", map).toString
+        .equals("ST_GeogFromText(\"LINESTRING(3 8, 4.7 73.23)\")"))
+    assert(
+      extraValueForClient(row, "col17", map).toString
+        .equals("ST_GeogFromText(\"POLYGON((0 1, 1 2, 2 3, 0 1))\")"))
   }
 
   @Test

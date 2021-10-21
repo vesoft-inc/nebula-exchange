@@ -64,7 +64,8 @@ trait Processor extends Serializable {
           "timestamp(\"" + row.get(index) + "\")"
         }
       }
-      case _ => row.get(index)
+      case PropertyType.GEOGRAPHY => "ST_GeogFromText(\"" + row.get(index) + "\")"
+      case _                      => row.get(index)
     }
   }
 
