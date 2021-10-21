@@ -30,7 +30,9 @@ class ReloadProcessor(data: DataFrame,
 
   private def processEachPartition(iterator: Iterator[Row]): Unit = {
     val graphProvider =
-      new GraphProvider(config.databaseConfig.getGraphAddress, config.connectionConfig.timeout)
+      new GraphProvider(config.databaseConfig.getGraphAddress,
+                        config.connectionConfig.timeout,
+                        config.sslConfig)
 
     val writer = new NebulaGraphClientWriter(config.databaseConfig,
                                              config.userConfig,

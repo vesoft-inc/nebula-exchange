@@ -58,7 +58,9 @@ class EdgeProcessor(data: DataFrame,
 
   private def processEachPartition(iterator: Iterator[Edge]): Unit = {
     val graphProvider =
-      new GraphProvider(config.databaseConfig.getGraphAddress, config.connectionConfig.timeout)
+      new GraphProvider(config.databaseConfig.getGraphAddress,
+                        config.connectionConfig.timeout,
+                        config.sslConfig)
     val writer = new NebulaGraphClientWriter(config.databaseConfig,
                                              config.userConfig,
                                              config.rateConfig,
