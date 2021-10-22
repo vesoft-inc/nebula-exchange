@@ -298,9 +298,10 @@ object Configs {
     val rateTimeout = getOrElse(rateConfig, "timeout", DEFAULT_RATE_TIMEOUT)
     val rateEntry   = RateConfigEntry(rateLimit, rateTimeout)
 
-    val sslConfig                = getConfigOrNone(nebulaConfig, "ssl")
-    val enable                   = getOrElse(sslConfig, "enable", DEFAULT_ENABLE_SSL)
-    val signType                 = SslType.withName(getOrElse(sslConfig, "sign.type", DEFAULT_SSL_SIGN_TYPE))
+    val sslConfig = getConfigOrNone(nebulaConfig, "ssl")
+    val enable    = getOrElse(sslConfig, "enable", DEFAULT_ENABLE_SSL)
+    val signType =
+      SslType.withName(getOrElse(sslConfig, "sign.type", DEFAULT_SSL_SIGN_TYPE).toLowerCase)
     var caParam: CaSignParam     = null
     var selfParam: SelfSignParam = null
     if (enable) {
