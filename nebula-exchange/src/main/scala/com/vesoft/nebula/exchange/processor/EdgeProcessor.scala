@@ -164,7 +164,7 @@ class EdgeProcessor(data: DataFrame,
             val ranking: Long = if (edgeConfig.rankingField.isDefined) {
               val rankIndex = row.schema.fieldIndex(edgeConfig.rankingField.get)
               assert(rankIndex >= 0 && !row.isNullAt(rankIndex),
-                s"rank must exist and cannot be null, your row data is $row")
+                     s"rank must exist and cannot be null, your row data is $row")
               row.get(rankIndex).toString.toLong
             } else {
               0
@@ -175,8 +175,9 @@ class EdgeProcessor(data: DataFrame,
               hostAddrs.append(new HostAddress(addr.getHostText, addr.getPort))
             }
 
-            val partitionId = NebulaUtils.getPartitionId(srcId, partitionNum, vidType)
-            val codec       = new NebulaCodecImpl()
+            val srcPartitionId = NebulaUtils.getPartitionId(srcId, partitionNum, vidType)
+            val dstPartitionId = NebulaUtils.getPartitionId(dstId, partitionNum, vidType)
+            val codec          = new NebulaCodecImpl()
 
             import java.nio.ByteBuffer
             val srcBytes = if (vidType == VidType.INT) {
@@ -199,13 +200,13 @@ class EdgeProcessor(data: DataFrame,
               dstId.getBytes()
             }
             val positiveEdgeKey = codec.edgeKeyByDefaultVer(spaceVidLen,
-                                                            partitionId,
+                                                            srcPartitionId,
                                                             srcBytes,
                                                             edgeItem.getEdge_type,
                                                             ranking,
                                                             dstBytes)
             val reverseEdgeKey = codec.edgeKeyByDefaultVer(spaceVidLen,
-                                                           partitionId,
+                                                           dstPartitionId,
                                                            dstBytes,
                                                            -edgeItem.getEdge_type,
                                                            ranking,
