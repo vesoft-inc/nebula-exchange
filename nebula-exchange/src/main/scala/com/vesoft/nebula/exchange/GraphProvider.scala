@@ -41,8 +41,8 @@ class GraphProvider(addresses: List[HostAndPort], timeout: Int, sslConfigEntry: 
   nebulaPoolConfig.setTimeout(timeout)
 
   // config graph ssl
-  nebulaPoolConfig.setEnableSsl(sslConfigEntry.enable)
-  if (sslConfigEntry.enable) {
+  nebulaPoolConfig.setEnableSsl(sslConfigEntry.enableGraph)
+  if (sslConfigEntry.enableGraph) {
     var sslParam: SSLParam = null
     if (sslConfigEntry.signType == SslType.CA) {
       val ca = sslConfigEntry.caSignParam
