@@ -64,7 +64,9 @@ class VerticesProcessor(data: DataFrame,
 
   private def processEachPartition(iterator: Iterator[Vertex]): Unit = {
     val graphProvider =
-      new GraphProvider(config.databaseConfig.getGraphAddress, config.connectionConfig.timeout)
+      new GraphProvider(config.databaseConfig.getGraphAddress,
+                        config.connectionConfig.timeout,
+                        config.sslConfig)
 
     val writer = new NebulaGraphClientWriter(config.databaseConfig,
                                              config.userConfig,

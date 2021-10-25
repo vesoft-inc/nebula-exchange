@@ -13,6 +13,7 @@ import com.google.common.net.HostAndPort
 import com.vesoft.nebula.exchange.KeyPolicy
 import com.typesafe.config.{Config, ConfigFactory}
 import com.vesoft.nebula.exchange.Argument
+import com.vesoft.nebula.exchange.config.SslType.SslType
 import com.vesoft.nebula.exchange.utils.NebulaUtils
 import org.apache.log4j.Logger
 
@@ -25,6 +26,12 @@ object Type extends Enumeration {
   type Type = Value
   val VERTEX = Value("VERTEX")
   val EDGE   = Value("EDGE")
+}
+
+object SslType extends Enumeration {
+  type SslType = Value
+  val CA   = Value("ca")
+  val SELF = Value("self")
 }
 
 /**
@@ -132,6 +139,32 @@ case class RateConfigEntry(limit: Int, timeout: Int) {
 }
 
 /**
+  * SslConfigEntry
+  */
+case class SslConfigEntry(enableGraph: Boolean,
+                          signType: SslType.Value,
+                          caSignParam: CaSignParam,
+                          selfSignParam: SelfSignParam) {
+  if (enableGraph) {
+    signType match {
+      case SslType.CA =>
+        require(
+          !caSignParam.caCrtFilePath.isEmpty && !caSignParam.crtFilePath.isEmpty && !caSignParam.keyFilePath.isEmpty)
+      case SslType.SELF =>
+        require(
+          !selfSignParam.crtFilePath.isEmpty && !selfSignParam.keyFilePath.isEmpty && !selfSignParam.password.isEmpty)
+      case _ => None
+    }
+  }
+
+  override def toString: String = super.toString
+}
+
+case class CaSignParam(caCrtFilePath: String, crtFilePath: String, keyFilePath: String)
+
+case class SelfSignParam(crtFilePath: String, keyFilePath: String, password: String)
+
+/**
   *
   */
 object SparkConfigEntry {
@@ -189,6 +222,7 @@ case class Configs(databaseConfig: DataBaseConfigEntry,
                    executionConfig: ExecutionConfigEntry,
                    errorConfig: ErrorConfigEntry,
                    rateConfig: RateConfigEntry,
+                   sslConfig: SslConfigEntry,
                    sparkConfigEntry: SparkConfigEntry,
                    tagsConfig: List[TagConfigEntry],
                    edgesConfig: List[EdgeConfigEntry],
@@ -206,6 +240,8 @@ object Configs {
   private[this] val DEFAULT_ERROR_MAX_BATCH_SIZE = Int.MaxValue
   private[this] val DEFAULT_RATE_LIMIT           = 1024
   private[this] val DEFAULT_RATE_TIMEOUT         = 100
+  private[this] val DEFAULT_ENABLE_SSL           = false
+  private[this] val DEFAULT_SSL_SIGN_TYPE        = "CA"
   private[this] val DEFAULT_EDGE_RANKING         = 0L
   private[this] val DEFAULT_BATCH                = 2
   private[this] val DEFAULT_PARTITION            = -1
@@ -261,6 +297,30 @@ object Configs {
     val rateLimit   = getOrElse(rateConfig, "limit", DEFAULT_RATE_LIMIT)
     val rateTimeout = getOrElse(rateConfig, "timeout", DEFAULT_RATE_TIMEOUT)
     val rateEntry   = RateConfigEntry(rateLimit, rateTimeout)
+
+    val sslConfig   = getConfigOrNone(nebulaConfig, "ssl")
+    val enableGraph = getOrElse(sslConfig, "enable.graph", DEFAULT_ENABLE_SSL)
+    val signType =
+      SslType.withName(getOrElse(sslConfig, "sign.type", DEFAULT_SSL_SIGN_TYPE).toLowerCase)
+    var caParam: CaSignParam     = null
+    var selfParam: SelfSignParam = null
+    if (enableGraph) {
+      if (signType == SslType.CA) {
+        val caCrtPath = sslConfig.get.getString("ca.param.caCrtFilePath")
+        val crtPath   = sslConfig.get.getString("ca.param.crtFilePath")
+        val keyPath   = sslConfig.get.getString("ca.param.keyFilePath")
+        caParam = CaSignParam(caCrtPath, crtPath, keyPath)
+      } else if (signType == SslType.SELF) {
+        val crtPath  = sslConfig.get.getString("self.param.crtFilePath")
+        val keyPath  = sslConfig.get.getString("self.param.keyFilePath")
+        val password = sslConfig.get.getString("self.param.password")
+        selfParam = SelfSignParam(crtPath, keyPath, password)
+      } else {
+        throw new IllegalArgumentException(
+          "ssl.sign.type is not supported, only support CA and SELF")
+      }
+    }
+    val sslEntry = SslConfigEntry(enableGraph, signType, caParam, selfParam)
 
     val sparkEntry = SparkConfigEntry(config)
 
@@ -469,6 +529,7 @@ object Configs {
             executionEntry,
             errorEntry,
             rateEntry,
+            sslEntry,
             sparkEntry,
             tags.toList,
             edges.toList,
