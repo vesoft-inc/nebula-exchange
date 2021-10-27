@@ -155,6 +155,9 @@ trait Processor extends Serializable {
         }
         row.get(index).toString.toLong
       }
+      case PropertyType.GEOGRAPHY => {
+        throw new IllegalArgumentException("sst import does not support GEOGRAPHY property yet.")
+      }
     }
   }
 
