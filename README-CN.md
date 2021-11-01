@@ -17,7 +17,7 @@ Exchange 2.0 仅支持 Nebula Graph 2.x。
     $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true
     ```
 
-    编译打包完成后，可以在 nebula-exchange/nebula-exchange/target/ 目录下看到 nebula-exchange-2.5-SNAPSHOT.jar 文件。
+    编译打包完成后，可以在 nebula-exchange/nebula-exchange/target/ 目录下看到 nebula-exchange-2.6.0.jar 文件。
 2. 在 Maven 远程仓库下载
     
     正式版本:
@@ -37,6 +37,7 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 |       2.1.0             |  2.0.0, 2.0.1  |
 |       2.5.0             |  2.5.0, 2.5.1  |
 |       2.5.1             |  2.5.0, 2.5.1  |
+|       2.6.0             |      2.6.0     |
 |     2.5-SNAPSHOT        |     nightly    |
 ## 使用说明
 
@@ -56,7 +57,7 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 
 *7. Exchange 2.0 的导入命令：*
 ```
-$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange-2.5.0.jar -c /path/to/application.conf
+$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange-2.6.0.jar -c /path/to/application.conf
 ```
 如果数据源有HIVE，则导入命令最后还需要加 `-h` 表示启用HIVE数据源。
 
@@ -67,7 +68,7 @@ $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --files application.conf \
 --conf spark.driver.extraClassPath=./ \
 --conf spark.executor.extraClassPath=./ \
-nebula-exchange-2.5.0.jar \
+nebula-exchange-2.6.0.jar \
 -c application.conf
 ```
 
