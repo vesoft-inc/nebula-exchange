@@ -37,6 +37,7 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 |       2.1.0             |  2.0.0, 2.0.1  |
 |       2.5.0             |  2.5.0, 2.5.1  |
 |       2.5.1             |  2.5.0, 2.5.1  |
+|       2.6.0             |     2.6.0      |
 |     2.5-SNAPSHOT        |     nightly    |
 ## 使用说明
 
@@ -67,6 +68,15 @@ $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --files application.conf \
 --conf spark.driver.extraClassPath=./ \
 --conf spark.executor.extraClassPath=./ \
+nebula-exchange-2.5.0.jar \
+-c application.conf
+```
+
+注：使用 Nebula Exchange 进行 SST 文件生成时，会涉及到 Spark 的 shuffle 操作，请注意在提交命令中增加 spark.sql.shuffle.partition 的配置：
+```
+$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
+--master local \
+--conf spark.sql.shuffle.partitions=200 \
 nebula-exchange-2.5.0.jar \
 -c application.conf
 ```

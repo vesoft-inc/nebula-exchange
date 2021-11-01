@@ -45,6 +45,15 @@ nebula-exchange-2.5.0.jar \
 -c application.conf
 ```
 
+Note: When use Exchange to generate SST files, please add spark.sql.shuffle.partition config for Spark's shuffle operation:
+```
+$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
+--master local \
+--conf spark.sql.shuffle.partitions=200 \
+nebula-exchange-2.5.0.jar \
+-c application.conf
+```
+
 For more details about Exchange, please refer to [Exchange 2.0](https://docs.nebula-graph.io/2.0.1/16.eco-tools/1.nebula-exchange/) .
 
 ## Version match
@@ -58,6 +67,7 @@ There are the version correspondence between Nebula Exchange and Nebula:
 |       2.1.0             |  2.0.0, 2.0.1  |
 |       2.5.0             |  2.5.0, 2.5.1  |
 |       2.5.1             |  2.5.0, 2.5.1  |
+|       2.6.0             |     2.6.0      |
 |     2.5-SNAPSHOT        |     nightly    |
 
 ## New Features
