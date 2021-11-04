@@ -75,7 +75,6 @@ object Exchange {
       .builder()
       .appName(PROGRAM_NAME)
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-      .config("spark.sql.shuffle.partitions", "1")
 
     for (key <- configs.sparkConfigEntry.map.keySet) {
       session.config(key, configs.sparkConfigEntry.map(key))
