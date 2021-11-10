@@ -142,23 +142,25 @@ class ProcessorSuite extends Processor {
 
     // POINT(3 8)
     val geogPoint = Geography.ptVal(new Point(new Coordinate(3, 8)))
-    assert(extraValueForClient(row, "col15", map).equals(geogPoint))
+    val geogPointExpect = extraValueForSST(row, "col15", map)
+
+    assert(geogPointExpect.equals(geogPoint))
     // LINESTRING(3 8, 4.7 73.23)
-    var line = new java.util.ArrayList[Coordinate]()
+    val line = new java.util.ArrayList[Coordinate]()
     line.add(new Coordinate(3, 8))
     line.add(new Coordinate(4.7, 73.23))
     val geogLineString = Geography.lsVal(new LineString(line))
-    assert(extraValueForClient(row, "col16", map).equals(geogLineString))
+    assert(extraValueForSST(row, "col16", map).equals(geogLineString))
     // POLYGON((0 1, 1 2, 2 3, 0 1))
-    var shell: java.util.List[Coordinate] = new java.util.ArrayList[Coordinate]()
+    val shell: java.util.List[Coordinate] = new java.util.ArrayList[Coordinate]()
     shell.add(new Coordinate(0, 1))
     shell.add(new Coordinate(1, 2))
     shell.add(new Coordinate(2, 3))
     shell.add(new Coordinate(0, 1))
-    var rings = new java.util.ArrayList[java.util.List[Coordinate]]()
+    val rings = new java.util.ArrayList[java.util.List[Coordinate]]()
     rings.add(shell)
     val geogPolygon = Geography.pgVal(new Polygon(rings))
-    assert(extraValueForClient(row, "col17", map).equals(geogPolygon))
+    assert(extraValueForSST(row, "col17", map).equals(geogPolygon))
   }
 
   /**

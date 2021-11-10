@@ -158,7 +158,7 @@ trait Processor extends Serializable {
       }
       case PropertyType.GEOGRAPHY => {
         val wkt                     = row.get(index).toString
-        val jtsGeom = new org.locationtech.jts.io.WKTReader().read(wkt);
+        val jtsGeom = new org.locationtech.jts.io.WKTReader().read(wkt)
         convertJTSGeometryToGeography(jtsGeom)
       }
     }
@@ -178,16 +178,16 @@ trait Processor extends Serializable {
   }
 
   def convertJTSGeometryToGeography(jtsGeom: org.locationtech.jts.geom.Geometry): Geography = {
-    jtsGeom.getGeometryType() match {
+    jtsGeom.getGeometryType match {
       case "Point" => {
         val jtsPoint = jtsGeom.asInstanceOf[org.locationtech.jts.geom.Point]
-        val jtsCoord = jtsPoint.getCoordinate()
+        val jtsCoord = jtsPoint.getCoordinate
         Geography.ptVal(new Point(new Coordinate(jtsCoord.x, jtsCoord.y)))
       }
       case "LineString" => {
         val jtsLineString = jtsGeom.asInstanceOf[org.locationtech.jts.geom.LineString]
-        val jtsCoordList = jtsLineString.getCoordinates()
-        var coordList = new ListBuffer[Coordinate]()
+        val jtsCoordList = jtsLineString.getCoordinates
+        val coordList = new ListBuffer[Coordinate]()
         for (jtsCoord <- jtsCoordList) {
           coordList += new Coordinate(jtsCoord.x, jtsCoord.y)
         }
@@ -195,19 +195,19 @@ trait Processor extends Serializable {
       }
       case "Polygon" => {
         val jtsPolygon = jtsGeom.asInstanceOf[org.locationtech.jts.geom.Polygon]
-        var coordListList = new java.util.ArrayList[java.util.List[Coordinate]]()
-        val jtsShell = jtsPolygon.getExteriorRing()
-        var coordList = new ListBuffer[Coordinate]()
-        for (jtsCoord <- jtsShell.getCoordinates()) {
+        val coordListList = new java.util.ArrayList[java.util.List[Coordinate]]()
+        val jtsShell = jtsPolygon.getExteriorRing
+        val coordList = new ListBuffer[Coordinate]()
+        for (jtsCoord <- jtsShell.getCoordinates) {
           coordList += new Coordinate(jtsCoord.x, jtsCoord.y)
         }
         coordListList.add(coordList.asJava)
 
-        val jtsHolesNum = jtsPolygon.getNumInteriorRing()
+        val jtsHolesNum = jtsPolygon.getNumInteriorRing
         for (i <- 0 until jtsHolesNum) {
-          var coordList = new ListBuffer[Coordinate]()
+          val coordList = new ListBuffer[Coordinate]()
           val jtsHole = jtsPolygon.getInteriorRingN(i)
-          for (jtsCoord <- jtsHole.getCoordinates()) {
+          for (jtsCoord <- jtsHole.getCoordinates) {
             coordList += new Coordinate(jtsCoord.x, jtsCoord.y)
           }
           coordListList.add(coordList.asJava)
