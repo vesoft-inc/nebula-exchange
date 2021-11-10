@@ -689,6 +689,11 @@ object Configs {
         } else {
           null
         }
+        val numPartitions = if (config.hasPath("numPartitions")) {
+          config.getString("numPartitions")
+        } else {
+          "1"
+        }
 
         val sentence = if (config.hasPath("sentence")) {
           config.getString("sentence")
@@ -705,6 +710,7 @@ object Configs {
           config.getString("accessKeyId"),
           config.getString("accessKeySecret"),
           partitionSpec,
+          numPartitions,
           sentence
         )
       }
