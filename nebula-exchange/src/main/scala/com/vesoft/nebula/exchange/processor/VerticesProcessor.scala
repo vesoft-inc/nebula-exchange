@@ -108,7 +108,7 @@ class VerticesProcessor(data: DataFrame,
 
     val timeout         = config.connectionConfig.timeout
     val retry           = config.connectionConfig.retry
-    val metaProvider    = new MetaProvider(address, timeout, retry)
+    val metaProvider    = new MetaProvider(address, timeout, retry, config.sslConfig)
     val fieldTypeMap    = NebulaUtils.getDataSourceFieldType(tagConfig, space, metaProvider)
     val isVidStringType = metaProvider.getVidType(space) == VidType.STRING
     val partitionNum    = metaProvider.getPartNumber(space)

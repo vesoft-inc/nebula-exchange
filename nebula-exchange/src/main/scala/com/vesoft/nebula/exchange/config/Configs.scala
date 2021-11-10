@@ -142,10 +142,11 @@ case class RateConfigEntry(limit: Int, timeout: Int) {
   * SslConfigEntry
   */
 case class SslConfigEntry(enableGraph: Boolean,
+                          enableMeta: Boolean,
                           signType: SslType.Value,
                           caSignParam: CaSignParam,
                           selfSignParam: SelfSignParam) {
-  if (enableGraph) {
+  if (enableGraph || enableMeta) {
     signType match {
       case SslType.CA =>
         require(
@@ -300,11 +301,12 @@ object Configs {
 
     val sslConfig   = getConfigOrNone(nebulaConfig, "ssl")
     val enableGraph = getOrElse(sslConfig, "enable.graph", DEFAULT_ENABLE_SSL)
+    val enableMeta  = getOrElse(sslConfig, "enable.meta", DEFAULT_ENABLE_SSL)
     val signType =
       SslType.withName(getOrElse(sslConfig, "sign.type", DEFAULT_SSL_SIGN_TYPE).toLowerCase)
     var caParam: CaSignParam     = null
     var selfParam: SelfSignParam = null
-    if (enableGraph) {
+    if (enableGraph || enableMeta) {
       if (signType == SslType.CA) {
         val caCrtPath = sslConfig.get.getString("ca.param.caCrtFilePath")
         val crtPath   = sslConfig.get.getString("ca.param.crtFilePath")
@@ -320,7 +322,7 @@ object Configs {
           "ssl.sign.type is not supported, only support CA and SELF")
       }
     }
-    val sslEntry = SslConfigEntry(enableGraph, signType, caParam, selfParam)
+    val sslEntry = SslConfigEntry(enableGraph, enableMeta, signType, caParam, selfParam)
 
     val sparkEntry = SparkConfigEntry(config)
 

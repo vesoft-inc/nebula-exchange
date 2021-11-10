@@ -7,9 +7,14 @@
 package com.vesoft.nebula.exchange
 
 import com.google.common.net.HostAndPort
-import com.vesoft.nebula.client.graph.data.HostAddress
+import com.vesoft.nebula.client.graph.data.{
+  CASignedSSLParam,
+  HostAddress,
+  SSLParam,
+  SelfSignedSSLParam
+}
 import com.vesoft.nebula.client.meta.MetaClient
-import com.vesoft.nebula.exchange.config.Type
+import com.vesoft.nebula.exchange.config.{SslConfigEntry, SslType, Type}
 import com.vesoft.nebula.meta.{EdgeItem, PropertyType, TagItem}
 import org.apache.log4j.Logger
 
@@ -20,7 +25,10 @@ import scala.collection.mutable.ListBuffer
 /**
   * MetaProvider provide nebula graph meta query operations.
   */
-class MetaProvider(addresses: List[HostAndPort], timeout: Int, retry: Int)
+class MetaProvider(addresses: List[HostAndPort],
+                   timeout: Int,
+                   retry: Int,
+                   sslConfigEntry: SslConfigEntry)
     extends AutoCloseable
     with Serializable {
   private[this] lazy val LOG = Logger.getLogger(this.getClass)
@@ -30,7 +38,22 @@ class MetaProvider(addresses: List[HostAndPort], timeout: Int, retry: Int)
     address.append(new HostAddress(addr.getHostText, addr.getPort))
   }
 
-  private val metaClient = new MetaClient(address.asJava, timeout, retry, retry)
+  private var metaClient: MetaClient = null
+  var sslParam: SSLParam             = null
+  // config meta ssl
+  if (sslConfigEntry.enableMeta) {
+    if (sslConfigEntry.signType == SslType.CA) {
+      val ca = sslConfigEntry.caSignParam
+      sslParam = new CASignedSSLParam(ca.caCrtFilePath, ca.crtFilePath, ca.keyFilePath)
+    } else {
+      val self = sslConfigEntry.selfSignParam
+      sslParam = new SelfSignedSSLParam(self.crtFilePath, self.keyFilePath, self.password)
+    }
+    metaClient = new MetaClient(address.asJava, timeout, retry, retry, true, sslParam)
+  } else {
+    metaClient = new MetaClient(address.asJava, timeout, retry, retry)
+  }
+
   metaClient.connect()
 
   def getPartNumber(space: String): Int = {
