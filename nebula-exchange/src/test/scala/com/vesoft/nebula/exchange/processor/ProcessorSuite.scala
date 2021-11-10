@@ -6,7 +6,7 @@
 package scala.com.vesoft.nebula.exchange.processor
 
 import com.vesoft.nebula.exchange.processor.Processor
-import com.vesoft.nebula.{Date, DateTime, NullType, Time, Value}
+import com.vesoft.nebula.{Date, DateTime, NullType, Time, Value, Geography, Coordinate, Point, LineString, Polygon}
 import com.vesoft.nebula.meta.PropertyType
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.{
@@ -139,6 +139,26 @@ class ProcessorSuite extends Processor {
     val nullValue = new Value()
     nullValue.setNVal(NullType.__NULL__)
     assert(extraValueForSST(row, "col14", map).equals(nullValue))
+
+    // POINT(3 8)
+    val geogPoint = Geography.ptVal(new Point(new Coordinate(3, 8)))
+    assert(extraValueForClient(row, "col15", map).equals(geogPoint))
+    // LINESTRING(3 8, 4.7 73.23)
+    var line = new java.util.ArrayList[Coordinate]()
+    line.add(new Coordinate(3, 8))
+    line.add(new Coordinate(4.7, 73.23))
+    val geogLineString = Geography.lsVal(new LineString(line))
+    assert(extraValueForClient(row, "col16", map).equals(geogLineString))
+    // POLYGON((0 1, 1 2, 2 3, 0 1))
+    var shell: java.util.List[Coordinate] = new java.util.ArrayList[Coordinate]()
+    shell.add(new Coordinate(0, 1))
+    shell.add(new Coordinate(1, 2))
+    shell.add(new Coordinate(2, 3))
+    shell.add(new Coordinate(0, 1))
+    var rings = new java.util.ArrayList[java.util.List[Coordinate]]()
+    rings.add(shell)
+    val geogPolygon = Geography.pgVal(new Polygon(rings))
+    assert(extraValueForClient(row, "col17", map).equals(geogPolygon))
   }
 
   /**
