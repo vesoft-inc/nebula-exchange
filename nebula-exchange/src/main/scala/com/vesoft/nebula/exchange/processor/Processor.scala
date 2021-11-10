@@ -1,3 +1,4 @@
+
 /* Copyright (c) 2020 vesoft inc. All rights reserved.
  *
  * This source code is licensed under Apache 2.0 License.
@@ -5,12 +6,14 @@
 
 package com.vesoft.nebula.exchange.processor
 
-import com.vesoft.nebula.{Date, DateTime, NullType, Time, Value}
+import com.vesoft.nebula.{Date, DateTime, NullType, Time, Value, Geography, Coordinate, Point, LineString, Polygon}
 import com.vesoft.nebula.exchange.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.exchange.utils.{HDFSUtils, NebulaUtils}
 import com.vesoft.nebula.meta.PropertyType
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{IntegerType, LongType, StringType}
+
+import org.locationtech.jts.io.WKBWriter;
 
 /**
   * processor is a converter.
@@ -155,7 +158,11 @@ trait Processor extends Serializable {
         row.get(index).toString.toLong
       }
       case PropertyType.GEOGRAPHY => {
-        throw new IllegalArgumentException("sst import does not support GEOGRAPHY property yet.")
+        val wkt                     = row.get(index).toString
+        org.locationtech.jts.geom.Geometry jtsGeom = new org.locationtech.jts.io
+                         .WKTReader(2, ByteOrderValues.LITTLE_ENDIAN)
+                         .read(wkt);
+        convertJTSGeometryToGeography(jtsGeom)
       }
     }
   }
@@ -170,6 +177,43 @@ trait Processor extends Serializable {
       case LongType    => row.getLong(index)
       case IntegerType => row.getInt(index).toLong
       case StringType  => row.getString(index).toLong
+    }
+  }
+
+  def convertJTSGeometryToGeography(jtsGeom: org.locationtech.jts.geom.Geometry): Geography = {
+    jtsGeom.getGeometryType() match {
+      case Geometry.TYPENAME_POINT => {
+        val jtsCoord = jtsGeom.getCoordinate()
+        Geography.ptVal(new Point(new Coordinate(jtsCoord.x, jtsCoord.y)))
+      }
+      case Geometry.TYPENAME_LINESTRING => {
+        val jtsCoordList = jtsGeom.getCoordinates().asScala
+        val coordList = scala.collection.mutable.ListBuffer.empty[Coordinate]
+        for (var jtsCoord <- jtsCoordList) {
+          coordList += jtsCoord
+        }
+        Geography.lsVal(new LineString(coordList.asJava))
+      }
+      case Geometry.TYPENAME_POLYGON => {
+        val coordListList = ListBuffer[ListBuffer[Coordinate]]
+        val jtsShell = jtsGeom.getExteriorRing()
+        val coordList = ListBuffer[Coordinate]
+        for (var jtsCoord <- jtsShell.getCoordinates()) {
+          coordList += new Coordinate(jtsCoord.x, jtsCoord.y)
+        }
+        coordListList += coordList
+
+        val jtsHolesNum = jtsGeom.getNumInteriorRing()
+        for (var i <- 0 to jtsHolesNum) {
+          val coordList = ListBuffer[Coordinate]
+          val jtsHole = jtsGeom.getInteriorRingN(i)
+          for (var jtsCoord <- jtsHole.geteCoordinates()) {
+            coordList += new Coordinate(jtsCoord.x, jtsCoord.y)
+          }
+          coordListList += coordList
+        }
+        Geography.pgVal(new Polygon(coordListList.asJava))
+      }
     }
   }
 }
