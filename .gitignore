@@ -29,6 +29,13 @@ target/
 .idea/
 .eclipse/
 *.iml
+.project
+.bloop
+.metals
+.settings
+.vscode
+.classpath
+.factorypath
 
 spark-importer.ipr
 spark-importer.iws
