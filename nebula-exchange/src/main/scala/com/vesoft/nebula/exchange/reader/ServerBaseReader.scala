@@ -276,6 +276,7 @@ class MaxcomputeReader(override val session: SparkSession, maxComputeConfig: Max
       .option("project", maxComputeConfig.project)
       .option("accessKeyId", maxComputeConfig.accessKeyId)
       .option("accessKeySecret", maxComputeConfig.accessKeySecret)
+      .option("numPartitions", maxComputeConfig.numPartitions)
 
     // if use partition read
     if (maxComputeConfig.partitionSpec != null) {
