@@ -50,16 +50,16 @@ When Space has 1 replica, and the auto-compact is enable.
 |  Dataset |             Data Amount          |cores|executor-memory|spark-partition|batch size|duration|   speed  |
 |:--------:|:--------------------------------:|:---:|:-------------:|:-------------:|:--------:|:------:|:--------:|
 |LDBC sf1  | vertex:3165488  edge:17256029    |  60 |       10G     |       60      |   2000   |  56s   | 360,000/s |
-|LDBC sf30 | vertex:88673640 edge:540915215   |  60 |       20G     |       60      |   2000   | 7.5min |1399,086/s|
-|LDBC sf100| vertex:282386021 edge:1775513185 |  60 |       30G     |       60      |   2000   | 27min  |1270,303/s|
+|LDBC sf30 | vertex:88673640 edge:540915215   |  60 |       20G     |       60      |   2000   | 7.5min |1,399,086/s|
+|LDBC sf100| vertex:282386021 edge:1775513185 |  60 |       30G     |       60      |   2000   | 27min  |1,270,303/s|
 
 When Space has 1 replica, and the auto-compact is false.
 
 |  Dataset |             Data Amount          |cores|executor-memory|spark-partition|batch size|duration|   speed  |
 |:--------:|:--------------------------------:|:---:|:-------------:|:-------------:|:--------:|:------:|:--------:|
 |LDBC sf1  | vertex:3165488  edge:17256029    |  60 |       10G     |       60      |   2000   |   49s  | 416,765/s|
-|LDBC sf30 | vertex:88673640 edge:540915215   |  60 |       20G     |       60      |   2000   |  6.3min|1665,578/s|
-|LDBC sf100| vertex:282386021 edge:1775513185 |  60 |       30G     |       60      |   2000   |  22min |1559,014/s|
+|LDBC sf30 | vertex:88673640 edge:540915215   |  60 |       20G     |       60      |   2000   |  6.3min|1,665,578/s|
+|LDBC sf100| vertex:282386021 edge:1775513185 |  60 |       30G     |       60      |   2000   |  22min |1,559,014/s|
 
 After data import, space sf100 with one replica will take to finish the manual compaction.
 
