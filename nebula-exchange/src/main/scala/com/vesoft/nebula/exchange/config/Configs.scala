@@ -338,10 +338,15 @@ object Configs {
       hiveEntryOpt = Option(hiveEntry)
     }
 
+    var hasKafka = false
+
     val tags       = mutable.ListBuffer[TagConfigEntry]()
     val tagConfigs = getConfigsOrNone(config, "tags")
     if (tagConfigs.isDefined) {
       for (tagConfig <- tagConfigs.get.asScala) {
+        if (hasKafka) {
+          throw new IllegalArgumentException("Can not define any other configs when kafka exists")
+        }
         if (!tagConfig.hasPath("name") ||
             !tagConfig.hasPath("type.source") ||
             !tagConfig.hasPath("type.sink")) {
@@ -375,6 +380,7 @@ object Configs {
         val sourceCategory = toSourceCategory(tagConfig.getString("type.source"))
         val sourceConfig   = dataSourceConfig(sourceCategory, tagConfig, nebulaConfig)
         LOG.info(s"Source Config ${sourceConfig}")
+        hasKafka = sourceCategory == SourceCategory.KAFKA
 
         val sinkCategory = toSinkCategory(tagConfig.getString("type.sink"))
         val sinkConfig   = dataSinkConfig(sinkCategory, nebulaConfig)
@@ -410,6 +416,9 @@ object Configs {
     val edgeConfigs = getConfigsOrNone(config, "edges")
     if (edgeConfigs.isDefined) {
       for (edgeConfig <- edgeConfigs.get.asScala) {
+        if (hasKafka) {
+          throw new IllegalArgumentException("Can not define any other configs when kafka exists")
+        }
         if (!edgeConfig.hasPath("name") ||
             !edgeConfig.hasPath("type.source") ||
             !edgeConfig.hasPath("type.sink")) {
@@ -432,6 +441,7 @@ object Configs {
         val sourceCategory = toSourceCategory(edgeConfig.getString("type.source"))
         val sourceConfig   = dataSourceConfig(sourceCategory, edgeConfig, nebulaConfig)
         LOG.info(s"Source Config ${sourceConfig}")
+        hasKafka = sourceCategory == SourceCategory.KAFKA
 
         val sinkCategory = toSinkCategory(edgeConfig.getString("type.sink"))
         val sinkConfig   = dataSinkConfig(sinkCategory, nebulaConfig)

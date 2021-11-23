@@ -131,7 +131,8 @@ object Exchange {
         val nebulaKeys = tagConfig.nebulaFields
         LOG.info(s"nebula keys: ${nebulaKeys.mkString(", ")}")
 
-        val data = createDataSource(spark, tagConfig.dataSourceConfigEntry)
+        val fields = tagConfig.vertexField::tagConfig.fields
+        val data = createDataSource(spark, tagConfig.dataSourceConfigEntry, fields)
         if (data.isDefined && !c.dry) {
           val startTime = System.currentTimeMillis()
           val batchSuccess =
@@ -172,7 +173,12 @@ object Exchange {
         LOG.info(s"field keys: ${fieldKeys.mkString(", ")}")
         val nebulaKeys = edgeConfig.nebulaFields
         LOG.info(s"nebula keys: ${nebulaKeys.mkString(", ")}")
-        val data = createDataSource(spark, edgeConfig.dataSourceConfigEntry)
+        val fields = if (edgeConfig.rankingField.isDefined) {
+          edgeConfig.rankingField.get::edgeConfig.sourceField::edgeConfig.targetField::edgeConfig.fields
+        } else {
+          edgeConfig.sourceField::edgeConfig.targetField::edgeConfig.fields
+        }
+        val data = createDataSource(spark, edgeConfig.dataSourceConfigEntry, fields)
         if (data.isDefined && !c.dry) {
           val startTime    = System.currentTimeMillis()
           val batchSuccess = spark.sparkContext.longAccumulator(s"batchSuccess.${edgeConfig.name}")
@@ -228,7 +234,8 @@ object Exchange {
     */
   private[this] def createDataSource(
       session: SparkSession,
-      config: DataSourceConfigEntry
+      config: DataSourceConfigEntry,
+      fields: List[String]
   ): Option[DataFrame] = {
     config.category match {
       case SourceCategory.PARQUET =>
@@ -260,7 +267,7 @@ object Exchange {
       case SourceCategory.KAFKA => {
         val kafkaConfig = config.asInstanceOf[KafkaSourceConfigEntry]
         LOG.info(s"""Loading from Kafka ${kafkaConfig.server} and subscribe ${kafkaConfig.topic}""")
-        val reader = new KafkaReader(session, kafkaConfig)
+        val reader = new KafkaReader(session, kafkaConfig, fields)
         Some(reader.read())
       }
       case SourceCategory.NEO4J =>
