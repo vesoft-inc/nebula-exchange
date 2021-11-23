@@ -10,7 +10,12 @@ import com.vesoft.nebula.client.graph.NebulaPoolConfig
 import com.vesoft.nebula.client.graph.data.HostAddress
 import com.vesoft.nebula.client.graph.net.NebulaPool
 import com.vesoft.nebula.client.storage.StorageClient
-import com.vesoft.nebula.exchange.config.{NebulaSinkConfigEntry, SinkCategory, TagConfigEntry}
+import com.vesoft.nebula.exchange.config.{
+  NebulaSinkConfigEntry,
+  SinkCategory,
+  SslConfigEntry,
+  TagConfigEntry
+}
 import com.vesoft.nebula.exchange.utils.NebulaUtils
 import com.vesoft.nebula.exchange.{KeyPolicy, MetaProvider, VidType}
 import com.vesoft.nebula.meta.PropertyType
@@ -89,7 +94,8 @@ class NebulaUtilsSuite {
     val space   = "test_string"
     val address = new ListBuffer[HostAndPort]()
     address.append(HostAndPort.fromParts("127.0.0.1", 9559))
-    val metaProvider = new MetaProvider(address.toList, 6000, 1)
+    val sslConfig    = SslConfigEntry(false, false, null, null, null)
+    val metaProvider = new MetaProvider(address.toList, 6000, 1, sslConfig)
 
     val map: Map[String, Int] =
       NebulaUtils.getDataSourceFieldType(sourceConfig, space, metaProvider)
