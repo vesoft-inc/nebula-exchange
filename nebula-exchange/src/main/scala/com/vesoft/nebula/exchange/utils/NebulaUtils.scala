@@ -5,6 +5,8 @@
 
 package com.vesoft.nebula.exchange.utils
 
+import java.nio.charset.Charset
+
 import com.google.common.primitives.UnsignedLong
 import com.vesoft.nebula.exchange.{MetaProvider, VidType}
 import com.vesoft.nebula.exchange.config.{SchemaConfigEntry, Type}
@@ -84,7 +86,8 @@ object NebulaUtils {
 
   def getPartitionId(id: String, partitionSize: Int, vidType: VidType.Value): Int = {
     val hashValue: Long = if (vidType == VidType.STRING) {
-      MurmurHash2.hash64(id.getBytes, id.length, 0xc70f6907)
+      val byteId = id.getBytes(Charset.forName("UTF-8"))
+      MurmurHash2.hash64(byteId, byteId.length, 0xc70f6907)
     } else {
       id.toLong
     }
