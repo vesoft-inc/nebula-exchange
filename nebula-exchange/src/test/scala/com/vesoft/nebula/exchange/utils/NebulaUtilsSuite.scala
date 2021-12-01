@@ -141,6 +141,15 @@ class NebulaUtilsSuite {
     assert(NebulaUtils.getPartitionId("-1", 10, VidType.INT) == 6)
     assert(NebulaUtils.getPartitionId("-2", 10, VidType.INT) == 5)
     assert(NebulaUtils.getPartitionId("-3", 10, VidType.INT) == 4)
+
+    // for chinese
+    assert(NebulaUtils.getPartitionId("中文", 10, VidType.STRING) == 5)
+    assert(NebulaUtils.getPartitionId("北京", 10, VidType.STRING) == 7)
+    assert(NebulaUtils.getPartitionId("北京123", 10, VidType.STRING) == 1)
+    assert(NebulaUtils.getPartitionId("北A12ABC", 10, VidType.STRING) == 3)
+    assert(NebulaUtils.getPartitionId("蒙DPP8EC", 10, VidType.STRING) == 4)
+    assert(NebulaUtils.getPartitionId("赣F6893_Vehicle", 10, VidType.STRING) == 2)
+    assert(NebulaUtils.getPartitionId("湘3Z4A1E_vehicle", 10, VidType.STRING) == 1)
   }
 
   @Test
