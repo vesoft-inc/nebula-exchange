@@ -86,6 +86,7 @@ object NebulaUtils {
 
   def getPartitionId(id: String, partitionSize: Int, vidType: VidType.Value): Int = {
     val hashValue: Long = if (vidType == VidType.STRING) {
+      // todo charset must be the same with Nebula Space
       val byteId = id.getBytes(Charset.forName("UTF-8"))
       MurmurHash2.hash64(byteId, byteId.length, 0xc70f6907)
     } else {
