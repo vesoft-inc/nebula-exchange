@@ -6,7 +6,18 @@
 package scala.com.vesoft.nebula.exchange.processor
 
 import com.vesoft.nebula.exchange.processor.Processor
-import com.vesoft.nebula.{Date, DateTime, NullType, Time, Value, Geography, Coordinate, Point, LineString, Polygon}
+import com.vesoft.nebula.{
+  Date,
+  DateTime,
+  NullType,
+  Time,
+  Value,
+  Geography,
+  Coordinate,
+  Point,
+  LineString,
+  Polygon
+}
 import com.vesoft.nebula.meta.PropertyType
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.{
@@ -30,8 +41,8 @@ class ProcessorSuite extends Processor {
     1000,
     100000,
     "2021-01-01",
-    "2021-01-01T12:00:00",
-    "12:00:00",
+    "2021-01-01T12:00:00.100",
+    "12:00:00.100",
     "2021-01-01T12:00:00",
     true,
     12.01,
@@ -92,8 +103,9 @@ class ProcessorSuite extends Processor {
     assert(extraValueForClient(row, "col6", map).toString.toLong == 100000)
     assert(extraValueForClient(row, "col7", map).toString.equals("date(\"2021-01-01\")"))
     assert(
-      extraValueForClient(row, "col8", map).toString.equals("datetime(\"2021-01-01T12:00:00\")"))
-    assert(extraValueForClient(row, "col9", map).toString.equals("time(\"12:00:00\")"))
+      extraValueForClient(row, "col8", map).toString
+        .equals("datetime(\"2021-01-01T12:00:00.100\")"))
+    assert(extraValueForClient(row, "col9", map).toString.equals("time(\"12:00:00.100\")"))
     assert(
       extraValueForClient(row, "col10", map).toString.equals("timestamp(\"2021-01-01T12:00:00\")"))
     assert(extraValueForClient(row, "col11", map).toString.toBoolean)
@@ -120,10 +132,10 @@ class ProcessorSuite extends Processor {
     assert(extraValueForSST(row, "col6", map).toString.toLong == 100000)
     val date = new Date(2021, 1, 1)
     assert(extraValueForSST(row, "col7", map).equals(date))
-    val datetime = new DateTime(2021, 1, 1, 12, 0, 0, 0)
+    val datetime = new DateTime(2021, 1, 1, 12, 0, 0, 100)
     assert(extraValueForSST(row, "col8", map).equals(datetime))
 
-    val time = new Time(12, 0, 0, 0)
+    val time = new Time(12, 0, 0, 100)
     assert(extraValueForSST(row, "col9", map).equals(time))
 
     try {
@@ -141,7 +153,7 @@ class ProcessorSuite extends Processor {
     assert(extraValueForSST(row, "col14", map).equals(nullValue))
 
     // POINT(3 8)
-    val geogPoint = Geography.ptVal(new Point(new Coordinate(3, 8)))
+    val geogPoint       = Geography.ptVal(new Point(new Coordinate(3, 8)))
     val geogPointExpect = extraValueForSST(row, "col15", map)
 
     assert(geogPointExpect.equals(geogPoint))
