@@ -34,7 +34,7 @@ trait Processor extends Serializable {
     * eg: convert attribute value 2020-01-01 to date("2020-01-01")
     *
     * Time type: add time() function for attribute value.
-    * eg: convert attribute value 12:12:12:1111 to time("12:12:12:1111")
+    * eg: convert attribute value 12:12:12.1111 to time("12:12:12.1111")
     *
     * DataTime type: add datetime() function for attribute value.
     * eg: convert attribute value 2020-01-01T22:30:40 to datetime("2020-01-01T22:30:40")
@@ -96,10 +96,10 @@ trait Processor extends Serializable {
           throw new UnsupportedOperationException(
             s"wrong format for time value: ${row.get(index)}, correct format is 12:00:00:0000")
         }
-        new Time(values(0).toByte,
-                 values(1).toByte,
-                 values(2).toByte,
-                 if (values.length > 3) values(3).toInt else 0)
+        val secs: Array[String] = values(2).split("\\.")
+        val sec: Byte           = secs(0).toByte
+        val microSec: Int       = if (secs.length == 2) secs(1).toInt else 0
+        new Time(values(0).toByte, values(1).toByte, sec, microSec)
       }
       case PropertyType.DATE => {
         val values = row.get(index).toString.split("-")
@@ -119,13 +119,13 @@ trait Processor extends Serializable {
         } else {
           throw new UnsupportedOperationException(
             s"wrong format for datetime value: $rowValue, " +
-              s"correct format is 2020-01-01T12:00:00:0000 or 2020-01-01 12:00:00:0000")
+              s"correct format is 2020-01-01T12:00:00.0000 or 2020-01-01 12:00:00.0000")
         }
 
         if (dateTimeValue.size < 2) {
           throw new UnsupportedOperationException(
             s"wrong format for datetime value: $rowValue, " +
-              s"correct format is 2020-01-01T12:00:00:0000 or 2020-01-01 12:00:00:0000")
+              s"correct format is 2020-01-01T12:00:00.0000 or 2020-01-01 12:00:00.0000")
         }
 
         val dateValues = dateTimeValue(0).split("-")
@@ -134,16 +134,19 @@ trait Processor extends Serializable {
         if (dateValues.size < 3 || timeValues.size < 3) {
           throw new UnsupportedOperationException(
             s"wrong format for datetime value: $rowValue, " +
-              s"correct format is 2020-01-01T12:00:00:0000 or 2020-01-01 12:00:00")
+              s"correct format is 2020-01-01T12:00:00.0000 or 2020-01-01 12:00:00")
         }
 
-        val microsec: Int = if (timeValues.size == 4) timeValues(3).toInt else 0
+        val secs: Array[String] = timeValues(2).split("\\.")
+        val sec: Byte           = secs(0).toByte
+        val microsec: Int       = if (secs.length == 2) secs(1).toInt else 0
+
         new DateTime(dateValues(0).toShort,
                      dateValues(1).toByte,
                      dateValues(2).toByte,
                      timeValues(0).toByte,
                      timeValues(1).toByte,
-                     timeValues(2).toByte,
+                     sec,
                      microsec)
       }
       case PropertyType.TIMESTAMP => {
