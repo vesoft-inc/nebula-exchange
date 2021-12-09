@@ -1,0 +1,56 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Deploy Exchange release version to Maven Central Repository
+
+on:
+  release:
+    types: published
+
+jobs:
+  deploy:
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Cache the Maven packages to speed up build
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: download neo4j-contrib & graphframes & pulsar-spark-connector dependency
+        run: |
+          wget https://oss-cdn.nebula-graph.com.cn/jar-packages/neo4j-contrib.zip
+          wget https://oss-cdn.nebula-graph.com.cn/jar-packages/graphframes.zip
+          wget https://oss-cdn.nebula-graph.com.cn/jar-packages/streamnative.zip
+          unzip -o -d ~/.m2/repository/ neo4j-contrib.zip
+          unzip -o -d ~/.m2/repository/ graphframes.zip
+          rm -rf ~/.m2/repository/io/streamnative
+          unzip -o -d ~/.m2/repository/io/ streamnative.zip
+
+      - name: Install nebula-graph
+        run: |
+          mkdir tmp
+          pushd tmp
+          git clone https://github.com/vesoft-inc/nebula-docker-compose.git
+          pushd nebula-docker-compose/
+          cp ../../nebula-exchange/src/test/resources/docker-compose.yaml .
+          docker-compose up -d
+          sleep 10
+          popd
+          popd
+
+      - name: Deploy release to Maven
+        uses: samuelmeuli/action-maven-publish@v1
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          nexus_username: ${{ secrets.OSSRH_USERNAME }}
+          nexus_password: ${{ secrets.OSSRH_TOKEN }}
