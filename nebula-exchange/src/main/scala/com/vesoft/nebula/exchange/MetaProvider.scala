@@ -6,6 +6,7 @@
 package com.vesoft.nebula.exchange
 
 import com.google.common.net.HostAndPort
+import com.vesoft.nebula.PropertyType
 import com.vesoft.nebula.client.graph.data.{
   CASignedSSLParam,
   HostAddress,
@@ -14,7 +15,7 @@ import com.vesoft.nebula.client.graph.data.{
 }
 import com.vesoft.nebula.client.meta.MetaClient
 import com.vesoft.nebula.exchange.config.{SslConfigEntry, SslType, Type}
-import com.vesoft.nebula.meta.{EdgeItem, PropertyType, TagItem}
+import com.vesoft.nebula.meta.{EdgeItem, TagItem}
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConverters._

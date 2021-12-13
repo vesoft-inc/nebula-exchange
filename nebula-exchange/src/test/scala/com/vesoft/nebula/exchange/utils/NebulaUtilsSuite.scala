@@ -6,10 +6,10 @@
 package scala.com.vesoft.nebula.exchange.utils
 
 import com.google.common.net.HostAndPort
+import com.vesoft.nebula.PropertyType
 import com.vesoft.nebula.client.graph.NebulaPoolConfig
 import com.vesoft.nebula.client.graph.data.HostAddress
 import com.vesoft.nebula.client.graph.net.NebulaPool
-import com.vesoft.nebula.client.storage.StorageClient
 import com.vesoft.nebula.exchange.config.{
   NebulaSinkConfigEntry,
   SinkCategory,
@@ -18,7 +18,6 @@ import com.vesoft.nebula.exchange.config.{
 }
 import com.vesoft.nebula.exchange.utils.NebulaUtils
 import com.vesoft.nebula.exchange.{KeyPolicy, MetaProvider, VidType}
-import com.vesoft.nebula.meta.PropertyType
 import org.apache.log4j.Logger
 import org.junit.{After, Before, Test}
 

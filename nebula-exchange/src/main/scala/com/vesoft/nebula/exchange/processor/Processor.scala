@@ -6,22 +6,23 @@
 package com.vesoft.nebula.exchange.processor
 
 import com.vesoft.nebula.{
+  Coordinate,
   Date,
   DateTime,
-  NullType,
-  Time,
-  Value,
   Geography,
-  Coordinate,
-  Point,
   LineString,
-  Polygon
+  NullType,
+  Point,
+  Polygon,
+  PropertyType,
+  Time,
+  Value
 }
 import com.vesoft.nebula.exchange.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.exchange.utils.{HDFSUtils, NebulaUtils}
-import com.vesoft.nebula.meta.PropertyType
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{IntegerType, LongType, StringType}
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
