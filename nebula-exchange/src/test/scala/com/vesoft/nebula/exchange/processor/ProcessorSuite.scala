@@ -7,18 +7,18 @@ package scala.com.vesoft.nebula.exchange.processor
 
 import com.vesoft.nebula.exchange.processor.Processor
 import com.vesoft.nebula.{
+  Coordinate,
   Date,
   DateTime,
-  NullType,
-  Time,
-  Value,
   Geography,
-  Coordinate,
-  Point,
   LineString,
-  Polygon
+  NullType,
+  Point,
+  Polygon,
+  PropertyType,
+  Time,
+  Value
 }
-import com.vesoft.nebula.meta.PropertyType
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.{
   BooleanType,
