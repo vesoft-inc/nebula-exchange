@@ -255,6 +255,10 @@ class VerticesProcessor(data: DataFrame,
             vertexId = ""
           }
 
+          if (tagConfig.vertexPolicy.isEmpty && isVidStringType){
+            vertexId = NebulaUtils.escapeUtil(vertexId).mkString("\"", "", "\"")
+          }
+
           val values = for {
             property <- fieldKeys if property.trim.length != 0
           } yield extraValueForClient(row, property, fieldTypeMap)
