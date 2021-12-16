@@ -249,6 +249,7 @@ object Configs {
   private[this] val DEFAULT_LOCAL_PATH           = None
   private[this] val DEFAULT_REMOTE_PATH          = None
   private[this] val DEFAULT_STREAM_INTERVAL      = 30
+  private[this] val DEFAULT_KAFKA_STARTINGOFFSETS      = "latest"
   private[this] val DEFAULT_PARALLEL             = 1
 
   /**
@@ -659,10 +660,18 @@ object Configs {
         val intervalSeconds =
           if (config.hasPath("interval.seconds")) config.getInt("interval.seconds")
           else DEFAULT_STREAM_INTERVAL
+        val startingOffsets =
+          if (config.hasPath("startingOffsets")) config.getString("startingOffsets")
+          else DEFAULT_KAFKA_STARTINGOFFSETS
+        val maxOffsetsPerTrigger =
+          if (config.hasPath("maxOffsetsPerTrigger")) Some(config.getLong("maxOffsetsPerTrigger"))
+          else None
         KafkaSourceConfigEntry(SourceCategory.KAFKA,
                                intervalSeconds,
                                config.getString("service"),
-                               config.getString("topic"))
+                               config.getString("topic"),
+                               startingOffsets,
+                               maxOffsetsPerTrigger)
       case SourceCategory.PULSAR =>
         val options =
           config.getObject("options").unwrapped.asScala.map(x => x._1 -> x._2.toString).toMap

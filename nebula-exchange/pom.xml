@@ -37,6 +37,7 @@
         <commons-codec.version>1.14</commons-codec.version>
         <hadoop.version>2.6.1</hadoop.version>
         <hbase.version>1.2.0</hbase.version>
+        <kafka.version>2.0.0</kafka.version>
     </properties>
 
     <build>
@@ -132,7 +133,7 @@
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <artifactSet>
                                 <excludes>
-                                    <exclude>org.apache.spark:*</exclude>
+                                    <!--<exclude>org.apache.spark:*</exclude>-->
                                     <exclude>org.apache.hadoop:*</exclude>
                                     <exclude>org.apache.hive:*</exclude>
                                     <exclude>log4j:log4j</exclude>
@@ -255,6 +256,17 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql-kafka-0-10_2.11</artifactId>
+            <version>${spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>io.streamnative.connectors</groupId>
             <artifactId>pulsar-spark-connector_2.11</artifactId>
             <version>${pulsar.version}</version>
@@ -263,6 +275,7 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.11</artifactId>
             <version>${spark.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>snappy-java</artifactId>
@@ -362,6 +375,7 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_2.11</artifactId>
             <version>${spark.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>snappy-java</artifactId>
@@ -401,11 +415,13 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-catalyst_2.11</artifactId>
             <version>${spark.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-hive_2.11</artifactId>
             <version>${spark.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-codec</artifactId>
@@ -455,12 +471,17 @@
                     <artifactId>commons-io</artifactId>
                     <groupId>commons-io</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>hive-metastore</artifactId>
+                    <groupId>org.spark-project.hive</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-yarn_2.11</artifactId>
             <version>${spark.version}</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>guava</artifactId>

@@ -5,21 +5,10 @@
 
 package com.vesoft.nebula.exchange.processor
 
-import com.vesoft.nebula.{
-  Coordinate,
-  Date,
-  DateTime,
-  Geography,
-  LineString,
-  NullType,
-  Point,
-  Polygon,
-  PropertyType,
-  Time,
-  Value
-}
+import com.vesoft.nebula.{Coordinate, Date, DateTime, Geography, LineString, NullType, Point, Polygon, PropertyType, Time, Value}
 import com.vesoft.nebula.exchange.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.exchange.utils.{HDFSUtils, NebulaUtils}
+import org.apache.log4j.Logger
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{IntegerType, LongType, StringType}
 
@@ -32,6 +21,9 @@ import scala.collection.mutable.ListBuffer
   * and submit data to writer.
   */
 trait Processor extends Serializable {
+
+  @transient
+  private[this] lazy val LOG = Logger.getLogger(this.getClass)
 
   /**
     * process dataframe to vertices or edges
@@ -229,5 +221,10 @@ trait Processor extends Serializable {
         Geography.pgVal(new Polygon(coordListList))
       }
     }
+  }
+
+  def printChoice(streamFlag: Boolean, context: String): Unit = {
+    if (streamFlag) LOG.info(context)
+    else assert(assertion = false, context)
   }
 }

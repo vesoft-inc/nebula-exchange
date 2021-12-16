@@ -6,10 +6,8 @@
 package com.vesoft.nebula.exchange.reader
 
 import com.vesoft.nebula.exchange.config.{KafkaSourceConfigEntry, PulsarSourceConfigEntry}
-import org.apache.spark.sql.{DataFrame, SparkSession, Row, Encoders}
-import com.alibaba.fastjson.{JSON, JSONObject}
-import org.apache.spark.sql.types.{StructField, StructType, StringType}
-import org.apache.spark.sql.functions.{from_json,col}
+import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**
   * Spark Streaming
@@ -27,6 +25,7 @@ abstract class StreamingBaseReader(override val session: SparkSession) extends R
   *
   * @param session
   * @param kafkaConfig
+  * @param targetFields
   */
 class KafkaReader(override val session: SparkSession,
                   kafkaConfig: KafkaSourceConfigEntry,
@@ -36,18 +35,24 @@ class KafkaReader(override val session: SparkSession,
   require(kafkaConfig.server.trim.nonEmpty && kafkaConfig.topic.trim.nonEmpty && targetFields.nonEmpty)
 
   override def read(): DataFrame = {
+    import org.apache.spark.sql.functions._
     import session.implicits._
     val fields = targetFields.distinct
-    val jsonSchema = StructType(fields.map(field => StructField(field, StringType, true)))
-    session.readStream
-           .format("kafka")
-           .option("kafka.bootstrap.servers", kafkaConfig.server)
-           .option("subscribe", kafkaConfig.topic)
-           .load()
-           .selectExpr("CAST(value AS STRING)")
-           .as[(String)]
-           .withColumn("value", from_json(col("value"), jsonSchema))
-           .select("value.*")
+    val reader =
+      session.readStream
+        .format("kafka")
+        .option("kafka.bootstrap.servers", kafkaConfig.server)
+        .option("subscribe", kafkaConfig.topic)
+        .option("startingOffsets", kafkaConfig.startingOffsets)
+
+    val maxOffsetsPerTrigger = kafkaConfig.maxOffsetsPerTrigger
+    if(maxOffsetsPerTrigger.isDefined) reader.option("maxOffsetsPerTrigger", maxOffsetsPerTrigger.get)
+
+    reader.load()
+      .select($"value".cast(StringType))
+      .select($"value", json_tuple($"value", fields: _*))
+      .toDF("value" :: fields: _*)
+
   }
 }
 
