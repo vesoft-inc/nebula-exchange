@@ -50,8 +50,8 @@ class KafkaReader(override val session: SparkSession,
 
     reader.load()
       .select($"value".cast(StringType))
-      .select($"value", json_tuple($"value", fields: _*))
-      .toDF("value" :: fields: _*)
+      .select(json_tuple($"value", fields: _*))
+      .toDF(fields: _*)
 
   }
 }

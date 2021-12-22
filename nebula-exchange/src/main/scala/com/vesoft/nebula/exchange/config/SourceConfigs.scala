@@ -162,8 +162,8 @@ case class MySQLSourceConfigEntry(override val category: SourceCategory.Value,
   *
   * @param server
   * @param topic
- * @param startingOffsets
- * @param maxOffsetsPerTrigger
+  * @param startingOffsets
+  * @param maxOffsetsPerTrigger
   */
 case class KafkaSourceConfigEntry(override val category: SourceCategory.Value,
                                   override val intervalSeconds: Int,
