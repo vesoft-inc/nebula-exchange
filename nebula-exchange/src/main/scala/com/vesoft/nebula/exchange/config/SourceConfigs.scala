@@ -162,16 +162,20 @@ case class MySQLSourceConfigEntry(override val category: SourceCategory.Value,
   *
   * @param server
   * @param topic
+  * @param startingOffsets
+  * @param maxOffsetsPerTrigger
   */
 case class KafkaSourceConfigEntry(override val category: SourceCategory.Value,
                                   override val intervalSeconds: Int,
                                   server: String,
-                                  topic: String)
+                                  topic: String,
+                                  startingOffsets: String,
+                                  maxOffsetsPerTrigger: Option[Long]=None)
     extends StreamingDataSourceConfigEntry {
   require(server.trim.nonEmpty && topic.trim.nonEmpty)
 
   override def toString: String = {
-    s"Kafka source server: ${server} topic:${topic}"
+    s"Kafka source server: ${server} topic:${topic} startingOffsets:${startingOffsets} maxOffsetsPerTrigger:${maxOffsetsPerTrigger}"
   }
 }
 

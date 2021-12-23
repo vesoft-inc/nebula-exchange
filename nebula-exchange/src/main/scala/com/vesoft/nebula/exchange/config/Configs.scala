@@ -231,25 +231,26 @@ case class Configs(databaseConfig: DataBaseConfigEntry,
 object Configs {
   private[this] val LOG = Logger.getLogger(this.getClass)
 
-  private[this] val DEFAULT_CONNECTION_TIMEOUT   = Integer.MAX_VALUE
-  private[this] val DEFAULT_CONNECTION_RETRY     = 3
-  private[this] val DEFAULT_EXECUTION_RETRY      = 3
-  private[this] val DEFAULT_EXECUTION_TIMEOUT    = Integer.MAX_VALUE
-  private[this] val DEFAULT_EXECUTION_INTERVAL   = 3000
-  private[this] val DEFAULT_ERROR_OUTPUT_PATH    = "/tmp/nebula.writer.errors/"
-  private[this] val DEFAULT_ERROR_MAX_BATCH_SIZE = Int.MaxValue
-  private[this] val DEFAULT_RATE_LIMIT           = 1024
-  private[this] val DEFAULT_RATE_TIMEOUT         = 100
-  private[this] val DEFAULT_ENABLE_SSL           = false
-  private[this] val DEFAULT_SSL_SIGN_TYPE        = "CA"
-  private[this] val DEFAULT_EDGE_RANKING         = 0L
-  private[this] val DEFAULT_BATCH                = 2
-  private[this] val DEFAULT_PARTITION            = -1
-  private[this] val DEFAULT_CHECK_POINT_PATH     = None
-  private[this] val DEFAULT_LOCAL_PATH           = None
-  private[this] val DEFAULT_REMOTE_PATH          = None
-  private[this] val DEFAULT_STREAM_INTERVAL      = 30
-  private[this] val DEFAULT_PARALLEL             = 1
+  private[this] val DEFAULT_CONNECTION_TIMEOUT    = Integer.MAX_VALUE
+  private[this] val DEFAULT_CONNECTION_RETRY      = 3
+  private[this] val DEFAULT_EXECUTION_RETRY       = 3
+  private[this] val DEFAULT_EXECUTION_TIMEOUT     = Integer.MAX_VALUE
+  private[this] val DEFAULT_EXECUTION_INTERVAL    = 3000
+  private[this] val DEFAULT_ERROR_OUTPUT_PATH     = "/tmp/nebula.writer.errors/"
+  private[this] val DEFAULT_ERROR_MAX_BATCH_SIZE  = Int.MaxValue
+  private[this] val DEFAULT_RATE_LIMIT            = 1024
+  private[this] val DEFAULT_RATE_TIMEOUT          = 100
+  private[this] val DEFAULT_ENABLE_SSL            = false
+  private[this] val DEFAULT_SSL_SIGN_TYPE         = "CA"
+  private[this] val DEFAULT_EDGE_RANKING          = 0L
+  private[this] val DEFAULT_BATCH                 = 2
+  private[this] val DEFAULT_PARTITION             = -1
+  private[this] val DEFAULT_CHECK_POINT_PATH      = None
+  private[this] val DEFAULT_LOCAL_PATH            = None
+  private[this] val DEFAULT_REMOTE_PATH           = None
+  private[this] val DEFAULT_STREAM_INTERVAL       = 30
+  private[this] val DEFAULT_KAFKA_STARTINGOFFSETS = "latest"
+  private[this] val DEFAULT_PARALLEL              = 1
 
   /**
     *
@@ -659,10 +660,18 @@ object Configs {
         val intervalSeconds =
           if (config.hasPath("interval.seconds")) config.getInt("interval.seconds")
           else DEFAULT_STREAM_INTERVAL
+        val startingOffsets =
+          if (config.hasPath("startingOffsets")) config.getString("startingOffsets")
+          else DEFAULT_KAFKA_STARTINGOFFSETS
+        val maxOffsetsPerTrigger =
+          if (config.hasPath("maxOffsetsPerTrigger")) Some(config.getLong("maxOffsetsPerTrigger"))
+          else None
         KafkaSourceConfigEntry(SourceCategory.KAFKA,
                                intervalSeconds,
                                config.getString("service"),
-                               config.getString("topic"))
+                               config.getString("topic"),
+                               startingOffsets,
+                               maxOffsetsPerTrigger)
       case SourceCategory.PULSAR =>
         val options =
           config.getObject("options").unwrapped.asScala.map(x => x._1 -> x._2.toString).toMap

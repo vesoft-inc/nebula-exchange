@@ -274,50 +274,27 @@ class EdgeProcessor(data: DataFrame,
           }
         }
     } else {
+      val streamFlag = data.isStreaming
       val edgeFrame = data
+        .filter { row => //filter and check row data,if streaming only print log
+          val sourceFlag = checkField(edgeConfig.sourceField, "source_field", row, edgeConfig.sourcePolicy, streamFlag, isVidStringType)
+
+          val targetFlag = checkField(edgeConfig.targetField, "target_field", row, edgeConfig.targetPolicy, streamFlag, isVidStringType)
+
+          val edgeRankFlag = if (edgeConfig.rankingField.isDefined) {
+            val index = row.schema.fieldIndex(edgeConfig.rankingField.get)
+            val ranking = row.get(index).toString
+            if (!NebulaUtils.isNumic(ranking)) {
+              printChoice(streamFlag, s"Not support non-Numeric type for ranking field.your row data is $row")
+              false
+            } else true
+          } else true
+          sourceFlag && targetFlag && edgeRankFlag
+        }
         .map { row =>
-          var sourceField = if (!edgeConfig.isGeo) {
-            val sourceIndex = row.schema.fieldIndex(edgeConfig.sourceField)
-            assert(sourceIndex >= 0 && !row.isNullAt(sourceIndex),
-                   s"source vertexId must exist and cannot be null, your row data is $row")
-            val value = row.get(sourceIndex).toString
-            if (value.equals(DEFAULT_EMPTY_VALUE)) "" else value
-          } else {
-            val lat = row.getDouble(row.schema.fieldIndex(edgeConfig.latitude.get))
-            val lng = row.getDouble(row.schema.fieldIndex(edgeConfig.longitude.get))
-            indexCells(lat, lng).mkString(",")
-          }
+          val sourceField = processField(edgeConfig.sourceField, "source_field", row, edgeConfig.sourcePolicy, isVidStringType)
 
-          if (edgeConfig.sourcePolicy.isEmpty) {
-            // process string type vid
-            if (isVidStringType) {
-              sourceField = NebulaUtils.escapeUtil(sourceField).mkString("\"", "", "\"")
-            } else {
-              assert(NebulaUtils.isNumic(sourceField),
-                     s"space vidType is int, but your srcId $sourceField is not numeric.")
-            }
-          } else {
-            assert(!isVidStringType,
-                   "only int vidType can use policy, but your vidType is FIXED_STRING.")
-          }
-
-          val targetIndex = row.schema.fieldIndex(edgeConfig.targetField)
-          assert(targetIndex >= 0 && !row.isNullAt(targetIndex),
-                 s"target vertexId must exist and cannot be null, your row data is $row")
-          var targetField = row.get(targetIndex).toString
-          if (targetField.equals(DEFAULT_EMPTY_VALUE)) targetField = ""
-          if (edgeConfig.targetPolicy.isEmpty) {
-            // process string type vid
-            if (isVidStringType) {
-              targetField = NebulaUtils.escapeUtil(targetField).mkString("\"", "", "\"")
-            } else {
-              assert(NebulaUtils.isNumic(targetField),
-                     s"space vidType is int, but your dstId $targetField is not numeric.")
-            }
-          } else {
-            assert(!isVidStringType,
-                   "only int vidType can use policy, but your vidType is FIXED_STRING.")
-          }
+          val targetField = processField(edgeConfig.targetField, "target_field", row, edgeConfig.targetPolicy, isVidStringType)
 
           val values = for {
             property <- fieldKeys if property.trim.length != 0
@@ -326,8 +303,6 @@ class EdgeProcessor(data: DataFrame,
           if (edgeConfig.rankingField.isDefined) {
             val index   = row.schema.fieldIndex(edgeConfig.rankingField.get)
             val ranking = row.get(index).toString
-            assert(NebulaUtils.isNumic(ranking), s"Not support non-Numeric type for ranking field")
-
             Edge(sourceField, targetField, Some(ranking.toLong), values)
           } else {
             Edge(sourceField, targetField, None, values)
@@ -335,10 +310,13 @@ class EdgeProcessor(data: DataFrame,
         }(Encoders.kryo[Edge])
 
       // streaming write
-      if (data.isStreaming) {
+      if (streamFlag) {
         val streamingDataSourceConfig =
           edgeConfig.dataSourceConfigEntry.asInstanceOf[StreamingDataSourceConfigEntry]
-        edgeFrame.writeStream
+        val wStream = edgeFrame.writeStream
+        if (edgeConfig.checkPointPath.isDefined) wStream.option("checkpointLocation", edgeConfig.checkPointPath.get)
+
+        wStream
           .foreachBatch((edges, batchId) => {
             LOG.info(s"${edgeConfig.name} edge start batch ${batchId}.")
             edges.foreachPartition(processEachPartition _)
@@ -356,5 +334,47 @@ class EdgeProcessor(data: DataFrame,
     val s2CellId   = S2CellId.fromLatLng(coordinate)
     for (index <- DEFAULT_MIN_CELL_LEVEL to DEFAULT_MAX_CELL_LEVEL)
       yield s2CellId.parent(index).id()
+  }
+
+  private[this] def checkField(field: String, fieldType: String, row: Row, policy: Option[KeyPolicy.Value], streamFlag: Boolean, isVidStringType: Boolean): Boolean = {
+    val fieldValue = if (edgeConfig.isGeo && "source_field".equals(fieldType)) {
+      val lat = row.getDouble(row.schema.fieldIndex(edgeConfig.latitude.get))
+      val lng = row.getDouble(row.schema.fieldIndex(edgeConfig.longitude.get))
+      Some(indexCells(lat, lng).mkString(","))
+    } else {
+      val index = row.schema.fieldIndex(field)
+      if (index < 0 || row.isNullAt(index)) {
+        printChoice(streamFlag, s"$fieldType must exist and cannot be null, your row data is $row")
+        None
+      } else Some(row.get(index).toString)
+    }
+
+    val idFlag = fieldValue.isDefined
+    val policyFlag = if (idFlag && policy.isEmpty && !isVidStringType
+      && !NebulaUtils.isNumic(fieldValue.get)) {
+      printChoice(streamFlag, s"space vidType is int, but your $fieldType $fieldValue is not numeric.your row data is $row")
+      false
+    } else if (idFlag && policy.isDefined && isVidStringType) {
+      printChoice(streamFlag, s"only int vidType can use policy, but your vidType is FIXED_STRING.your row data is $row")
+      false
+    } else true
+    idFlag && policyFlag
+  }
+
+  private[this] def processField(field: String, fieldType: String, row: Row, policy: Option[KeyPolicy.Value], isVidStringType: Boolean): String = {
+    var fieldValue = if (edgeConfig.isGeo && "source_field".equals(fieldType)) {
+      val lat = row.getDouble(row.schema.fieldIndex(edgeConfig.latitude.get))
+      val lng = row.getDouble(row.schema.fieldIndex(edgeConfig.longitude.get))
+      indexCells(lat, lng).mkString(",")
+    } else {
+      val index = row.schema.fieldIndex(field)
+      val value = row.get(index).toString
+      if (value.equals(DEFAULT_EMPTY_VALUE)) "" else value
+    }
+    // process string type vid
+    if (policy.isEmpty && isVidStringType) {
+      fieldValue = NebulaUtils.escapeUtil(fieldValue).mkString("\"", "", "\"")
+    }
+    fieldValue
   }
 }

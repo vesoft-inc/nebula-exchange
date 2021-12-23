@@ -229,42 +229,50 @@ class VerticesProcessor(data: DataFrame,
           }
         }
     } else {
+      val streamFlag = data.isStreaming
       val vertices = data
+        .filter { row => //filter and check row data,if streaming only print log
+          val index = row.schema.fieldIndex(tagConfig.vertexField)
+          if (index < 0 || row.isNullAt(index)) {
+            printChoice(streamFlag, s"vertexId must exist and cannot be null, your row data is $row")
+            false
+          } else {
+            val vertexId = row.get(index).toString
+            // process int type vid
+            if (tagConfig.vertexPolicy.isEmpty && !isVidStringType && !NebulaUtils.isNumic(vertexId)) {
+              printChoice(streamFlag, s"space vidType is int, but your vertex id $vertexId is not numeric.your row data is $row")
+              false
+            } else if (tagConfig.vertexPolicy.isDefined && isVidStringType) {
+              printChoice(streamFlag, s"only int vidType can use policy, but your vidType is FIXED_STRING.your row data is $row")
+              false
+            } else true
+          }
+        }
         .map { row =>
-          val vertexID = {
-            val index = row.schema.fieldIndex(tagConfig.vertexField)
-            assert(index >= 0 && !row.isNullAt(index),
-                   s"vertexId must exist and cannot be null, your row data is $row")
-            var value = row.get(index).toString
-            if (value.equals(DEFAULT_EMPTY_VALUE)) { value = "" }
-            if (tagConfig.vertexPolicy.isEmpty) {
-              // process string type vid
-              if (isVidStringType) {
-                NebulaUtils.escapeUtil(value).mkString("\"", "", "\"")
-              } else {
-                // process int type vid
-                assert(NebulaUtils.isNumic(value),
-                       s"space vidType is int, but your vertex id $value is not numeric.")
-                value
-              }
-            } else {
-              assert(!isVidStringType,
-                     "only int vidType can use policy, but your vidType is FIXED_STRING.")
-              value
-            }
+          val index = row.schema.fieldIndex(tagConfig.vertexField)
+          var vertexId = row.get(index).toString
+          if (vertexId.equals(DEFAULT_EMPTY_VALUE)) {
+            vertexId = ""
+          }
+
+          if (tagConfig.vertexPolicy.isEmpty && isVidStringType){
+            vertexId = NebulaUtils.escapeUtil(vertexId).mkString("\"", "", "\"")
           }
 
           val values = for {
             property <- fieldKeys if property.trim.length != 0
           } yield extraValueForClient(row, property, fieldTypeMap)
-          Vertex(vertexID, values)
+          Vertex(vertexId, values)
         }(Encoders.kryo[Vertex])
 
       // streaming write
-      if (data.isStreaming) {
+      if (streamFlag) {
         val streamingDataSourceConfig =
           tagConfig.dataSourceConfigEntry.asInstanceOf[StreamingDataSourceConfigEntry]
-        vertices.writeStream
+        val wStream = vertices.writeStream
+        if (tagConfig.checkPointPath.isDefined) wStream.option("checkpointLocation", tagConfig.checkPointPath.get)
+
+        wStream
           .foreachBatch((vertexSet, batchId) => {
             LOG.info(s"${tagConfig.name} tag start batch ${batchId}.")
             vertexSet.foreachPartition(processEachPartition _)
