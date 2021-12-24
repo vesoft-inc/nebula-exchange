@@ -5,16 +5,22 @@
 
 package com.vesoft.nebula.exchange.writer
 
+import java.nio.{ByteBuffer, ByteOrder}
+import java.nio.file.{Files, Paths}
+import com.vesoft.nebula.exchange.config.FileBaseSinkConfigEntry
+import com.vesoft.nebula.exchange.utils.HDFSUtils
+import org.apache.spark.TaskContext
+import org.apache.spark.sql.Row
+import org.apache.spark.util.LongAccumulator
 import org.rocksdb.{EnvOptions, Options, RocksDB, SstFileWriter}
 import org.slf4j.LoggerFactory
 
 /**
   * NebulaSSTWriter
-  * @param path
   */
-class NebulaSSTWriter(path: String) extends Writer {
-  require(path.trim.nonEmpty)
-  var isOpen = false
+class NebulaSSTWriter extends Writer {
+  var isOpen       = false
+  var path: String = _
 
   private val LOG = LoggerFactory.getLogger(getClass)
 
@@ -33,6 +39,11 @@ class NebulaSSTWriter(path: String) extends Writer {
   val env                   = new EnvOptions()
   var writer: SstFileWriter = _
 
+  def withPath(path: String): NebulaSSTWriter = {
+    this.path = path
+    this
+  }
+
   override def prepare(): Unit = {
     writer = new SstFileWriter(env, options)
     writer.open(path)
@@ -50,5 +61,59 @@ class NebulaSSTWriter(path: String) extends Writer {
     }
     options.close()
     env.close()
+  }
+
+  def writeSstFiles(iterator: Iterator[Row],
+                    fileBaseConfig: FileBaseSinkConfigEntry,
+                    partitionNum: Int,
+                    namenode: String,
+                    batchFailure: LongAccumulator): Unit = {
+    val taskID                  = TaskContext.get().taskAttemptId()
+    var writer: NebulaSSTWriter = null
+    var currentPart             = -1
+    val localPath               = fileBaseConfig.localPath
+    val remotePath              = fileBaseConfig.remotePath
+    try {
+      iterator.foreach { vertex =>
+        val key   = vertex.getAs[Array[Byte]](0)
+        val value = vertex.getAs[Array[Byte]](1)
+        var part = ByteBuffer
+          .wrap(key, 0, 4)
+          .order(ByteOrder.nativeOrder)
+          .getInt >> 8
+        if (part <= 0) {
+          part = part + partitionNum
+        }
+
+        if (part != currentPart) {
+          if (writer != null) {
+            writer.close()
+            val localFile = s"$localPath/$currentPart-$taskID.sst"
+            HDFSUtils.upload(localFile,
+                             s"$remotePath/${currentPart}/$currentPart-$taskID.sst",
+                             namenode)
+            Files.delete(Paths.get(localFile))
+          }
+          currentPart = part
+          val tmp = s"$localPath/$currentPart-$taskID.sst"
+          withPath(tmp).prepare()
+        }
+        writer.write(key, value)
+      }
+    } catch {
+      case e: Throwable => {
+        LOG.error("sst file write error,", e)
+        batchFailure.add(1)
+      }
+    } finally {
+      if (writer != null) {
+        writer.close()
+        val localFile = s"$localPath/$currentPart-$taskID.sst"
+        HDFSUtils.upload(localFile,
+                         s"$remotePath/${currentPart}/$currentPart-$taskID.sst",
+                         namenode)
+        Files.delete(Paths.get(localFile))
+      }
+    }
   }
 }

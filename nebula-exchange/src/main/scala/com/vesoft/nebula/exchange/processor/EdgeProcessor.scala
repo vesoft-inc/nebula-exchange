@@ -31,6 +31,7 @@ import com.vesoft.nebula.exchange.{
 }
 import org.apache.log4j.Logger
 import com.vesoft.nebula.exchange.writer.{NebulaGraphClientWriter, NebulaSSTWriter}
+import com.vesoft.nebula.meta.{EdgeItem, TagItem}
 import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.spark.TaskContext
 import org.apache.spark.sql.streaming.Trigger
@@ -123,104 +124,7 @@ class EdgeProcessor(data: DataFrame,
       distintData
         .mapPartitions { iter =>
           iter.map { row =>
-            val srcIndex: Int = row.schema.fieldIndex(edgeConfig.sourceField)
-            assert(srcIndex >= 0 && !row.isNullAt(srcIndex),
-                   s"edge source vertex must exist and cannot be null, your row data is $row")
-            var srcId: String = row.get(srcIndex).toString
-            if (srcId.equals(DEFAULT_EMPTY_VALUE)) { srcId = "" }
-
-            val dstIndex: Int = row.schema.fieldIndex(edgeConfig.targetField)
-            assert(dstIndex >= 0 && !row.isNullAt(dstIndex),
-                   s"edge target vertex must exist and cannot be null, your row data is $row")
-            var dstId: String = row.get(dstIndex).toString
-            if (dstId.equals(DEFAULT_EMPTY_VALUE)) { dstId = "" }
-
-            if (edgeConfig.sourcePolicy.isDefined) {
-              edgeConfig.sourcePolicy.get match {
-                case KeyPolicy.HASH =>
-                  srcId = MurmurHash2
-                    .hash64(srcId.getBytes(), srcId.getBytes().length, 0xc70f6907)
-                    .toString
-                case KeyPolicy.UUID =>
-                  throw new UnsupportedOperationException("do not support uuid yet")
-                case _ =>
-                  throw new IllegalArgumentException(
-                    s"policy ${edgeConfig.sourcePolicy.get} is invalidate")
-              }
-            }
-            if (edgeConfig.targetPolicy.isDefined) {
-              edgeConfig.targetPolicy.get match {
-                case KeyPolicy.HASH =>
-                  dstId = MurmurHash2
-                    .hash64(dstId.getBytes(), dstId.getBytes().length, 0xc70f6907)
-                    .toString
-                case KeyPolicy.UUID =>
-                  throw new UnsupportedOperationException("do not support uuid yet")
-                case _ =>
-                  throw new IllegalArgumentException(
-                    s"policy ${edgeConfig.targetPolicy.get} is invalidate")
-              }
-            }
-
-            val ranking: Long = if (edgeConfig.rankingField.isDefined) {
-              val rankIndex = row.schema.fieldIndex(edgeConfig.rankingField.get)
-              assert(rankIndex >= 0 && !row.isNullAt(rankIndex),
-                     s"rank must exist and cannot be null, your row data is $row")
-              row.get(rankIndex).toString.toLong
-            } else {
-              0
-            }
-
-            val hostAddrs: ListBuffer[HostAddress] = new ListBuffer[HostAddress]
-            for (addr <- address) {
-              hostAddrs.append(new HostAddress(addr.getHostText, addr.getPort))
-            }
-
-            val srcPartitionId = NebulaUtils.getPartitionId(srcId, partitionNum, vidType)
-            val dstPartitionId = NebulaUtils.getPartitionId(dstId, partitionNum, vidType)
-            val codec          = new NebulaCodecImpl()
-
-            import java.nio.ByteBuffer
-            val srcBytes = if (vidType == VidType.INT) {
-              ByteBuffer
-                .allocate(8)
-                .order(ByteOrder.nativeOrder)
-                .putLong(srcId.toLong)
-                .array
-            } else {
-              srcId.getBytes()
-            }
-
-            val dstBytes = if (vidType == VidType.INT) {
-              ByteBuffer
-                .allocate(8)
-                .order(ByteOrder.nativeOrder)
-                .putLong(dstId.toLong)
-                .array
-            } else {
-              dstId.getBytes()
-            }
-            val positiveEdgeKey = codec.edgeKeyByDefaultVer(spaceVidLen,
-                                                            srcPartitionId,
-                                                            srcBytes,
-                                                            edgeItem.getEdge_type,
-                                                            ranking,
-                                                            dstBytes)
-            val reverseEdgeKey = codec.edgeKeyByDefaultVer(spaceVidLen,
-                                                           dstPartitionId,
-                                                           dstBytes,
-                                                           -edgeItem.getEdge_type,
-                                                           ranking,
-                                                           srcBytes)
-
-            val values = for {
-              property <- fieldKeys if property.trim.length != 0
-            } yield
-              extraValueForSST(row, property, fieldTypeMap)
-                .asInstanceOf[AnyRef]
-
-            val edgeValue = codec.encodeEdge(edgeItem, nebulaKeys.asJava, values.asJava)
-            (positiveEdgeKey, reverseEdgeKey, edgeValue)
+            encodeEdge(row, partitionNum, vidType, spaceVidLen, edgeItem, fieldTypeMap)
           }
         }(Encoders.tuple(Encoders.BINARY, Encoders.BINARY, Encoders.BINARY))
         .flatMap(line => {
@@ -229,84 +133,21 @@ class EdgeProcessor(data: DataFrame,
         .toDF("key", "value")
         .sortWithinPartitions("key")
         .foreachPartition { iterator: Iterator[Row] =>
-          val taskID                  = TaskContext.get().taskAttemptId()
-          var writer: NebulaSSTWriter = null
-          var currentPart             = -1
-          try {
-            iterator.foreach { vertex =>
-              val key   = vertex.getAs[Array[Byte]](0)
-              val value = vertex.getAs[Array[Byte]](1)
-              var part = ByteBuffer
-                .wrap(key, 0, 4)
-                .order(ByteOrder.nativeOrder)
-                .getInt >> 8
-              if (part <= 0) {
-                part = part + partitionNum
-              }
-
-              if (part != currentPart) {
-                if (writer != null) {
-                  writer.close()
-                  val localFile = s"${fileBaseConfig.localPath}/$currentPart-$taskID.sst"
-                  HDFSUtils.upload(
-                    localFile,
-                    s"${fileBaseConfig.remotePath}/${currentPart}/$currentPart-$taskID.sst",
-                    namenode)
-                  Files.delete(Paths.get(localFile))
-                }
-                currentPart = part
-                val tmp = s"${fileBaseConfig.localPath}/$currentPart-$taskID.sst"
-                writer = new NebulaSSTWriter(tmp)
-                writer.prepare()
-              }
-              writer.write(key, value)
-            }
-          } finally {
-            if (writer != null) {
-              writer.close()
-              val localFile = s"${fileBaseConfig.localPath}/$currentPart-$taskID.sst"
-              HDFSUtils.upload(
-                localFile,
-                s"${fileBaseConfig.remotePath}/${currentPart}/$currentPart-$taskID.sst",
-                namenode)
-              Files.delete(Paths.get(localFile))
-            }
-          }
+          val sstFileWriter = new NebulaSSTWriter
+          sstFileWriter.writeSstFiles(iterator,
+                                      fileBaseConfig,
+                                      partitionNum,
+                                      namenode,
+                                      batchFailure)
         }
     } else {
       val streamFlag = data.isStreaming
       val edgeFrame = data
-        .filter { row => //filter and check row data,if streaming only print log
-          val sourceFlag = checkField(edgeConfig.sourceField, "source_field", row, edgeConfig.sourcePolicy, streamFlag, isVidStringType)
-
-          val targetFlag = checkField(edgeConfig.targetField, "target_field", row, edgeConfig.targetPolicy, streamFlag, isVidStringType)
-
-          val edgeRankFlag = if (edgeConfig.rankingField.isDefined) {
-            val index = row.schema.fieldIndex(edgeConfig.rankingField.get)
-            val ranking = row.get(index).toString
-            if (!NebulaUtils.isNumic(ranking)) {
-              printChoice(streamFlag, s"Not support non-Numeric type for ranking field.your row data is $row")
-              false
-            } else true
-          } else true
-          sourceFlag && targetFlag && edgeRankFlag
+        .filter { row =>
+          isEdgeValid(row, edgeConfig, streamFlag, isVidStringType)
         }
         .map { row =>
-          val sourceField = processField(edgeConfig.sourceField, "source_field", row, edgeConfig.sourcePolicy, isVidStringType)
-
-          val targetField = processField(edgeConfig.targetField, "target_field", row, edgeConfig.targetPolicy, isVidStringType)
-
-          val values = for {
-            property <- fieldKeys if property.trim.length != 0
-          } yield extraValueForClient(row, property, fieldTypeMap)
-
-          if (edgeConfig.rankingField.isDefined) {
-            val index   = row.schema.fieldIndex(edgeConfig.rankingField.get)
-            val ranking = row.get(index).toString
-            Edge(sourceField, targetField, Some(ranking.toLong), values)
-          } else {
-            Edge(sourceField, targetField, None, values)
-          }
+          convertToEdge(row, edgeConfig, isVidStringType, fieldKeys, fieldTypeMap)
         }(Encoders.kryo[Edge])
 
       // streaming write
@@ -314,7 +155,8 @@ class EdgeProcessor(data: DataFrame,
         val streamingDataSourceConfig =
           edgeConfig.dataSourceConfigEntry.asInstanceOf[StreamingDataSourceConfigEntry]
         val wStream = edgeFrame.writeStream
-        if (edgeConfig.checkPointPath.isDefined) wStream.option("checkpointLocation", edgeConfig.checkPointPath.get)
+        if (edgeConfig.checkPointPath.isDefined)
+          wStream.option("checkpointLocation", edgeConfig.checkPointPath.get)
 
         wStream
           .foreachBatch((edges, batchId) => {
@@ -336,7 +178,51 @@ class EdgeProcessor(data: DataFrame,
       yield s2CellId.parent(index).id()
   }
 
-  private[this] def checkField(field: String, fieldType: String, row: Row, policy: Option[KeyPolicy.Value], streamFlag: Boolean, isVidStringType: Boolean): Boolean = {
+  /**
+    * filter and check row data for edge, if streaming only print log
+    */
+  private[this] def isEdgeValid(row: Row,
+                                edgeConfig: EdgeConfigEntry,
+                                streamFlag: Boolean,
+                                isVidStringType: Boolean): Boolean = {
+    val sourceFlag = checkField(edgeConfig.sourceField,
+                                "source_field",
+                                row,
+                                edgeConfig.sourcePolicy,
+                                streamFlag,
+                                isVidStringType)
+
+    val targetFlag = checkField(edgeConfig.targetField,
+                                "target_field",
+                                row,
+                                edgeConfig.targetPolicy,
+                                streamFlag,
+                                isVidStringType)
+
+    val edgeRankFlag = if (edgeConfig.rankingField.isDefined) {
+      val index = row.schema.fieldIndex(edgeConfig.rankingField.get)
+      if (index < 0 || row.isNullAt(index)) {
+        printChoice(streamFlag, s"rank must exist and cannot be null, your row data is $row")
+      }
+      val ranking = row.get(index).toString
+      if (!NebulaUtils.isNumic(ranking)) {
+        printChoice(streamFlag,
+                    s"Not support non-Numeric type for ranking field.your row data is $row")
+        false
+      } else true
+    } else true
+    sourceFlag && targetFlag && edgeRankFlag
+  }
+
+  /**
+    * check if edge source id and target id valid
+    */
+  private[this] def checkField(field: String,
+                               fieldType: String,
+                               row: Row,
+                               policy: Option[KeyPolicy.Value],
+                               streamFlag: Boolean,
+                               isVidStringType: Boolean): Boolean = {
     val fieldValue = if (edgeConfig.isGeo && "source_field".equals(fieldType)) {
       val lat = row.getDouble(row.schema.fieldIndex(edgeConfig.latitude.get))
       val lng = row.getDouble(row.schema.fieldIndex(edgeConfig.longitude.get))
@@ -350,18 +236,63 @@ class EdgeProcessor(data: DataFrame,
     }
 
     val idFlag = fieldValue.isDefined
-    val policyFlag = if (idFlag && policy.isEmpty && !isVidStringType
-      && !NebulaUtils.isNumic(fieldValue.get)) {
-      printChoice(streamFlag, s"space vidType is int, but your $fieldType $fieldValue is not numeric.your row data is $row")
-      false
-    } else if (idFlag && policy.isDefined && isVidStringType) {
-      printChoice(streamFlag, s"only int vidType can use policy, but your vidType is FIXED_STRING.your row data is $row")
-      false
-    } else true
+    val policyFlag =
+      if (idFlag && policy.isEmpty && !isVidStringType
+          && !NebulaUtils.isNumic(fieldValue.get)) {
+        printChoice(
+          streamFlag,
+          s"space vidType is int, but your $fieldType $fieldValue is not numeric.your row data is $row")
+        false
+      } else if (idFlag && policy.isDefined && isVidStringType) {
+        printChoice(
+          streamFlag,
+          s"only int vidType can use policy, but your vidType is FIXED_STRING.your row data is $row")
+        false
+      } else true
     idFlag && policyFlag
   }
 
-  private[this] def processField(field: String, fieldType: String, row: Row, policy: Option[KeyPolicy.Value], isVidStringType: Boolean): String = {
+  /**
+    * convert row data to {@link Edge}
+    */
+  private[this] def convertToEdge(row: Row,
+                                  edgeConfig: EdgeConfigEntry,
+                                  isVidStringType: Boolean,
+                                  fieldKeys: List[String],
+                                  fieldTypeMap: Map[String, Int]): Edge = {
+    val sourceField = processField(edgeConfig.sourceField,
+                                   "source_field",
+                                   row,
+                                   edgeConfig.sourcePolicy,
+                                   isVidStringType)
+
+    val targetField = processField(edgeConfig.targetField,
+                                   "target_field",
+                                   row,
+                                   edgeConfig.targetPolicy,
+                                   isVidStringType)
+
+    val values = for {
+      property <- fieldKeys if property.trim.length != 0
+    } yield extraValueForClient(row, property, fieldTypeMap)
+
+    if (edgeConfig.rankingField.isDefined) {
+      val index   = row.schema.fieldIndex(edgeConfig.rankingField.get)
+      val ranking = row.get(index).toString
+      Edge(sourceField, targetField, Some(ranking.toLong), values)
+    } else {
+      Edge(sourceField, targetField, None, values)
+    }
+  }
+
+  /**
+    * process edge source and target field
+    */
+  private[this] def processField(field: String,
+                                 fieldType: String,
+                                 row: Row,
+                                 policy: Option[KeyPolicy.Value],
+                                 isVidStringType: Boolean): String = {
     var fieldValue = if (edgeConfig.isGeo && "source_field".equals(fieldType)) {
       val lat = row.getDouble(row.schema.fieldIndex(edgeConfig.latitude.get))
       val lng = row.getDouble(row.schema.fieldIndex(edgeConfig.longitude.get))
@@ -376,5 +307,104 @@ class EdgeProcessor(data: DataFrame,
       fieldValue = NebulaUtils.escapeUtil(fieldValue).mkString("\"", "", "\"")
     }
     fieldValue
+  }
+
+  /**
+    * encode edge
+    */
+  private[this] def encodeEdge(
+      row: Row,
+      partitionNum: Int,
+      vidType: VidType.Value,
+      spaceVidLen: Int,
+      edgeItem: EdgeItem,
+      fieldTypeMap: Map[String, Int]): (Array[Byte], Array[Byte], Array[Byte]) = {
+    isEdgeValid(row, edgeConfig, false, vidType == VidType.STRING)
+
+    val srcIndex: Int = row.schema.fieldIndex(edgeConfig.sourceField)
+    var srcId: String = row.get(srcIndex).toString
+    if (srcId.equals(DEFAULT_EMPTY_VALUE)) { srcId = "" }
+
+    val dstIndex: Int = row.schema.fieldIndex(edgeConfig.targetField)
+    var dstId: String = row.get(dstIndex).toString
+    if (dstId.equals(DEFAULT_EMPTY_VALUE)) { dstId = "" }
+
+    if (edgeConfig.sourcePolicy.isDefined) {
+      edgeConfig.sourcePolicy.get match {
+        case KeyPolicy.HASH =>
+          srcId = MurmurHash2
+            .hash64(srcId.getBytes(), srcId.getBytes().length, 0xc70f6907)
+            .toString
+        case KeyPolicy.UUID =>
+          throw new UnsupportedOperationException("do not support uuid yet")
+        case _ =>
+          throw new IllegalArgumentException(s"policy ${edgeConfig.sourcePolicy.get} is invalidate")
+      }
+    }
+    if (edgeConfig.targetPolicy.isDefined) {
+      edgeConfig.targetPolicy.get match {
+        case KeyPolicy.HASH =>
+          dstId = MurmurHash2
+            .hash64(dstId.getBytes(), dstId.getBytes().length, 0xc70f6907)
+            .toString
+        case KeyPolicy.UUID =>
+          throw new UnsupportedOperationException("do not support uuid yet")
+        case _ =>
+          throw new IllegalArgumentException(s"policy ${edgeConfig.targetPolicy.get} is invalidate")
+      }
+    }
+
+    val ranking: Long = if (edgeConfig.rankingField.isDefined) {
+      val rankIndex = row.schema.fieldIndex(edgeConfig.rankingField.get)
+      row.get(rankIndex).toString.toLong
+    } else {
+      0
+    }
+
+    val srcPartitionId = NebulaUtils.getPartitionId(srcId, partitionNum, vidType)
+    val dstPartitionId = NebulaUtils.getPartitionId(dstId, partitionNum, vidType)
+    val codec          = new NebulaCodecImpl()
+
+    import java.nio.ByteBuffer
+    val srcBytes = if (vidType == VidType.INT) {
+      ByteBuffer
+        .allocate(8)
+        .order(ByteOrder.nativeOrder)
+        .putLong(srcId.toLong)
+        .array
+    } else {
+      srcId.getBytes()
+    }
+
+    val dstBytes = if (vidType == VidType.INT) {
+      ByteBuffer
+        .allocate(8)
+        .order(ByteOrder.nativeOrder)
+        .putLong(dstId.toLong)
+        .array
+    } else {
+      dstId.getBytes()
+    }
+    val positiveEdgeKey = codec.edgeKeyByDefaultVer(spaceVidLen,
+                                                    srcPartitionId,
+                                                    srcBytes,
+                                                    edgeItem.getEdge_type,
+                                                    ranking,
+                                                    dstBytes)
+    val reverseEdgeKey = codec.edgeKeyByDefaultVer(spaceVidLen,
+                                                   dstPartitionId,
+                                                   dstBytes,
+                                                   -edgeItem.getEdge_type,
+                                                   ranking,
+                                                   srcBytes)
+
+    val values = for {
+      property <- fieldKeys if property.trim.length != 0
+    } yield
+      extraValueForSST(row, property, fieldTypeMap)
+        .asInstanceOf[AnyRef]
+
+    val edgeValue = codec.encodeEdge(edgeItem, nebulaKeys.asJava, values.asJava)
+    (positiveEdgeKey, reverseEdgeKey, edgeValue)
   }
 }
