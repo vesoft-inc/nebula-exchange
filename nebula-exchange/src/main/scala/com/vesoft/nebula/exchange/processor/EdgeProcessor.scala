@@ -181,10 +181,10 @@ class EdgeProcessor(data: DataFrame,
   /**
     * filter and check row data for edge, if streaming only print log
     */
-  private[this] def isEdgeValid(row: Row,
-                                edgeConfig: EdgeConfigEntry,
-                                streamFlag: Boolean,
-                                isVidStringType: Boolean): Boolean = {
+  def isEdgeValid(row: Row,
+                  edgeConfig: EdgeConfigEntry,
+                  streamFlag: Boolean,
+                  isVidStringType: Boolean): Boolean = {
     val sourceFlag = checkField(edgeConfig.sourceField,
                                 "source_field",
                                 row,
@@ -217,12 +217,12 @@ class EdgeProcessor(data: DataFrame,
   /**
     * check if edge source id and target id valid
     */
-  private[this] def checkField(field: String,
-                               fieldType: String,
-                               row: Row,
-                               policy: Option[KeyPolicy.Value],
-                               streamFlag: Boolean,
-                               isVidStringType: Boolean): Boolean = {
+  def checkField(field: String,
+                 fieldType: String,
+                 row: Row,
+                 policy: Option[KeyPolicy.Value],
+                 streamFlag: Boolean,
+                 isVidStringType: Boolean): Boolean = {
     val fieldValue = if (edgeConfig.isGeo && "source_field".equals(fieldType)) {
       val lat = row.getDouble(row.schema.fieldIndex(edgeConfig.latitude.get))
       val lng = row.getDouble(row.schema.fieldIndex(edgeConfig.longitude.get))
@@ -255,11 +255,11 @@ class EdgeProcessor(data: DataFrame,
   /**
     * convert row data to {@link Edge}
     */
-  private[this] def convertToEdge(row: Row,
-                                  edgeConfig: EdgeConfigEntry,
-                                  isVidStringType: Boolean,
-                                  fieldKeys: List[String],
-                                  fieldTypeMap: Map[String, Int]): Edge = {
+  def convertToEdge(row: Row,
+                    edgeConfig: EdgeConfigEntry,
+                    isVidStringType: Boolean,
+                    fieldKeys: List[String],
+                    fieldTypeMap: Map[String, Int]): Edge = {
     val sourceField = processField(edgeConfig.sourceField,
                                    "source_field",
                                    row,
@@ -288,11 +288,11 @@ class EdgeProcessor(data: DataFrame,
   /**
     * process edge source and target field
     */
-  private[this] def processField(field: String,
-                                 fieldType: String,
-                                 row: Row,
-                                 policy: Option[KeyPolicy.Value],
-                                 isVidStringType: Boolean): String = {
+  def processField(field: String,
+                   fieldType: String,
+                   row: Row,
+                   policy: Option[KeyPolicy.Value],
+                   isVidStringType: Boolean): String = {
     var fieldValue = if (edgeConfig.isGeo && "source_field".equals(fieldType)) {
       val lat = row.getDouble(row.schema.fieldIndex(edgeConfig.latitude.get))
       val lng = row.getDouble(row.schema.fieldIndex(edgeConfig.longitude.get))
@@ -312,13 +312,12 @@ class EdgeProcessor(data: DataFrame,
   /**
     * encode edge
     */
-  private[this] def encodeEdge(
-      row: Row,
-      partitionNum: Int,
-      vidType: VidType.Value,
-      spaceVidLen: Int,
-      edgeItem: EdgeItem,
-      fieldTypeMap: Map[String, Int]): (Array[Byte], Array[Byte], Array[Byte]) = {
+  def encodeEdge(row: Row,
+                 partitionNum: Int,
+                 vidType: VidType.Value,
+                 spaceVidLen: Int,
+                 edgeItem: EdgeItem,
+                 fieldTypeMap: Map[String, Int]): (Array[Byte], Array[Byte], Array[Byte]) = {
     isEdgeValid(row, edgeConfig, false, vidType == VidType.STRING)
 
     val srcIndex: Int = row.schema.fieldIndex(edgeConfig.sourceField)

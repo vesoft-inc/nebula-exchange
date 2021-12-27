@@ -176,10 +176,10 @@ class VerticesProcessor(data: DataFrame,
     * filter and check row data for vertex, if streaming only print log
     * for not streaming datasource, if the vertex data is invalid, throw AssertException.
     */
-  private[this] def isVertexValid(row: Row,
-                                  tagConfig: TagConfigEntry,
-                                  streamFlag: Boolean,
-                                  isVidStringType: Boolean): Boolean = {
+  def isVertexValid(row: Row,
+                    tagConfig: TagConfigEntry,
+                    streamFlag: Boolean,
+                    isVidStringType: Boolean): Boolean = {
     val index = row.schema.fieldIndex(tagConfig.vertexField)
     if (index < 0 || row.isNullAt(index)) {
       printChoice(streamFlag, s"vertexId must exist and cannot be null, your row data is $row")
@@ -207,11 +207,11 @@ class VerticesProcessor(data: DataFrame,
   /**
     * Convert row data to {@link Vertex}
     */
-  private[this] def convertToVertex(row: Row,
-                                    tagConfig: TagConfigEntry,
-                                    isVidStringType: Boolean,
-                                    fieldKeys: List[String],
-                                    fieldTypeMap: Map[String, Int]): Vertex = {
+  def convertToVertex(row: Row,
+                      tagConfig: TagConfigEntry,
+                      isVidStringType: Boolean,
+                      fieldKeys: List[String],
+                      fieldTypeMap: Map[String, Int]): Vertex = {
     val index    = row.schema.fieldIndex(tagConfig.vertexField)
     var vertexId = row.get(index).toString
     if (vertexId.equals(DEFAULT_EMPTY_VALUE)) {
@@ -231,12 +231,12 @@ class VerticesProcessor(data: DataFrame,
   /**
     * encode vertex
     */
-  private[this] def encodeVertex(row: Row,
-                                 partitionNum: Int,
-                                 vidType: VidType.Value,
-                                 spaceVidLen: Int,
-                                 tagItem: TagItem,
-                                 fieldTypeMap: Map[String, Int]): (Array[Byte], Array[Byte]) = {
+  def encodeVertex(row: Row,
+                   partitionNum: Int,
+                   vidType: VidType.Value,
+                   spaceVidLen: Int,
+                   tagItem: TagItem,
+                   fieldTypeMap: Map[String, Int]): (Array[Byte], Array[Byte]) = {
     // check if vertex id is valid, if not, throw AssertException
     isVertexValid(row, tagConfig, false, vidType == VidType.STRING)
 

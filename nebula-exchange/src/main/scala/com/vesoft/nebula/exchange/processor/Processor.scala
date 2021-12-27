@@ -188,15 +188,6 @@ trait Processor extends Serializable {
     HDFSUtils.getContent(path).toLong
   }
 
-  def getLong(row: Row, field: String): Long = {
-    val index = row.schema.fieldIndex(field)
-    row.schema.fields(index).dataType match {
-      case LongType    => row.getLong(index)
-      case IntegerType => row.getInt(index).toLong
-      case StringType  => row.getString(index).toLong
-    }
-  }
-
   def convertJTSGeometryToGeography(jtsGeom: org.locationtech.jts.geom.Geometry): Geography = {
     jtsGeom.getGeometryType match {
       case "Point" => {
