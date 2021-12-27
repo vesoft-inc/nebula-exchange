@@ -31,14 +31,9 @@ import org.scalatest.Assertions.assertThrows
 import scala.collection.JavaConverters._
 
 class VerticesProcessorSuite {
-  val spark = SparkSession
-    .builder()
-    .master("local")
-    .appName("test")
-    .getOrCreate()
   val config: Configs = Configs.parse(new File("src/test/resources/process_application.conf"))
 
-  var data: DataFrame           = spark.read.option("header", "true").csv("src/test/resources/vertex.csv")
+  var data: DataFrame           = null
   var tagConfig: TagConfigEntry = config.tagsConfig.head
   val fieldKeys = List("col1",
                        "col2",
@@ -69,16 +64,8 @@ class VerticesProcessorSuite {
                         "col13",
                         "col14")
 
-  val batchSuccess = spark.sparkContext.longAccumulator(s"batchSuccess")
-  val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure")
-
-  val processClazz = new VerticesProcessor(data,
-                                           tagConfig,
-                                           fieldKeys,
-                                           nebulaKeys,
-                                           config,
-                                           batchSuccess,
-                                           batchFailure)
+  val processClazz =
+    new VerticesProcessor(data, tagConfig, fieldKeys, nebulaKeys, config, null, null)
   @Test
   def isVertexValidSuite(): Unit = {
     val stringIdValue      = List("Bob")
@@ -123,7 +110,7 @@ class VerticesProcessorSuite {
     val vertex = processClazz.convertToVertex(row, tagConfig, true, fieldKeys, map)
     assert(vertex.vertexID.equals("\"1\""))
     assert(vertex.toString.equals(
-      "Vertex ID: \"1\", Values: \"\", \"fixedBob\", 12, 200, 1000, 100000, date(\"2021-01-01\"), datetime(\"2021-01-01T12:00:00.100\"), time(\"12:00:00.100\"), timestamp(\"2021-01-01T12:00:00\"), true, 12.01, 22.12, ST_GeogFromText(\"POINT(3 8)\")"))
+      "Vertex ID: \"1\", Values: \"\", \"fixedBob\", 12, 200, 1000, 100000, date(\"2021-01-01\"), datetime(\"2021-01-01T12:00:00.100\"), time(\"12:00:00.100\"), 345436232, true, 12.01, 22.12, ST_GeogFromText(\"POINT(3 8)\")"))
   }
 
   @Test

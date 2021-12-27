@@ -31,14 +31,9 @@ import org.scalatest.Assertions.assertThrows
 import scala.collection.JavaConverters._
 
 class EdgeProcessorSuite {
-  val spark = SparkSession
-    .builder()
-    .master("local")
-    .appName("test")
-    .getOrCreate()
   val config: Configs = Configs.parse(new File("src/test/resources/process_application.conf"))
 
-  var data: DataFrame             = spark.read.option("header", "true").csv("src/test/resources/edge.csv")
+  var data: DataFrame             = null
   var edgeConfig: EdgeConfigEntry = config.edgesConfig.head
   val fieldKeys = List("col1",
                        "col2",
@@ -69,11 +64,8 @@ class EdgeProcessorSuite {
                         "col13",
                         "col14")
 
-  val batchSuccess = spark.sparkContext.longAccumulator(s"batchSuccess")
-  val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure")
-
   val processClazz =
-    new EdgeProcessor(data, edgeConfig, fieldKeys, nebulaKeys, config, batchSuccess, batchFailure)
+    new EdgeProcessor(data, edgeConfig, fieldKeys, nebulaKeys, config, null, null)
   @Test
   def isEdgeValidSuite(): Unit = {
     val stringIdValue = List("Bob", "Tom")
