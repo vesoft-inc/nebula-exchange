@@ -31,6 +31,10 @@ import org.apache.spark.sql.types.{
   StructType
 }
 import org.junit.Test
+import org.scalatest.Assertions.assertThrows
+
+import scala.collection.JavaConverters.seqAsJavaListConverter
+import scala.collection.mutable.ListBuffer
 
 class ProcessorSuite extends Processor {
   val values = List(
@@ -180,4 +184,36 @@ class ProcessorSuite extends Processor {
     */
   override def process(): Unit = ???
 
+  @Test
+  def convertJTSGeometryToGeographySuite(): Unit = {
+    val pointWkt  = "POINT(3 8)"
+    val pointGeom = new org.locationtech.jts.io.WKTReader().read(pointWkt)
+    val point     = Geography.ptVal(new Point(new Coordinate(3, 8)))
+    assert(convertJTSGeometryToGeography(pointGeom) == point)
+
+    val lineWkt   = "LINE(1 2,2 4)"
+    val lineGeom  = new org.locationtech.jts.io.WKTReader().read(lineWkt)
+    val coordList = List(new Coordinate(1, 2), new Coordinate(2, 4))
+    val line      = Geography.lsVal(new LineString(coordList.asJava))
+    assert(convertJTSGeometryToGeography(lineGeom) == line)
+
+    val polygonWkt  = "POLYGON((1 2,2 4,3 5,5 6))"
+    val polygonGeom = new org.locationtech.jts.io.WKTReader().read(polygonWkt)
+    val list        = new ListBuffer[Coordinate]()
+    list.append(new Coordinate(1, 2))
+    list.append(new Coordinate(2, 4))
+    list.append(new Coordinate(3, 5))
+    list.append(new Coordinate(5, 6))
+    val coordListList: java.util.ArrayList[java.util.List[Coordinate]] =
+      new java.util.ArrayList[java.util.List[Coordinate]]
+    coordListList.add(list.asJava)
+    val polygon = Geography.pgVal(new Polygon(coordListList))
+    assert(convertJTSGeometryToGeography(polygonGeom) == polygon)
+  }
+
+  @Test
+  def printChoiceSuite(): Unit = {
+    printChoice(true, "nothing")
+    assertThrows[AssertionError](printChoice(false, "assert failed"))
+  }
 }
