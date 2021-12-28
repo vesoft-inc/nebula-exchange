@@ -9,7 +9,7 @@ import java.io.File
 
 import com.vesoft.nebula.PropertyType
 import com.vesoft.nebula.common.VidType
-import com.vesoft.nebula.common.common.KeyPolicy
+import com.vesoft.nebula.common.KeyPolicy
 import com.vesoft.nebula.common.config.{Configs, EdgeConfigEntry}
 import com.vesoft.nebula.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.meta.{ColumnDef, ColumnTypeDef, EdgeItem, Schema, SchemaProp}
