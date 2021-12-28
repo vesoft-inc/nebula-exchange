@@ -65,7 +65,8 @@ package object exchange {
     def propertyValues: String = values.mkString(", ")
 
     override def toString: String = {
-      s"Edge: ${source}->${destination}@${ranking} values: ${propertyValues}"
+      val rank = if (ranking.isEmpty) 0 else ranking.get
+      s"Edge: ${source}->${destination}@${rank} values: ${propertyValues}"
     }
   }
 

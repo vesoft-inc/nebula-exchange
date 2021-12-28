@@ -5,7 +5,21 @@
 
 package com.vesoft.nebula.exchange.processor
 
-import com.vesoft.nebula.{Coordinate, Date, DateTime, Geography, LineString, NullType, Point, Polygon, PropertyType, Time, Value}
+import com.vesoft.nebula.exchange.Vertex
+import com.vesoft.nebula.exchange.config.{EdgeConfigEntry, TagConfigEntry}
+import com.vesoft.nebula.{
+  Coordinate,
+  Date,
+  DateTime,
+  Geography,
+  LineString,
+  NullType,
+  Point,
+  Polygon,
+  PropertyType,
+  Time,
+  Value
+}
 import com.vesoft.nebula.exchange.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.exchange.utils.{HDFSUtils, NebulaUtils}
 import org.apache.log4j.Logger
@@ -174,15 +188,6 @@ trait Processor extends Serializable {
     HDFSUtils.getContent(path).toLong
   }
 
-  def getLong(row: Row, field: String): Long = {
-    val index = row.schema.fieldIndex(field)
-    row.schema.fields(index).dataType match {
-      case LongType    => row.getLong(index)
-      case IntegerType => row.getInt(index).toLong
-      case StringType  => row.getString(index).toLong
-    }
-  }
-
   def convertJTSGeometryToGeography(jtsGeom: org.locationtech.jts.geom.Geometry): Geography = {
     jtsGeom.getGeometryType match {
       case "Point" => {
@@ -224,7 +229,8 @@ trait Processor extends Serializable {
   }
 
   def printChoice(streamFlag: Boolean, context: String): Unit = {
-    if (streamFlag) LOG.info(context)
+    if (streamFlag) LOG.warn(context)
     else assert(assertion = false, context)
   }
+
 }
