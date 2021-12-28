@@ -6,8 +6,16 @@
 package com.vesoft.nebula.exchange.reader
 
 import com.google.common.collect.Maps
-import com.vesoft.nebula.exchange.config.ClickHouseConfigEntry
-import com.vesoft.nebula.exchange.utils.Neo4jUtils
+import com.vesoft.nebula.common.config.{
+  ClickHouseConfigEntry,
+  HBaseSourceConfigEntry,
+  HiveSourceConfigEntry,
+  JanusGraphSourceConfigEntry,
+  MaxComputeConfigEntry,
+  MySQLSourceConfigEntry,
+  Neo4JSourceConfigEntry,
+  ServerDataSourceConfigEntry
+}
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
@@ -99,66 +107,7 @@ class Neo4JReader(override val session: SparkSession, neo4jConfig: Neo4JSourceCo
   @transient lazy private val LOG = Logger.getLogger(this.getClass)
 
   override def read(): DataFrame = {
-    if (!neo4jConfig.sentence.toUpperCase.contains("ORDER"))
-      LOG.warn(
-        "We strongly suggest the cypher sentence must use `order by` clause.\n" +
-          "Because the `skip` clause in partition no guarantees are made on the order of the result unless the query specifies the ORDER BY clause")
-    val totalCount: Long = {
-      val returnIndex   = neo4jConfig.sentence.toUpperCase.lastIndexOf("RETURN") + "RETURN".length
-      val countSentence = neo4jConfig.sentence.substring(0, returnIndex) + " count(*)"
-      val driver =
-        GraphDatabase.driver(s"${neo4jConfig.server}",
-                             AuthTokens.basic(neo4jConfig.user, neo4jConfig.password))
-      val neo4JSession = driver.session()
-      neo4JSession.run(countSentence).single().get(0).asLong()
-    }
-
-    val offsets =
-      getOffsets(totalCount, neo4jConfig.parallel, neo4jConfig.checkPointPath, neo4jConfig.name)
-    LOG.info(s"${neo4jConfig.name} offsets: ${offsets.mkString(",")}")
-    if (offsets.forall(_.size == 0L)) {
-      LOG.warn(s"${neo4jConfig.name} already write done from check point.")
-      return session.createDataFrame(session.sparkContext.emptyRDD[Row], new StructType())
-    }
-
-    val config = Neo4jConfig(neo4jConfig.server,
-                             neo4jConfig.user,
-                             Some(neo4jConfig.password),
-                             neo4jConfig.database,
-                             neo4jConfig.encryption)
-
-    val rdd = session.sparkContext
-      .parallelize(offsets, offsets.size)
-      .flatMap(offset => {
-        if (neo4jConfig.checkPointPath.isDefined) {
-          val path =
-            s"${neo4jConfig.checkPointPath.get}/${neo4jConfig.name}.${TaskContext.getPartitionId()}"
-          HDFSUtils.saveContent(path, offset.start.toString)
-        }
-        val query     = s"${neo4jConfig.sentence} SKIP ${offset.start} LIMIT ${offset.size}"
-        val result    = new Neo4jSessionAwareIterator(config, query, Maps.newHashMap(), false)
-        val fields    = if (result.hasNext) result.peek().keys().asScala else List()
-        val neo4jType = new TypeRepresentation(TypeConstructor.STRING)
-        val schema =
-          if (result.hasNext)
-            StructType(
-              fields
-                .map(k => (k, neo4jType))
-                .map(keyType => CypherTypes.field(keyType)))
-          else new StructType()
-        result.map(record => {
-          val row = new Array[Any](record.keys().size())
-          for (i <- row.indices)
-            row.update(i, Executor.convert(Neo4jUtils.convertNeo4jData(record.get(i))))
-          new GenericRowWithSchema(values = row, schema).asInstanceOf[Row]
-        })
-      })
-
-    if (rdd.isEmpty())
-      throw new RuntimeException(
-        "Please check your cypher sentence. because use it search nothing!")
-    val schema = rdd.repartition(1).first().schema
-    session.createDataFrame(rdd, schema)
+    throw new UnsupportedOperationException("Neo4j datasource is not support yet for spark2.2")
   }
 }
 
@@ -300,6 +249,7 @@ class ClickhouseReader(override val session: SparkSession,
       .option("user", clickHouseConfigEntry.user)
       .option("password", clickHouseConfigEntry.passwd)
       .option("numPartitions", clickHouseConfigEntry.numPartition)
+      .option("dbtable", clickHouseConfigEntry.table)
       .option("query", clickHouseConfigEntry.sentence)
       .load()
     df

@@ -3,32 +3,32 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.common.processor
+package com.vesoft.nebula.exchange.processor
 
-import java.nio.{ByteBuffer, ByteOrder}
-import com.vesoft.nebula.common.{ErrorHandler, GraphProvider, MetaProvider, VidType}
-import com.vesoft.nebula.common.common.{KeyPolicy, Vertex, Vertices}
+import java.nio.ByteOrder
+
+import com.vesoft.nebula.common.{KeyPolicy, Vertex, Vertices}
 import com.vesoft.nebula.common.config.{
   Configs,
   FileBaseSinkConfigEntry,
   SinkCategory,
-  StreamingDataSourceConfigEntry,
   TagConfigEntry
 }
+import com.vesoft.nebula.common.processor.Processor
 import com.vesoft.nebula.common.utils.NebulaUtils
 import com.vesoft.nebula.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.common.writer.{NebulaGraphClientWriter, NebulaSSTWriter}
+import com.vesoft.nebula.common.{ErrorHandler, GraphProvider, MetaProvider, VidType}
 import com.vesoft.nebula.encoder.NebulaCodecImpl
 import com.vesoft.nebula.meta.TagItem
 import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
-import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{DataFrame, Encoders, Row}
 import org.apache.spark.util.LongAccumulator
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable.{ArrayBuffer}
+import scala.collection.mutable.ArrayBuffer
 
 /**
   *
@@ -139,24 +139,7 @@ class VerticesProcessor(data: DataFrame,
           convertToVertex(row, tagConfig, isVidStringType, fieldKeys, fieldTypeMap)
         }(Encoders.kryo[Vertex])
 
-      // streaming write
-      if (streamFlag) {
-        val streamingDataSourceConfig =
-          tagConfig.dataSourceConfigEntry.asInstanceOf[StreamingDataSourceConfigEntry]
-        val wStream = vertices.writeStream
-        if (tagConfig.checkPointPath.isDefined)
-          wStream.option("checkpointLocation", tagConfig.checkPointPath.get)
-
-        wStream
-          .foreachBatch((vertexSet, batchId) => {
-            LOG.info(s"${tagConfig.name} tag start batch ${batchId}.")
-            vertexSet.foreachPartition(processEachPartition _)
-          })
-          .trigger(Trigger.ProcessingTime(s"${streamingDataSourceConfig.intervalSeconds} seconds"))
-          .start()
-          .awaitTermination()
-      } else
-        vertices.foreachPartition(processEachPartition _)
+      vertices.foreachPartition(processEachPartition _)
     }
   }
 

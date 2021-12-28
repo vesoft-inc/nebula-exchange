@@ -5,7 +5,8 @@
 
 package com.vesoft.nebula.exchange.reader
 
-import com.vesoft.nebula.exchange.Offset
+import com.vesoft.nebula.common.Offset
+import com.vesoft.nebula.common.utils.HDFSUtils
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 /**

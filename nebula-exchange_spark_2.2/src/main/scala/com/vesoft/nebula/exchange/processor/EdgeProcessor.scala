@@ -3,34 +3,34 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.common.processor
+package com.vesoft.nebula.exchange.processor
 
 import java.nio.ByteOrder
 
 import com.google.common.geometry.{S2CellId, S2LatLng}
-import com.vesoft.nebula.common.{ErrorHandler, GraphProvider, MetaProvider, VidType}
-import com.vesoft.nebula.common.common.{Edge, Edges, KeyPolicy}
+import com.vesoft.nebula.common.{Edge, Edges, KeyPolicy}
 import com.vesoft.nebula.common.config.{
   Configs,
   EdgeConfigEntry,
   FileBaseSinkConfigEntry,
-  SinkCategory,
-  StreamingDataSourceConfigEntry
+  SinkCategory
 }
+import com.vesoft.nebula.common.processor.Processor
 import com.vesoft.nebula.common.utils.NebulaUtils
 import com.vesoft.nebula.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.common.writer.{NebulaGraphClientWriter, NebulaSSTWriter}
+import com.vesoft.nebula.common.{ErrorHandler, GraphProvider, MetaProvider, VidType}
 import com.vesoft.nebula.encoder.NebulaCodecImpl
-import org.apache.log4j.Logger
-import com.vesoft.nebula.meta.{EdgeItem, TagItem}
+import com.vesoft.nebula.meta.EdgeItem
 import org.apache.commons.codec.digest.MurmurHash2
+import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{DataFrame, Encoders, Row}
 import org.apache.spark.util.LongAccumulator
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.ArrayBuffer
 
 class EdgeProcessor(data: DataFrame,
                     edgeConfig: EdgeConfigEntry,
@@ -141,24 +141,7 @@ class EdgeProcessor(data: DataFrame,
           convertToEdge(row, edgeConfig, isVidStringType, fieldKeys, fieldTypeMap)
         }(Encoders.kryo[Edge])
 
-      // streaming write
-      if (streamFlag) {
-        val streamingDataSourceConfig =
-          edgeConfig.dataSourceConfigEntry.asInstanceOf[StreamingDataSourceConfigEntry]
-        val wStream = edgeFrame.writeStream
-        if (edgeConfig.checkPointPath.isDefined)
-          wStream.option("checkpointLocation", edgeConfig.checkPointPath.get)
-
-        wStream
-          .foreachBatch((edges, batchId) => {
-            LOG.info(s"${edgeConfig.name} edge start batch ${batchId}.")
-            edges.foreachPartition(processEachPartition _)
-          })
-          .trigger(Trigger.ProcessingTime(s"${streamingDataSourceConfig.intervalSeconds} seconds"))
-          .start()
-          .awaitTermination()
-      } else
-        edgeFrame.foreachPartition(processEachPartition _)
+      edgeFrame.foreachPartition(processEachPartition _)
     }
   }
 
