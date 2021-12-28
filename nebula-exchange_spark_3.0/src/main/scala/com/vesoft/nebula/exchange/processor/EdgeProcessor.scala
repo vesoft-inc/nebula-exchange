@@ -8,7 +8,7 @@ package com.vesoft.nebula.exchange.processor
 import java.nio.ByteOrder
 
 import com.google.common.geometry.{S2CellId, S2LatLng}
-import com.vesoft.nebula.common.common.{Edge, Edges, KeyPolicy}
+import com.vesoft.nebula.common.{Edge, Edges, KeyPolicy}
 import com.vesoft.nebula.common.config.{
   Configs,
   EdgeConfigEntry,
@@ -27,7 +27,7 @@ import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.sql.streaming.Trigger
-import org.apache.spark.sql.{DataFrame, Encoders, Row}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row}
 import org.apache.spark.util.LongAccumulator
 
 import scala.collection.JavaConverters._
@@ -151,7 +151,7 @@ class EdgeProcessor(data: DataFrame,
           wStream.option("checkpointLocation", edgeConfig.checkPointPath.get)
 
         wStream
-          .foreachBatch((edges, batchId) => {
+          .foreachBatch((edges: Dataset[Edge], batchId: Long) => {
             LOG.info(s"${edgeConfig.name} edge start batch ${batchId}.")
             edges.foreachPartition(processEachPartition _)
           })
@@ -314,11 +314,15 @@ class EdgeProcessor(data: DataFrame,
 
     val srcIndex: Int = row.schema.fieldIndex(edgeConfig.sourceField)
     var srcId: String = row.get(srcIndex).toString
-    if (srcId.equals(DEFAULT_EMPTY_VALUE)) { srcId = "" }
+    if (srcId.equals(DEFAULT_EMPTY_VALUE)) {
+      srcId = ""
+    }
 
     val dstIndex: Int = row.schema.fieldIndex(edgeConfig.targetField)
     var dstId: String = row.get(dstIndex).toString
-    if (dstId.equals(DEFAULT_EMPTY_VALUE)) { dstId = "" }
+    if (dstId.equals(DEFAULT_EMPTY_VALUE)) {
+      dstId = ""
+    }
 
     if (edgeConfig.sourcePolicy.isDefined) {
       edgeConfig.sourcePolicy.get match {

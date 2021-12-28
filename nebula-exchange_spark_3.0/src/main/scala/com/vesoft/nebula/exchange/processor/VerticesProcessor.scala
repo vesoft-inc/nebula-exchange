@@ -7,7 +7,7 @@ package com.vesoft.nebula.exchange.processor
 
 import java.nio.ByteOrder
 
-import com.vesoft.nebula.common.common.{KeyPolicy, Vertex, Vertices}
+import com.vesoft.nebula.common.{KeyPolicy, Vertex, Vertices}
 import com.vesoft.nebula.common.config.{
   Configs,
   FileBaseSinkConfigEntry,
@@ -26,7 +26,7 @@ import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.sql.streaming.Trigger
-import org.apache.spark.sql.{DataFrame, Encoders, Row}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row}
 import org.apache.spark.util.LongAccumulator
 
 import scala.collection.JavaConverters._
@@ -150,7 +150,7 @@ class VerticesProcessor(data: DataFrame,
           wStream.option("checkpointLocation", tagConfig.checkPointPath.get)
 
         wStream
-          .foreachBatch((vertexSet, batchId) => {
+          .foreachBatch((vertexSet: Dataset[Vertex], batchId: Long) => {
             LOG.info(s"${tagConfig.name} tag start batch ${batchId}.")
             vertexSet.foreachPartition(processEachPartition _)
           })

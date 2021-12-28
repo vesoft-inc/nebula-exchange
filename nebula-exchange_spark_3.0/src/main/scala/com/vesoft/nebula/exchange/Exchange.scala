@@ -8,8 +8,24 @@ package com.vesoft.nebula.exchange
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import java.io.File
 
-import com.vesoft.nebula.exchange.config.ClickHouseConfigEntry
-import com.vesoft.nebula.common.processor.{EdgeProcessor, VerticesProcessor}
+import com.vesoft.nebula.Argument
+import com.vesoft.nebula.common.{CheckPointHandler, ErrorHandler}
+import com.vesoft.nebula.common.config.{
+  ClickHouseConfigEntry,
+  Configs,
+  DataSourceConfigEntry,
+  FileBaseSourceConfigEntry,
+  HBaseSourceConfigEntry,
+  HiveSourceConfigEntry,
+  JanusGraphSourceConfigEntry,
+  KafkaSourceConfigEntry,
+  MaxComputeConfigEntry,
+  MySQLSourceConfigEntry,
+  Neo4JSourceConfigEntry,
+  PulsarSourceConfigEntry,
+  SinkCategory,
+  SourceCategory
+}
 import com.vesoft.nebula.exchange.reader.{
   CSVReader,
   ClickhouseReader,
@@ -26,6 +42,7 @@ import com.vesoft.nebula.exchange.reader.{
   PulsarReader
 }
 import com.vesoft.nebula.common.processor.ReloadProcessor
+import com.vesoft.nebula.exchange.processor.{EdgeProcessor, VerticesProcessor}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkConf
 
@@ -62,10 +79,11 @@ object Exchange {
     val sparkConf = new SparkConf()
     sparkConf.registerKryoClasses(Array(classOf[com.facebook.thrift.async.TAsyncClientManager]))
 
-    // config hive for sparkSession
+    // com.vesoft.nebula.common.config hive for sparkSession
     if (c.hive) {
       if (configs.hiveConfigEntry.isEmpty) {
-        LOG.info("you don't config hive source, so using hive tied with spark.")
+        LOG.info(
+          "you don't com.vesoft.nebula.common.config hive source, so using hive tied with spark.")
       } else {
         val hiveConfig = configs.hiveConfigEntry.get
         sparkConf.set("spark.sql.warehouse.dir", hiveConfig.warehouse)
@@ -213,7 +231,7 @@ object Exchange {
     * Create data source for different data type.
     *
     * @param session The Spark Session.
-    * @param config  The config.
+    * @param config  The com.vesoft.nebula.common.config.
     * @return
     */
   private[this] def createDataSource(
@@ -256,17 +274,17 @@ object Exchange {
       }
       case SourceCategory.NEO4J =>
         val neo4jConfig = config.asInstanceOf[Neo4JSourceConfigEntry]
-        LOG.info(s"Loading from neo4j config: ${neo4jConfig}")
+        LOG.info(s"Loading from neo4j com.vesoft.nebula.common.config: ${neo4jConfig}")
         val reader = new Neo4JReader(session, neo4jConfig)
         Some(reader.read())
       case SourceCategory.MYSQL =>
         val mysqlConfig = config.asInstanceOf[MySQLSourceConfigEntry]
-        LOG.info(s"Loading from mysql config: ${mysqlConfig}")
+        LOG.info(s"Loading from mysql com.vesoft.nebula.common.config: ${mysqlConfig}")
         val reader = new MySQLReader(session, mysqlConfig)
         Some(reader.read())
       case SourceCategory.PULSAR =>
         val pulsarConfig = config.asInstanceOf[PulsarSourceConfigEntry]
-        LOG.info(s"Loading from pulsar config: ${pulsarConfig}")
+        LOG.info(s"Loading from pulsar com.vesoft.nebula.common.config: ${pulsarConfig}")
         val reader = new PulsarReader(session, pulsarConfig)
         Some(reader.read())
       case SourceCategory.JANUS_GRAPH =>

@@ -3,17 +3,17 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.common.processor
+package com.vesoft.nebula.exchange.processor
 
 import java.io.File
 
 import com.vesoft.nebula.PropertyType
-import com.vesoft.nebula.exchange.KeyPolicy
-import com.vesoft.nebula.exchange.config.EdgeConfigEntry
-import com.vesoft.nebula.exchange.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
-import com.vesoft.nebula.meta.{ColumnDef, ColumnTypeDef, EdgeItem, Schema, SchemaProp, TagItem}
+import com.vesoft.nebula.common.VidType
+import com.vesoft.nebula.common.common.KeyPolicy
+import com.vesoft.nebula.common.config.{Configs, EdgeConfigEntry}
+import com.vesoft.nebula.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
+import com.vesoft.nebula.meta.{ColumnDef, ColumnTypeDef, EdgeItem, Schema, SchemaProp}
 import org.apache.commons.codec.binary.Hex
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.{
   BooleanType,
@@ -25,13 +25,15 @@ import org.apache.spark.sql.types.{
   StructField,
   StructType
 }
+import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.Test
 import org.scalatest.Assertions.assertThrows
 
 import scala.collection.JavaConverters._
 
 class EdgeProcessorSuite {
-  val config: Configs = Configs.parse(new File("src/test/resources/process_application.conf"))
+  val config: Configs =
+    Configs.parse(new File("../common/src/test/resources/process_application.conf"))
 
   var data: DataFrame             = null
   var edgeConfig: EdgeConfigEntry = config.edgesConfig.head
