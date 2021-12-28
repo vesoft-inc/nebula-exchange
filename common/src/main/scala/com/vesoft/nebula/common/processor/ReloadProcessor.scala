@@ -3,11 +3,11 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange.processor
+package com.vesoft.nebula.common.processor
 
-import com.vesoft.nebula.exchange.{ErrorHandler, GraphProvider}
-import com.vesoft.nebula.exchange.config.Configs
-import com.vesoft.nebula.exchange.writer.NebulaGraphClientWriter
+import com.vesoft.nebula.common.{ErrorHandler, GraphProvider}
+import com.vesoft.nebula.common.config.Configs
+import com.vesoft.nebula.common.writer.NebulaGraphClientWriter
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.sql.{DataFrame, Row}
@@ -24,7 +24,7 @@ class ReloadProcessor(data: DataFrame,
   private[this] lazy val LOG = Logger.getLogger(this.getClass)
 
   override def process(): Unit = {
-    data.foreachPartition(processEachPartition(_))
+    data.foreachPartition((rows: Iterator[Row]) => processEachPartition(rows))
   }
 
   private def processEachPartition(iterator: Iterator[Row]): Unit = {

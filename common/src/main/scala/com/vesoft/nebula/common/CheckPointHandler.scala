@@ -5,6 +5,10 @@
 
 package com.vesoft.nebula.common
 
+import com.vesoft.nebula.common.config.{SchemaConfigEntry, SourceCategory}
+import com.vesoft.nebula.common.utils.HDFSUtils
+import org.apache.spark.TaskContext
+
 /**
   * CheckPointHandler handle the checkpoint files for Neo4j and Janusgraph
   */

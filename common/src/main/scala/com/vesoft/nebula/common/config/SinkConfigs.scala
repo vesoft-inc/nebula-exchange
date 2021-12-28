@@ -3,7 +3,7 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange.config
+package com.vesoft.nebula.common.config
 
 /**
   * SinkCategory is used to expression the writer's type.

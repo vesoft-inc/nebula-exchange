@@ -3,7 +3,7 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange.writer
+package com.vesoft.nebula.common.writer
 
 /**
   *

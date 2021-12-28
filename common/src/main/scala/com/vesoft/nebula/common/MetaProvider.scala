@@ -3,7 +3,7 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange
+package com.vesoft.nebula.common
 
 import com.google.common.net.HostAndPort
 import com.vesoft.nebula.PropertyType
@@ -14,13 +14,13 @@ import com.vesoft.nebula.client.graph.data.{
   SelfSignedSSLParam
 }
 import com.vesoft.nebula.client.meta.MetaClient
-import com.vesoft.nebula.exchange.config.{SslConfigEntry, SslType, Type}
+import com.vesoft.nebula.common.config.{SslConfigEntry, SslType, Type}
 import com.vesoft.nebula.meta.{EdgeItem, TagItem}
 import org.apache.log4j.Logger
 
+import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 
 /**
   * MetaProvider provide nebula graph meta query operations.
@@ -40,7 +40,7 @@ class MetaProvider(addresses: List[HostAndPort],
 
   private var metaClient: MetaClient = null
   var sslParam: SSLParam             = null
-  // config meta ssl
+  // com.vesoft.nebula.common.config meta ssl
   if (sslConfigEntry.enableMeta) {
     if (sslConfigEntry.signType == SslType.CA) {
       val ca = sslConfigEntry.caSignParam

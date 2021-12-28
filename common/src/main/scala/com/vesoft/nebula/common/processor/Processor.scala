@@ -3,10 +3,10 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange.processor
+package com.vesoft.nebula.common.processor
 
-import com.vesoft.nebula.exchange.Vertex
-import com.vesoft.nebula.exchange.config.{EdgeConfigEntry, TagConfigEntry}
+import com.vesoft.nebula.common.utils.{HDFSUtils, NebulaUtils}
+import com.vesoft.nebula.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.{
   Coordinate,
   Date,
@@ -20,17 +20,14 @@ import com.vesoft.nebula.{
   Time,
   Value
 }
-import com.vesoft.nebula.exchange.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
-import com.vesoft.nebula.exchange.utils.{HDFSUtils, NebulaUtils}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{IntegerType, LongType, StringType}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
 
 /**
-  * processor is a converter.
+  * com.vesoft.nebula.common.processor is a converter.
   * It is responsible for converting the dataframe row data into Nebula Graph's vertex or edge,
   * and submit data to writer.
   */

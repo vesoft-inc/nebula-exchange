@@ -10,14 +10,20 @@ import com.vesoft.nebula.PropertyType
 import com.vesoft.nebula.client.graph.NebulaPoolConfig
 import com.vesoft.nebula.client.graph.data.HostAddress
 import com.vesoft.nebula.client.graph.net.NebulaPool
-import com.vesoft.nebula.exchange.config.NebulaSinkConfigEntry
-import com.vesoft.nebula.exchange.KeyPolicy
+import com.vesoft.nebula.common.{MetaProvider, NebulaGraphMock, VidType}
+import com.vesoft.nebula.common.KeyPolicy
+import com.vesoft.nebula.common.config.{
+  NebulaSinkConfigEntry,
+  SinkCategory,
+  SslConfigEntry,
+  TagConfigEntry
+}
+import com.vesoft.nebula.common.utils.NebulaUtils
 import org.apache.log4j.Logger
 import org.junit.{After, Before, Test}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
-import scala.com.vesoft.nebula.exchange.NebulaGraphMock
 
 class NebulaUtilsSuite {
   private[this] val LOG = Logger.getLogger(this.getClass)

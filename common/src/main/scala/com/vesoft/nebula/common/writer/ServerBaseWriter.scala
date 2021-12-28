@@ -3,33 +3,21 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange.writer
+package com.vesoft.nebula.common.writer
 
-import java.util.concurrent.{CountDownLatch, TimeUnit}
+import java.util.concurrent.TimeUnit
 
-import com.google.common.base.Optional
-import com.google.common.util.concurrent.{FutureCallback, RateLimiter}
-import com.vesoft.nebula.ErrorCode
-import com.vesoft.nebula.exchange.config.{
-  ConnectionConfigEntry,
+import com.google.common.util.concurrent.RateLimiter
+import com.vesoft.nebula.common.{GraphProvider}
+import com.vesoft.nebula.common.{Edges, KeyPolicy, Vertices}
+import com.vesoft.nebula.common.config.{
   DataBaseConfigEntry,
   RateConfigEntry,
   SchemaConfigEntry,
   Type,
   UserConfigEntry
 }
-import com.vesoft.nebula.exchange.utils.HDFSUtils
-import com.vesoft.nebula.exchange.{
-  Edges,
-  GraphProvider,
-  KeyPolicy,
-  TooManyErrorsException,
-  Vertices
-}
 import org.apache.log4j.Logger
-import org.apache.spark.util.LongAccumulator
-
-import scala.collection.JavaConverters._
 
 abstract class ServerBaseWriter extends Writer {
   private[this] val BATCH_INSERT_TEMPLATE               = "INSERT %s `%s`(%s) VALUES %s"

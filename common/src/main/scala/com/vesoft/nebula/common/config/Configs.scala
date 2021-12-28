@@ -3,23 +3,21 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange.config
+package com.vesoft.nebula.common.config
 
 import java.io.File
 import java.nio.file.Files
 
 import com.google.common.net.HostAndPort
-import com.vesoft.nebula.exchange.KeyPolicy
 import com.typesafe.config.{Config, ConfigFactory}
-import com.vesoft.nebula.exchange.Argument
-import com.vesoft.nebula.exchange.config.SslType.SslType
-import com.vesoft.nebula.exchange.utils.NebulaUtils
+import com.vesoft.nebula.Argument
+import com.vesoft.nebula.common.KeyPolicy
 import org.apache.log4j.Logger
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scala.util.control.Breaks._
+import scala.collection.JavaConverters._
+import scala.util.control.Breaks.break
 
 object Type extends Enumeration {
   type Type = Value
@@ -365,7 +363,7 @@ object Configs {
           fields
         }
 
-        // You can specified the vertex field name via the config item `vertex`
+        // You can specified the vertex field name via the com.vesoft.nebula.common.config item `vertex`
         // If you want to qualified the key policy, you can wrap them into a block.
         val vertexField = if (tagConfig.hasPath("vertex.field")) {
           tagConfig.getString("vertex.field")
@@ -587,7 +585,7 @@ object Configs {
   }
 
   /**
-    * Use to generate data source config according to category of source.
+    * Use to generate data source com.vesoft.nebula.common.config according to category of source.
     *
     * @param category
     * @param config
@@ -740,12 +738,15 @@ object Configs {
         } else {
           "1"
         }
-        ClickHouseConfigEntry(SourceCategory.CLICKHOUSE,
-                              config.getString("url"),
-                              config.getString("user"),
-                              config.getString("password"),
-                              partition,
-                              config.getString("sentence"))
+        ClickHouseConfigEntry(
+          SourceCategory.CLICKHOUSE,
+          config.getString("url"),
+          config.getString("user"),
+          config.getString("password"),
+          partition,
+          config.getString("table"),
+          config.getString("sentence")
+        )
       }
       case _ =>
         throw new IllegalArgumentException("Unsupported data source")
@@ -778,10 +779,10 @@ object Configs {
   }
 
   /**
-    * Get the config list by the path.
+    * Get the com.vesoft.nebula.common.config list by the path.
     *
-    * @param config The config.
-    * @param path   The path of the config.
+    * @param config The com.vesoft.nebula.common.config.
+    * @param path   The path of the com.vesoft.nebula.common.config.
     * @return
     */
   private[this] def getConfigsOrNone(config: Config,
@@ -794,7 +795,7 @@ object Configs {
   }
 
   /**
-    * Get the config by the path.
+    * Get the com.vesoft.nebula.common.config by the path.
     *
     * @param config
     * @param path
@@ -809,10 +810,10 @@ object Configs {
   }
 
   /**
-    * Get the value from config by the path. If the path not exist, return the default value.
+    * Get the value from com.vesoft.nebula.common.config by the path. If the path not exist, return the default value.
     *
-    * @param config       The config.
-    * @param path         The path of the config.
+    * @param config       The com.vesoft.nebula.common.config.
+    * @param path         The path of the com.vesoft.nebula.common.config.
     * @param defaultValue The default value for the path.
     * @return
     */
@@ -833,7 +834,7 @@ object Configs {
   }
 
   /**
-    * Get the value from config by the path which is optional.
+    * Get the value from com.vesoft.nebula.common.config by the path which is optional.
     * If the path not exist, return the default value.
     *
     * @param config
@@ -865,7 +866,7 @@ object Configs {
         .required()
         .valueName("fileName")
         .action((x, c) => c.copy(config = x))
-        .text("config fileName")
+        .text("com.vesoft.nebula.common.config fileName")
 
       opt[Unit]('h', "hive")
         .action((_, c) => c.copy(hive = true))

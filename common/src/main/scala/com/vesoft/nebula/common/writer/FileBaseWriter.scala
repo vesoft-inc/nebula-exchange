@@ -3,12 +3,13 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange.writer
+package com.vesoft.nebula.common.writer
 
 import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.file.{Files, Paths}
-import com.vesoft.nebula.exchange.config.FileBaseSinkConfigEntry
-import com.vesoft.nebula.exchange.utils.HDFSUtils
+
+import com.vesoft.nebula.common.config.FileBaseSinkConfigEntry
+import com.vesoft.nebula.common.utils.HDFSUtils
 import org.apache.spark.TaskContext
 import org.apache.spark.sql.Row
 import org.apache.spark.util.LongAccumulator

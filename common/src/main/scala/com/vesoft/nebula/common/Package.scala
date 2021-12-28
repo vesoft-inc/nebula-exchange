@@ -3,7 +3,7 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.common
+package com.vesoft.nebula
 
 import com.google.common.base.Optional
 import com.google.common.util.concurrent.ListenableFuture

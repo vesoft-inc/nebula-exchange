@@ -3,7 +3,7 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package scala.com.vesoft.nebula.exchange
+package com.vesoft.nebula.common
 
 import com.vesoft.nebula.client.graph.NebulaPoolConfig
 import com.vesoft.nebula.client.graph.data.HostAddress

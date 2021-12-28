@@ -3,13 +3,11 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange
+package com.vesoft.nebula.common
 
 import com.google.common.net.HostAndPort
-import com.vesoft.nebula.exchange.config.SslConfigEntry
+import com.vesoft.nebula.common.config.{SslConfigEntry, SslType, Type}
 import org.junit.{After, Before, Test}
-
-import scala.com.vesoft.nebula.exchange.NebulaGraphMock
 
 class MetaProviderSuite {
 

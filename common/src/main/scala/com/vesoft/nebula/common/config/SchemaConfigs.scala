@@ -3,9 +3,9 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange.config
+package com.vesoft.nebula.common.config
 
-import com.vesoft.nebula.exchange.KeyPolicy
+import com.vesoft.nebula.common.KeyPolicy
 
 /**
   * SchemaConfigEntry is tag/edge super class use to save some basic parameter for importer.

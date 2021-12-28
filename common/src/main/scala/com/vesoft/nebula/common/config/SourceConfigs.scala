@@ -3,9 +3,9 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange.config
+package com.vesoft.nebula.common.config
 
-import com.vesoft.nebula.exchange.utils.NebulaUtils
+import com.vesoft.nebula.common.utils.NebulaUtils
 
 /**
   * Category use to explain the data source which the Spark application could reading.
@@ -158,7 +158,7 @@ case class MySQLSourceConfigEntry(override val category: SourceCategory.Value,
 }
 
 /**
-  * TODO: Support more config item about Kafka Consumer
+  * TODO: Support more com.vesoft.nebula.common.config item about Kafka Consumer
   *
   * @param server
   * @param topic
@@ -170,7 +170,7 @@ case class KafkaSourceConfigEntry(override val category: SourceCategory.Value,
                                   server: String,
                                   topic: String,
                                   startingOffsets: String,
-                                  maxOffsetsPerTrigger: Option[Long]=None)
+                                  maxOffsetsPerTrigger: Option[Long] = None)
     extends StreamingDataSourceConfigEntry {
   require(server.trim.nonEmpty && topic.trim.nonEmpty)
 
@@ -257,9 +257,10 @@ case class ClickHouseConfigEntry(override val category: SourceCategory.Value,
                                  user: String,
                                  passwd: String,
                                  numPartition: String,
+                                 table: String,
                                  override val sentence: String)
     extends ServerDataSourceConfigEntry {
   override def toString: String = {
-    s"ClickHouse source {url:$url, user:$user, passwd:$passwd, numPartition:$numPartition, sentence:$sentence}"
+    s"ClickHouse source {url:$url, user:$user, passwd:$passwd, numPartition:$numPartition, table:$table, sentence:$sentence}"
   }
 }

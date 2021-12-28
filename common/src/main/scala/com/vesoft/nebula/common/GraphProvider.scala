@@ -3,7 +3,7 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.exchange
+package com.vesoft.nebula.common
 
 import com.google.common.net.HostAndPort
 import com.vesoft.nebula.client.graph.NebulaPoolConfig
@@ -15,11 +15,11 @@ import com.vesoft.nebula.client.graph.data.{
   SelfSignedSSLParam
 }
 import com.vesoft.nebula.client.graph.net.{NebulaPool, Session}
-import com.vesoft.nebula.exchange.config.{SslConfigEntry, SslType, UserConfigEntry}
+import com.vesoft.nebula.common.config.{SslConfigEntry, SslType, UserConfigEntry}
 import org.apache.log4j.Logger
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
+import scala.collection.JavaConverters._
 
 /**
   * GraphProvider for Nebula Graph Service
@@ -39,7 +39,7 @@ class GraphProvider(addresses: List[HostAndPort], timeout: Int, sslConfigEntry: 
 
   nebulaPoolConfig.setTimeout(timeout)
 
-  // config graph ssl
+  // com.vesoft.nebula.common.config graph ssl
   nebulaPoolConfig.setEnableSsl(sslConfigEntry.enableGraph)
   if (sslConfigEntry.enableGraph) {
     var sslParam: SSLParam = null

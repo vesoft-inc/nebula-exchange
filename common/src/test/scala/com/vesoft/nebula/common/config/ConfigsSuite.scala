@@ -7,8 +7,20 @@ package scala.com.vesoft.nebula.exchange.config
 
 import java.io.File
 
-import com.vesoft.nebula.exchange.config.HBaseSourceConfigEntry
-import com.vesoft.nebula.exchange.{Argument, KeyPolicy}
+import com.vesoft.nebula.Argument
+import com.vesoft.nebula.common.KeyPolicy
+import com.vesoft.nebula.common.config.{
+  Configs,
+  DataBaseConfigEntry,
+  FileBaseSourceConfigEntry,
+  FileDataSourceConfigEntry,
+  HBaseSourceConfigEntry,
+  HiveSourceConfigEntry,
+  MySQLSourceConfigEntry,
+  Neo4JSourceConfigEntry,
+  SinkCategory,
+  SourceCategory
+}
 import org.apache.log4j.Logger
 import org.junit.Test
 import org.scalatest.Assertions.assertThrows
@@ -232,7 +244,7 @@ class ConfigsSuite {
   }
 
   /**
-    * correct config
+    * correct com.vesoft.nebula.common.config
     */
   @Test
   def dataBaseConfigSuite(): Unit = {
