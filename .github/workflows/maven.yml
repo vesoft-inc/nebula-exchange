@@ -30,29 +30,22 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-maven-
 
-    - name: download neo4j-contrib & graphframes & pulsar-spark-connector dependency
-      run: |
-        wget https://oss-cdn.nebula-graph.com.cn/jar-packages/neo4j-contrib.zip
-        wget https://oss-cdn.nebula-graph.com.cn/jar-packages/graphframes.zip
-        wget https://oss-cdn.nebula-graph.com.cn/jar-packages/streamnative.zip
-        unzip -o -d ~/.m2/repository/ neo4j-contrib.zip
-        unzip -o -d ~/.m2/repository/ graphframes.zip
-        rm -rf ~/.m2/repository/io/streamnative
-        unzip -o -d ~/.m2/repository/io/ streamnative.zip
-
     - name: Install nebula-graph
       run: |
         mkdir tmp
         pushd tmp
         git clone https://github.com/vesoft-inc/nebula-docker-compose.git
         pushd nebula-docker-compose/
-        cp ../../nebula-exchange/src/test/resources/docker-compose.yaml .
+        cp ../../common/src/test/resources/docker-compose.yaml .
         docker-compose up -d
         sleep 10
         popd
         popd
 
     - name: Build with Maven
-      run: mvn -B package
+      run: |
+        mvn clean package -pl nebula-exchange_spark_2.2 -am -Pscala-2.11 -Pspark-2.2
+        mvn clean package -pl nebula-exchange_spark_2.4 -am -Pscala-2.11 -Pspark-2.4
+        mvn clean package -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0
 
     - uses: codecov/codecov-action@v2
