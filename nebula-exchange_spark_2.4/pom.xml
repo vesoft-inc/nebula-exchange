@@ -61,7 +61,6 @@
                         </goals>
                         <configuration>
                             <excludes>
-                                <exclude>com/vesoft/tools/**</exclude>
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
@@ -73,11 +72,6 @@
                         <goals>
                             <goal>testCompile</goal>
                         </goals>
-                        <configuration>
-                            <excludes>
-                                com/vesoft/tools/**
-                            </excludes>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -136,7 +130,6 @@
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
-                                        <exclude>com/vesoft/tools/**</exclude>
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
