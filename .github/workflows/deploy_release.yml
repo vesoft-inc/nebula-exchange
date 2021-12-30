@@ -52,11 +52,3 @@ jobs:
             nebula-exchange_spark_2.2/target/nebula-exchange_spark_2.2-*-SNAPSHOT.jar
             nebula-exchange_spark_2.4/target/nebula-exchange_spark_2.4-*-SNAPSHOT.jar
             nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-*-SNAPSHOT.jar
-
-      - name: Deploy release to Maven
-        uses: samuelmeuli/action-maven-publish@v1
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          nexus_username: ${{ secrets.OSSRH_USERNAME }}
-          nexus_password: ${{ secrets.OSSRH_TOKEN }}
