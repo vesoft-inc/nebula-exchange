@@ -34,7 +34,7 @@ import scala.collection.JavaConverters._
 
 class VerticesProcessorSuite {
   val config: Configs =
-    Configs.parse(new File("../common/src/test/resources/process_application.conf"))
+    Configs.parse(new File("../exchange-common/src/test/resources/process_application.conf"))
 
   var data: DataFrame           = null
   var tagConfig: TagConfigEntry = config.tagsConfig.head
