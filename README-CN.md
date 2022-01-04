@@ -7,24 +7,30 @@ Exchange 2.0 仅支持 Nebula Graph 2.x。
 
 如果您正在使用 Nebula Graph v1.x，请使用 [Nebula Exchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange) ，或参考 Exchange 1.0 的使用文档[《Nebula Exchange 用户手册》](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
 
+Exchange 目前支持 Spark 2.2， Spark 2.4， Spark 3.0， 对应的工具包名分别是 nebula-exchange_spark_2.2，nebula-exchange_spark_2.4，nebula-exchange_spark_3.0。
+
 ## 如何获取
 
 1. 编译打包最新的 Exchange。
 
     ```bash
     $ git clone https://github.com/vesoft-inc/nebula-exchange.git
-    $ cd nebula-exchange/nebula-exchange
-    $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true
+    $ cd nebula-exchange
+    $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true -pl nebula-exchange_spark_2.2 -am -Pscala-2.11 -Pspark-2.2
+    $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true -pl nebula-exchange_spark_2.4 -am -Pscala-2.11 -Pspark-2.4
+    $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0 
     ```
 
-    编译打包完成后，可以在 nebula-exchange/nebula-exchange/target/ 目录下看到 nebula-exchange-2.5-SNAPSHOT.jar 文件。
-2. 在 Maven 远程仓库下载
+    编译打包完成后，可以在 nebula-exchange/nebula-exchange_spark_2.2/target/ 目录下看到 nebula-exchange_spark_2.2-2.5-SNAPSHOT.jar 文件，
+    在 nebula-exchange/nebula-exchange_spark_2.4/target/ 目录下看到 nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar 文件，
+    在 nebula-exchange/nebula-exchange_spark_3.0/target/ 目录下看到 nebula-exchange_spark_3.0-2.5-SNAPSHOT.jar 文件。
+2. 在官网或 github 下载
     
     正式版本:
-    https://repo1.maven.org/maven2/com/vesoft/nebula-exchange/
+    https://github.com/vesoft-inc/nebula-exchange/releases or https://nebula-graph.com.cn/release/?exchange
     
-    快照版本:
-    https://oss.sonatype.org/content/repositories/snapshots/com/vesoft/nebula-exchange/
+    快照版本: （进入页面点击任意workflow后，snapshot版本的jar包在Artifacts中，根据需求自行下载）
+    https://github.com/vesoft-inc/nebula-exchange/actions/workflows/deploy_snapshot.yml
     
 ## 版本匹配
 
@@ -57,7 +63,7 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 
 *7. Exchange 2.0 的导入命令：*
 ```
-$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange-2.5.0.jar -c /path/to/application.conf
+$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar -c /path/to/application.conf
 ```
 如果数据源有HIVE，则导入命令最后还需要加 `-h` 表示启用HIVE数据源。
 
@@ -68,7 +74,7 @@ $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --files application.conf \
 --conf spark.driver.extraClassPath=./ \
 --conf spark.executor.extraClassPath=./ \
-nebula-exchange-2.5.0.jar \
+nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar \
 -c application.conf
 ```
 
@@ -77,7 +83,7 @@ nebula-exchange-2.5.0.jar \
 $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --master local \
 --conf spark.sql.shuffle.partitions=200 \
-nebula-exchange-2.5.0.jar \
+nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar \
 -c application.conf
 ```
 
