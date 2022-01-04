@@ -33,7 +33,7 @@ jobs:
         pushd tmp
         git clone https://github.com/vesoft-inc/nebula-docker-compose.git
         pushd nebula-docker-compose/
-        cp ../../common/src/test/resources/docker-compose.yaml .
+        cp ../../exchange-common/src/test/resources/docker-compose.yaml .
         docker-compose up -d
         sleep 10
         popd
