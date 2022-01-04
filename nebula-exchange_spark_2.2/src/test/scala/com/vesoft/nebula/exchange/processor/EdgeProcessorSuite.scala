@@ -7,11 +7,11 @@ package com.vesoft.nebula.exchange.processor
 
 import java.io.File
 
+import com.vesoft.exchange.common.VidType
 import com.vesoft.nebula.PropertyType
-import com.vesoft.nebula.common.VidType
-import com.vesoft.nebula.common.KeyPolicy
-import com.vesoft.nebula.common.config.{Configs, EdgeConfigEntry}
-import com.vesoft.nebula.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
+import com.vesoft.exchange.common.KeyPolicy
+import com.vesoft.exchange.common.config.{Configs, EdgeConfigEntry}
+import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.meta.{ColumnDef, ColumnTypeDef, EdgeItem, Schema, SchemaProp}
 import org.apache.commons.codec.binary.Hex
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema

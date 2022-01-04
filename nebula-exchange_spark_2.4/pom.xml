@@ -535,7 +535,7 @@
         </dependency>
         <dependency>
             <groupId>com.vesoft</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>exchange-common</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

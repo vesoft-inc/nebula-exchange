@@ -6,7 +6,7 @@
 package com.vesoft.nebula.exchange.reader
 
 import com.google.common.collect.Maps
-import com.vesoft.nebula.common.config.{
+import com.vesoft.exchange.common.config.{
   ClickHouseConfigEntry,
   HBaseSourceConfigEntry,
   HiveSourceConfigEntry,

@@ -5,7 +5,7 @@
 
 package com.vesoft.nebula.exchange.reader
 
-import com.vesoft.nebula.common.config.{KafkaSourceConfigEntry, PulsarSourceConfigEntry}
+import com.vesoft.exchange.common.config.{KafkaSourceConfigEntry, PulsarSourceConfigEntry}
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 

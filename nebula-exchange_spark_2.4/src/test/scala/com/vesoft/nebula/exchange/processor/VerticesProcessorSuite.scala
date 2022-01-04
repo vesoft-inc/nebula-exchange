@@ -3,15 +3,15 @@
  * This source code is licensed under Apache 2.0 License.
  */
 
-package com.vesoft.nebula.common.processor
+package com.vesoft.exchange.common.processor
 
 import java.io.File
 
+import com.vesoft.exchange.common.VidType
 import com.vesoft.nebula.PropertyType
-import com.vesoft.nebula.common.VidType
-import com.vesoft.nebula.common.KeyPolicy
-import com.vesoft.nebula.common.config.{Configs, TagConfigEntry}
-import com.vesoft.nebula.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
+import com.vesoft.exchange.common.KeyPolicy
+import com.vesoft.exchange.common.config.{Configs, TagConfigEntry}
+import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.exchange.processor.VerticesProcessor
 import com.vesoft.nebula.meta.{ColumnDef, ColumnTypeDef, Schema, SchemaProp, TagItem}
 import org.apache.commons.codec.binary.Hex

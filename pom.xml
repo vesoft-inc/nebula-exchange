@@ -41,7 +41,7 @@
     </developers>
 
     <modules>
-        <module>common</module>
+        <module>exchange-common</module>
         <module>nebula-exchange_spark_2.4</module>
         <module>nebula-exchange_spark_2.2</module>
         <module>nebula-exchange_spark_3.0</module>

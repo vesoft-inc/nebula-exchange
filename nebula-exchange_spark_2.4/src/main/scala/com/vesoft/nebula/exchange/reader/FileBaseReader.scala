@@ -5,8 +5,8 @@
 
 package com.vesoft.nebula.exchange.reader
 
-import com.vesoft.nebula.common.config.FileBaseSourceConfigEntry
-import com.vesoft.nebula.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
+import com.vesoft.exchange.common.config.FileBaseSourceConfigEntry
+import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}

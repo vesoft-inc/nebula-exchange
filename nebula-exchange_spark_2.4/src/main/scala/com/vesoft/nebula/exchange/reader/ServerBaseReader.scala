@@ -6,7 +6,7 @@
 package com.vesoft.nebula.exchange.reader
 
 import com.google.common.collect.Maps
-import com.vesoft.nebula.common.config.{
+import com.vesoft.exchange.common.config.{
   ClickHouseConfigEntry,
   HBaseSourceConfigEntry,
   HiveSourceConfigEntry,
@@ -16,7 +16,7 @@ import com.vesoft.nebula.common.config.{
   Neo4JSourceConfigEntry,
   ServerDataSourceConfigEntry
 }
-import com.vesoft.nebula.common.utils.HDFSUtils
+import com.vesoft.exchange.common.utils.HDFSUtils
 import com.vesoft.nebula.exchange.utils.Neo4jUtils
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.Result

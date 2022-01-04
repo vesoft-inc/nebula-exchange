@@ -23,6 +23,7 @@
         <neo.version>4.0.1</neo.version>
         <gremlin.version>3.4.6</gremlin.version>
         <janusgraph.version>0.5.0</janusgraph.version>
+        <pulsar.version>3.1.1.1</pulsar.version>
     </properties>
 
     <build>
@@ -375,8 +376,14 @@
         </dependency>
 
         <dependency>
+            <groupId>io.streamnative.connectors</groupId>
+            <artifactId>pulsar-spark-connector_2.12</artifactId>
+            <version>${pulsar.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.vesoft</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>exchange-common</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

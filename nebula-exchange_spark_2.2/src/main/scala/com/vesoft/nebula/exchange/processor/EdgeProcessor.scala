@@ -8,18 +8,19 @@ package com.vesoft.nebula.exchange.processor
 import java.nio.ByteOrder
 
 import com.google.common.geometry.{S2CellId, S2LatLng}
-import com.vesoft.nebula.common.{Edge, Edges, KeyPolicy}
-import com.vesoft.nebula.common.config.{
+import com.vesoft.exchange.common.{ErrorHandler, GraphProvider, MetaProvider, VidType}
+import com.vesoft.exchange.common.{Edge, Edges, KeyPolicy}
+import com.vesoft.exchange.common.config.{
   Configs,
   EdgeConfigEntry,
   FileBaseSinkConfigEntry,
   SinkCategory
 }
-import com.vesoft.nebula.common.processor.Processor
-import com.vesoft.nebula.common.utils.NebulaUtils
-import com.vesoft.nebula.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
-import com.vesoft.nebula.common.writer.{NebulaGraphClientWriter, NebulaSSTWriter}
-import com.vesoft.nebula.common.{ErrorHandler, GraphProvider, MetaProvider, VidType}
+import com.vesoft.exchange.common.processor.Processor
+import com.vesoft.exchange.common.utils.NebulaUtils
+import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
+import com.vesoft.exchange.common.writer.{NebulaGraphClientWriter, NebulaSSTWriter}
+import com.vesoft.exchange.common.VidType
 import com.vesoft.nebula.encoder.NebulaCodecImpl
 import com.vesoft.nebula.meta.EdgeItem
 import org.apache.commons.codec.digest.MurmurHash2
