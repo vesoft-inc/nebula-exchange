@@ -45,12 +45,23 @@ jobs:
         mvn clean package -pl nebula-exchange_spark_2.4 -am -Pscala-2.11 -Pspark-2.4
         mvn clean package -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0
 
-    - name: upload to snapshot assets
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: upload Exchange with Spark 2.2 to snapshot assets
+      uses: actions/upload-artifact@v2
       with:
-        files: |
+        name: nebula-exchange_spark_2.2-*-SNAPSHOT.jar
+        path:
           nebula-exchange_spark_2.2/target/nebula-exchange_spark_2.2-*-SNAPSHOT.jar
-          nebula-exchange_spark_2.4/target/nebula-exchange_spark_2.4-*-SNAPSHOT.jar
+
+    - name: upload Exchange with Spark 2.4 to snapshot assets
+      uses: actions/upload-artifact@v2
+      with:
+        name: nebula-exchange_spark_2.4-*-SNAPSHOT.jar
+        path:
+            nebula-exchange_spark_2.4/target/nebula-exchange_spark_2.4-*-SNAPSHOT.jar
+
+    - name: upload Exchange with Spark 3.0 to snapshot assets
+      uses: actions/upload-artifact@v2
+      with:
+        name: nebula-exchange_spark_3.0-*-SNAPSHOT.jar
+        path:
           nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-*-SNAPSHOT.jar
