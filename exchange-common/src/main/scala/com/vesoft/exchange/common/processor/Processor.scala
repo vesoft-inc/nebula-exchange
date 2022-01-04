@@ -5,7 +5,8 @@
 
 package com.vesoft.exchange.common.processor
 
-import com.vesoft.exchange.common.utils.{HDFSUtils, NebulaUtils}
+import com.vesoft.exchange.common.VidType
+import com.vesoft.exchange.common.utils.{HDFSUtils, NebulaPartitioner, NebulaUtils}
 import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.{
   Coordinate,
@@ -21,7 +22,7 @@ import com.vesoft.nebula.{
   Value
 }
 import org.apache.log4j.Logger
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -230,4 +231,20 @@ trait Processor extends Serializable {
     else assert(assertion = false, context)
   }
 
+  def customRepartition(spark: SparkSession,
+                        data: Dataset[(Array[Byte], Array[Byte])],
+                        partitionNum: Int,
+                        vidType: VidType.Value): Dataset[(Array[Byte], Array[Byte])] = {
+    import spark.implicits._
+    data.rdd
+      .partitionBy(new NebulaPartitioner(partitionNum, vidType))
+      .map(kv => SSTData(kv._1, kv._2))
+      .toDF()
+      .map { row =>
+        (row.getAs[Array[Byte]](0), row.getAs[Array[Byte]](1))
+      }(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
+  }
+
 }
+
+case class SSTData(key: Array[Byte], value: Array[Byte])

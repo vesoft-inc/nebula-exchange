@@ -395,7 +395,8 @@ object Configs {
         val localPath  = getOptOrElse(tagConfig, "local.path")
         val remotePath = getOptOrElse(tagConfig, "remote.path")
 
-        val partition = getOrElse(tagConfig, "partition", DEFAULT_PARTITION)
+        val partition             = getOrElse(tagConfig, "partition", DEFAULT_PARTITION)
+        val repartitionWithNebula = getOrElse(tagConfig, "repartitionWithNebula", false)
 
         LOG.info(s"name ${tagName}  batch ${batch}")
         val entry = TagConfigEntry(tagName,
@@ -407,7 +408,8 @@ object Configs {
                                    policyOpt,
                                    batch,
                                    partition,
-                                   checkPointPath)
+                                   checkPointPath,
+                                   repartitionWithNebula)
         LOG.info(s"Tag Config: ${entry}")
         tags += entry
       }
@@ -510,6 +512,8 @@ object Configs {
         val localPath  = getOptOrElse(edgeConfig, "path.local")
         val remotePath = getOptOrElse(edgeConfig, "path.remote")
 
+        val repartitionWithNebula = getOrElse(edgeConfig, "repartitionWithNebula", false)
+
         val entry = EdgeConfigEntry(
           edgeName,
           sourceConfig,
@@ -526,7 +530,8 @@ object Configs {
           longitude,
           batch,
           partition,
-          checkPointPath
+          checkPointPath,
+          repartitionWithNebula
         )
         LOG.info(s"Edge Config: ${entry}")
         edges += entry

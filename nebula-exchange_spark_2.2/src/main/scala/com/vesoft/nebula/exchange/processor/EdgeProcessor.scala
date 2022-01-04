@@ -27,13 +27,14 @@ import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.sql.streaming.Trigger
-import org.apache.spark.sql.{DataFrame, Encoders, Row}
+import org.apache.spark.sql.{DataFrame, Encoders, Row, SparkSession}
 import org.apache.spark.util.LongAccumulator
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 
-class EdgeProcessor(data: DataFrame,
+class EdgeProcessor(spark: SparkSession,
+                    data: DataFrame,
                     edgeConfig: EdgeConfigEntry,
                     fieldKeys: List[String],
                     nebulaKeys: List[String],
@@ -113,7 +114,7 @@ class EdgeProcessor(data: DataFrame,
       } else {
         data.dropDuplicates(edgeConfig.sourceField, edgeConfig.targetField)
       }
-      distintData
+      var sstKeyValueData = distintData
         .mapPartitions { iter =>
           iter.map { row =>
             encodeEdge(row, partitionNum, vidType, spaceVidLen, edgeItem, fieldTypeMap)
@@ -122,6 +123,10 @@ class EdgeProcessor(data: DataFrame,
         .flatMap(line => {
           List((line._1, line._3), (line._2, line._3))
         })(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
+      if (edgeConfig.repartitionWithNebula) {
+        sstKeyValueData = customRepartition(spark, sstKeyValueData, partitionNum, vidType)
+      }
+      sstKeyValueData
         .toDF("key", "value")
         .sortWithinPartitions("key")
         .foreachPartition { iterator: Iterator[Row] =>

@@ -27,7 +27,7 @@ import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.sql.streaming.Trigger
-import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
 import org.apache.spark.util.LongAccumulator
 
 import scala.collection.JavaConverters._
@@ -43,7 +43,8 @@ import scala.collection.mutable.ArrayBuffer
   * @param batchSuccess
   * @param batchFailure
   */
-class VerticesProcessor(data: DataFrame,
+class VerticesProcessor(spark: SparkSession,
+                        data: DataFrame,
                         tagConfig: TagConfigEntry,
                         fieldKeys: List[String],
                         nebulaKeys: List[String],
@@ -115,13 +116,17 @@ class VerticesProcessor(data: DataFrame,
       val spaceVidLen = metaProvider.getSpaceVidLen(space)
       val tagItem     = metaProvider.getTagItem(space, tagName)
 
-      data
+      var sstKeyValueData = data
         .dropDuplicates(tagConfig.vertexField)
         .mapPartitions { iter =>
           iter.map { row =>
             encodeVertex(row, partitionNum, vidType, spaceVidLen, tagItem, fieldTypeMap)
           }
         }(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
+      if (tagConfig.repartitionWithNebula) {
+        sstKeyValueData = customRepartition(spark, sstKeyValueData, partitionNum, vidType)
+      }
+      sstKeyValueData
         .toDF("key", "value")
         .sortWithinPartitions("key")
         .foreachPartition { iterator: Iterator[Row] =>

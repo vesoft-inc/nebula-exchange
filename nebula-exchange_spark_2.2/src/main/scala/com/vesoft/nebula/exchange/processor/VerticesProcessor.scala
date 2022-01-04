@@ -25,7 +25,7 @@ import com.vesoft.nebula.meta.TagItem
 import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
-import org.apache.spark.sql.{DataFrame, Encoders, Row}
+import org.apache.spark.sql.{DataFrame, Encoders, Row, SparkSession}
 import org.apache.spark.util.LongAccumulator
 
 import scala.collection.JavaConverters._
@@ -41,7 +41,8 @@ import scala.collection.mutable.ArrayBuffer
   * @param batchSuccess
   * @param batchFailure
   */
-class VerticesProcessor(data: DataFrame,
+class VerticesProcessor(spark: SparkSession,
+                        data: DataFrame,
                         tagConfig: TagConfigEntry,
                         fieldKeys: List[String],
                         nebulaKeys: List[String],
