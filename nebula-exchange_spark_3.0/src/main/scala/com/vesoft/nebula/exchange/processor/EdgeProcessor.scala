@@ -20,7 +20,7 @@ import com.vesoft.exchange.common.config.{
 import com.vesoft.exchange.common.processor.Processor
 import com.vesoft.exchange.common.utils.NebulaUtils
 import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
-import com.vesoft.exchange.common.writer.{NebulaGraphClientWriter, NebulaSSTWriter}
+import com.vesoft.exchange.common.writer.{GenerateSstFile, NebulaGraphClientWriter, NebulaSSTWriter}
 import com.vesoft.exchange.common.VidType
 import com.vesoft.nebula.encoder.NebulaCodecImpl
 import com.vesoft.nebula.meta.EdgeItem
@@ -124,19 +124,22 @@ class EdgeProcessor(spark: SparkSession,
         .flatMap(line => {
           List((line._1, line._3), (line._2, line._3))
         })(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
+
+      // repartition dataframe according to nebula part, to make sure sst files for one part has no overlap
       if (edgeConfig.repartitionWithNebula) {
-        sstKeyValueData = customRepartition(spark, sstKeyValueData, partitionNum, vidType)
+        sstKeyValueData = customRepartition(spark, sstKeyValueData, partitionNum)
       }
+
       sstKeyValueData
         .toDF("key", "value")
         .sortWithinPartitions("key")
         .foreachPartition { iterator: Iterator[Row] =>
-          val sstFileWriter = new NebulaSSTWriter
-          sstFileWriter.writeSstFiles(iterator,
-                                      fileBaseConfig,
-                                      partitionNum,
-                                      namenode,
-                                      batchFailure)
+          val generateSstFile = new GenerateSstFile
+          generateSstFile.writeSstFiles(iterator,
+                                        fileBaseConfig,
+                                        partitionNum,
+                                        namenode,
+                                        batchFailure)
         }
     } else {
       val streamFlag = data.isStreaming

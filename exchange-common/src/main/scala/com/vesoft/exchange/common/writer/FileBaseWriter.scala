@@ -19,9 +19,8 @@ import org.slf4j.LoggerFactory
 /**
   * NebulaSSTWriter
   */
-class NebulaSSTWriter extends Writer {
-  var isOpen       = false
-  var path: String = _
+class NebulaSSTWriter(path: String) extends Writer {
+  var isOpen = false
 
   private val LOG = LoggerFactory.getLogger(getClass)
 
@@ -39,11 +38,6 @@ class NebulaSSTWriter extends Writer {
 
   val env                   = new EnvOptions()
   var writer: SstFileWriter = _
-
-  def withPath(path: String): NebulaSSTWriter = {
-    this.path = path
-    this
-  }
 
   override def prepare(): Unit = {
     writer = new SstFileWriter(env, options)
@@ -63,6 +57,11 @@ class NebulaSSTWriter extends Writer {
     options.close()
     env.close()
   }
+
+}
+
+class GenerateSstFile {
+  private val LOG = LoggerFactory.getLogger(getClass)
 
   def writeSstFiles(iterator: Iterator[Row],
                     fileBaseConfig: FileBaseSinkConfigEntry,
@@ -97,7 +96,8 @@ class NebulaSSTWriter extends Writer {
           }
           currentPart = part
           val tmp = s"$localPath/$currentPart-$taskID.sst"
-          withPath(tmp).prepare()
+          writer = new NebulaSSTWriter(tmp)
+          writer.prepare()
         }
         writer.write(key, value)
       }

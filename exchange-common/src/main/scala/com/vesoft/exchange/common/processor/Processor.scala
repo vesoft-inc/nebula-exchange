@@ -233,11 +233,10 @@ trait Processor extends Serializable {
 
   def customRepartition(spark: SparkSession,
                         data: Dataset[(Array[Byte], Array[Byte])],
-                        partitionNum: Int,
-                        vidType: VidType.Value): Dataset[(Array[Byte], Array[Byte])] = {
+                        partitionNum: Int): Dataset[(Array[Byte], Array[Byte])] = {
     import spark.implicits._
     data.rdd
-      .partitionBy(new NebulaPartitioner(partitionNum, vidType))
+      .partitionBy(new NebulaPartitioner(partitionNum))
       .map(kv => SSTData(kv._1, kv._2))
       .toDF()
       .map { row =>
