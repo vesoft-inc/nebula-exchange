@@ -60,7 +60,7 @@ class NebulaSSTWriter(path: String) extends Writer {
 
 }
 
-class GenerateSstFile {
+class GenerateSstFile extends Serializable {
   private val LOG = LoggerFactory.getLogger(getClass)
 
   def writeSstFiles(iterator: Iterator[Row],

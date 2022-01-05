@@ -32,8 +32,12 @@ case class FileBaseSinkConfigEntry(override val category: SinkCategory.Value,
                                    remotePath: String,
                                    fsName: Option[String])
     extends DataSinkConfigEntry {
+
   override def toString: String = {
-    s"File sink: from ${localPath} to ${fsName.get}${remotePath}"
+    val fullRemotePath =
+      if (fsName.isDefined) s"${fsName.get}$remotePath"
+      else remotePath
+    s"File sink: from ${localPath} to $fullRemotePath"
   }
 }
 

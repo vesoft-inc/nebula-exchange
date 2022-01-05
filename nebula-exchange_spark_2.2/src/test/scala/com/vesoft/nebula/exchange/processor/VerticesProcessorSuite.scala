@@ -67,7 +67,7 @@ class VerticesProcessorSuite {
                         "col14")
 
   val processClazz =
-    new VerticesProcessor(data, tagConfig, fieldKeys, nebulaKeys, config, null, null)
+    new VerticesProcessor(null, data, tagConfig, fieldKeys, nebulaKeys, config, null, null)
   @Test
   def isVertexValidSuite(): Unit = {
     val stringIdValue      = List("Bob")
