@@ -5,33 +5,43 @@ Nebula Exchange (Exchange for short) is an Apache Spark application. It is used 
 
 Exchange 2.0 only supports Nebula Graph 2.0 . If you want to import data for Nebula Graph v1.x，please use [Nebula Exchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange).
 
+Exchange currently supports spark2.2, spark2.4 and spark3.0, and the corresponding toolkits are nebula-exchange_spark_2.2,  nebula-exchange_spark_2.4, nebula-exchange_spark_3.0.
+
 ## How to get
 
 1. Package latest Exchange
 
     ```bash
     $ git clone https://github.com/vesoft-inc/nebula-exchange.git
-    $ cd nebula-exchange/nebula-exchange
-    $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true
+    $ cd nebula-exchange
+    $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true -pl nebula-exchange_spark_2.2 -am -Pscala-2.11 -Pspark-2.2
+    $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true -pl nebula-exchange_spark_2.4 -am -Pscala-2.11 -Pspark-2.4
+    $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0
     ```
 
-    After the packaging, you can see the newly generated nebula-exchange-2.5-SNAPSHOT.jar under the nebula-exchange/nebula-exchange/target/ directory.
-2. Download from Maven repository
+    After the packaging, you can see the newly generated nebula-exchange_spark_2.2-2.5-SNAPSHOT.jar under the nebula-exchange/nebula-exchange_spark_2.2/target/ directory,
+    nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar under the nebula-exchange/nebula-exchange_spark_2.4/target/ directory, 
+    nebula-exchange_spark_3.0-2.5-SNAPSHOT.jar under the nebula-exchange/nebula-exchange_spark_3.0/target/ directory.
+2. Download from github artifact
    
-   release version:
-   https://repo1.maven.org/maven2/com/vesoft/nebula-exchange/
+   **release version:**
    
-   snapshot version:
-   https://oss.sonatype.org/content/repositories/snapshots/com/vesoft/nebula-exchange/
+   `https://github.com/vesoft-inc/nebula-exchange/releases`
+   or
+   `https://nebula-graph.com.cn/release/?exchange`
+   
+   **snapshot version:**
+   
+   `https://github.com/vesoft-inc/nebula-exchange/actions/workflows/deploy_snapshot.yml`
 ## How to use
 
 Import command:
 ```
-$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange-2.5.0.jar -c /path/to/application.conf
+$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar -c /path/to/application.conf
 ```
 If your source is HIVE, import command is:
 ```
-$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange-2.5.0.jar -c /path/to/application.conf -h
+$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar -c /path/to/application.conf -h
 ```
 
 Note：Submit Exchange with Yarn-Cluster mode, please use following command：
@@ -41,7 +51,7 @@ $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --files application.conf \
 --conf spark.driver.extraClassPath=./ \
 --conf spark.executor.extraClassPath=./ \
-nebula-exchange-2.5.0.jar \
+nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar \
 -c application.conf
 ```
 
@@ -50,7 +60,7 @@ Note: When use Exchange to generate SST files, please add spark.sql.shuffle.part
 $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --master local \
 --conf spark.sql.shuffle.partitions=200 \
-nebula-exchange-2.5.0.jar \
+nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar \
 -c application.conf
 ```
 
@@ -77,5 +87,6 @@ There are the version correspondence between Nebula Exchange and Nebula:
 3. Supports importing data from other Hive sources besides Hive on Spark.
 4. Supports recording and retrying the INSERT statement after failures during data import.
 5. Supports SST import, but not support property's default value yet.
+6. Supports Spark 2.2, Spark 2.4 and Spark 3.0.
 
 Refer to [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf) as an example to edit the configuration file.
