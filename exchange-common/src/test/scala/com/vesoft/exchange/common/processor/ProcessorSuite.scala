@@ -5,7 +5,10 @@
 
 package scala.com.vesoft.nebula.exchange.processor
 
+import java.util
+
 import com.vesoft.exchange.common.processor.Processor
+import com.vesoft.exchange.common.utils.NebulaPartitioner
 import com.vesoft.nebula.{
   Coordinate,
   Date,
@@ -19,6 +22,8 @@ import com.vesoft.nebula.{
   Time,
   Value
 }
+import org.apache.spark.TaskContext
+import org.apache.spark.sql.{Dataset, Encoders, SparkSession}
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.{
   BooleanType,
@@ -216,5 +221,28 @@ class ProcessorSuite extends Processor {
   def printChoiceSuite(): Unit = {
     printChoice(true, "nothing")
     assertThrows[AssertionError](printChoice(false, "assert failed"))
+  }
+
+  @Test
+  def customRepartitionSuite(): Unit = {
+    val spark = SparkSession.builder().master("local").getOrCreate()
+    import spark.implicits._
+    val key1  = "01d80100546f6d000000000000000000000000000000000002000000"
+    val key2  = "017b000030313233343536373839e4070000"
+    val value = "abc"
+    val data: Dataset[(Array[Byte], Array[Byte])] = spark.sparkContext
+      .parallelize(List(key1.getBytes(), key2.getBytes()))
+      .map(line => (line, value.getBytes()))
+      .toDF("key", "value")
+      .map { row =>
+        (row.getAs[Array[Byte]](0), row.getAs[Array[Byte]](1))
+      }(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
+
+    val result      = customRepartition(spark, data, 100)
+    val partitioner = new NebulaPartitioner(100)
+    result.map { row =>
+      assert(partitioner.getPartition(row._1) == TaskContext.getPartitionId())
+      ""
+    }
   }
 }

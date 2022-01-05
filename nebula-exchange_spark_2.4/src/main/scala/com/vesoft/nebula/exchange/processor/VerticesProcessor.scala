@@ -16,10 +16,10 @@ import com.vesoft.exchange.common.config.{
   StreamingDataSourceConfigEntry,
   TagConfigEntry
 }
-import com.vesoft.exchange.common.processor.Processor
-import com.vesoft.exchange.common.utils.NebulaUtils
+import com.vesoft.exchange.common.processor.{Processor, SSTData}
+import com.vesoft.exchange.common.utils.{NebulaPartitioner, NebulaUtils}
 import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
-import com.vesoft.exchange.common.writer.{NebulaGraphClientWriter, NebulaSSTWriter}
+import com.vesoft.exchange.common.writer.{GenerateSstFile, NebulaGraphClientWriter, NebulaSSTWriter}
 import com.vesoft.exchange.common.VidType
 import com.vesoft.nebula.encoder.NebulaCodecImpl
 import com.vesoft.nebula.meta.TagItem
@@ -27,7 +27,7 @@ import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.sql.streaming.Trigger
-import org.apache.spark.sql.{DataFrame, Encoders, Row}
+import org.apache.spark.sql.{DataFrame, Encoders, Row, SparkSession}
 import org.apache.spark.util.LongAccumulator
 
 import scala.collection.JavaConverters._
@@ -43,7 +43,8 @@ import scala.collection.mutable.ArrayBuffer
   * @param batchSuccess
   * @param batchFailure
   */
-class VerticesProcessor(data: DataFrame,
+class VerticesProcessor(spark: SparkSession,
+                        data: DataFrame,
                         tagConfig: TagConfigEntry,
                         fieldKeys: List[String],
                         nebulaKeys: List[String],
@@ -115,22 +116,29 @@ class VerticesProcessor(data: DataFrame,
       val spaceVidLen = metaProvider.getSpaceVidLen(space)
       val tagItem     = metaProvider.getTagItem(space, tagName)
 
-      data
+      var sstKeyValueData = data
         .dropDuplicates(tagConfig.vertexField)
         .mapPartitions { iter =>
           iter.map { row =>
             encodeVertex(row, partitionNum, vidType, spaceVidLen, tagItem, fieldTypeMap)
           }
         }(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
+
+      // repartition dataframe according to nebula part, to make sure sst files for one part has no overlap
+      if (tagConfig.repartitionWithNebula) {
+        sstKeyValueData = customRepartition(spark, sstKeyValueData, partitionNum)
+      }
+
+      sstKeyValueData
         .toDF("key", "value")
         .sortWithinPartitions("key")
         .foreachPartition { iterator: Iterator[Row] =>
-          val sstFileWriter = new NebulaSSTWriter
-          sstFileWriter.writeSstFiles(iterator,
-                                      fileBaseConfig,
-                                      partitionNum,
-                                      namenode,
-                                      batchFailure)
+          val generateSstFile = new GenerateSstFile
+          generateSstFile.writeSstFiles(iterator,
+                                        fileBaseConfig,
+                                        partitionNum,
+                                        namenode,
+                                        batchFailure)
         }
     } else {
       val streamFlag = data.isStreaming

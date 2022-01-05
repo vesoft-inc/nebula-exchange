@@ -140,13 +140,15 @@ object Exchange {
             spark.sparkContext.longAccumulator(s"batchFailure.${tagConfig.name}")
 
           val processor = new VerticesProcessor(
+            spark,
             repartition(data.get, tagConfig.partition, tagConfig.dataSourceConfigEntry.category),
             tagConfig,
             fieldKeys,
             nebulaKeys,
             configs,
             batchSuccess,
-            batchFailure)
+            batchFailure
+          )
           processor.process()
           val costTime = ((System.currentTimeMillis() - startTime) / 1000.0).formatted("%.2f")
           LOG.info(s"import for tag ${tagConfig.name} cost time: ${costTime} s")
@@ -185,6 +187,7 @@ object Exchange {
           val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure.${edgeConfig.name}")
 
           val processor = new EdgeProcessor(
+            spark,
             repartition(data.get, edgeConfig.partition, edgeConfig.dataSourceConfigEntry.category),
             edgeConfig,
             fieldKeys,

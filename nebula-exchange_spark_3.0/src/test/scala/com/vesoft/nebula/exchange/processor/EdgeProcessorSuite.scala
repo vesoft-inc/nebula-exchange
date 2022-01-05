@@ -67,7 +67,7 @@ class EdgeProcessorSuite {
                         "col14")
 
   val processClazz =
-    new EdgeProcessor(data, edgeConfig, fieldKeys, nebulaKeys, config, null, null)
+    new EdgeProcessor(null, data, edgeConfig, fieldKeys, nebulaKeys, config, null, null)
   @Test
   def isEdgeValidSuite(): Unit = {
     val stringIdValue = List("Bob", "Tom")
