@@ -15,6 +15,8 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    container:
+      image: vesoft/nebula-dev:centos7
 
     steps:
     - uses: actions/checkout@v2
@@ -47,5 +49,12 @@ jobs:
         mvn clean package -pl nebula-exchange_spark_2.2 -am -Pscala-2.11 -Pspark-2.2
         mvn clean package -pl nebula-exchange_spark_2.4 -am -Pscala-2.11 -Pspark-2.4
         mvn clean package -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0
+
+    - name: upload to oss
+      run: |
+        ossutil64 -e ${{ secrets.OSS_ENDPOINT }} \
+          -i ${{ secrets.OSS_ID }} \
+          -k ${{ secrets.OSS_SECRET }} \
+          -f cp nebula-exchange_spark_2.2/target/nebula-exchange_spark_2.2-2.5—SNAPSHOT.jar oss://nebula-graph/maven2/nebula-exchange/${{ steps.get_version.output.VERSION }}/nebula-exchange_spark_2.2-2.5-SNAPSHOT.jar
 
     - uses: codecov/codecov-action@v2
