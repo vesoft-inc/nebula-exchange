@@ -14,7 +14,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     steps:
     - uses: actions/checkout@v2
@@ -48,6 +48,9 @@ jobs:
         mvn clean package -pl nebula-exchange_spark_2.4 -am -Pscala-2.11 -Pspark-2.4
         mvn clean package -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0
 
+    - name: Get the version
+    id: get_version
+    run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
     - name: upload to oss
       run: |

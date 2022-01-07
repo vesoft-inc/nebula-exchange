@@ -10,8 +10,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-18.04
-    container:
-      image: vesoft/nebula-dev:centos7
 
     steps:
       - uses: actions/checkout@v2
@@ -45,20 +43,19 @@ jobs:
           mvn clean package -pl nebula-exchange_spark_2.4 -am -Pscala-2.11 -Pspark-2.4
           mvn clean package -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0
 
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
       - name: upload to release assets
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            nebula-exchange_spark_2.2/target/nebula-exchange_spark_2.2-${{ github.ref }}.jar
-            nebula-exchange_spark_2.4/target/nebula-exchange_spark_2.4-${{ github.ref }}.jar
-            nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-${{ github.ref }}.jar
-
-
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+            nebula-exchange_spark_2.2/target/nebula-exchange_spark_2.2-${{ steps.get_version.output.VERSION }}.jar
+            nebula-exchange_spark_2.4/target/nebula-exchange_spark_2.4-${{ steps.get_version.output.VERSION }}.jar
+            nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-${{ steps.get_version.output.VERSION }}.jar
 
       - name: upload to oss
         run: |
