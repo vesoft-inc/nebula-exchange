@@ -43,27 +43,38 @@ jobs:
           mvn clean package -pl nebula-exchange_spark_2.4 -am -Pscala-2.11 -Pspark-2.4
           mvn clean package -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0
 
+      - name: Get the version
+        id: get_version
+        run: |
+          tag=$(echo ${{ github.ref }} | rev | cut -d/ -f1 | rev)
+          tagnum=$(echo $tag | sed 's/^v//')
+          echo "::set-output name=tag::$tag"
+          echo "::set-output name=tagnum::$tagnum"
+        shell: bash
+
       - name: upload to release assets
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            nebula-exchange_spark_2.2/target/nebula-exchange_spark_2.2-${{ github.ref }}.jar
-            nebula-exchange_spark_2.4/target/nebula-exchange_spark_2.4-${{ github.ref }}.jar
-            nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-${{ github.ref }}.jar
+            nebula-exchange_spark_2.2/target/nebula-exchange_spark_2.2-${{ steps.get_version.outputs.tagnum }}.jar
+            nebula-exchange_spark_2.4/target/nebula-exchange_spark_2.4-${{ steps.get_version.outputs.tagnum }}.jar
+            nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-${{ steps.get_version.outputs.tagnum }}.jar
 
       - name: upload to oss
         run: |
-          ossutil64 -e ${{ secrets.OSS_ENDPOINT }} \
+          wget http://gosspublic.alicdn.com/ossutil/1.7.8/ossutil64
+          chmod 755 ossutil64
+          ./ossutil64 -e ${{ secrets.OSS_ENDPOINT }} \
             -i ${{ secrets.OSS_ID }} \
             -k ${{ secrets.OSS_SECRET }} \
-            -f cp nebula-exchange_spark_2.2/target/nebula-exchange_spark_2.2-${{ github.ref }}.jar oss://nebula-graph/maven2/nebula-exchange/${{ github.ref }}
-          ossutil64 -e ${{ secrets.OSS_ENDPOINT }} \
+            -f cp nebula-exchange_spark_2.2/target/nebula-exchange_spark_2.2-${{ steps.get_version.outputs.tagnum}}.jar oss://nebula-graph/maven2/nebula-exchange/${{ steps.get_version.outputs.tagnum }}/
+          ./ossutil64 -e ${{ secrets.OSS_ENDPOINT }} \
             -i ${{ secrets.OSS_ID }} \
             -k ${{ secrets.OSS_SECRET }} \
-            -f cp nebula-exchange_spark_2.4/target/nebula-exchange_spark_2.4-${{ github.ref }}.jar oss://nebula-graph/maven2/nebula-exchange/${{ github.ref }}
-          ossutil64 -e ${{ secrets.OSS_ENDPOINT }} \
+            -f cp nebula-exchange_spark_2.4/target/nebula-exchange_spark_2.4-${{ steps.get_version.outputs.tagnum }}.jar oss://nebula-graph/maven2/nebula-exchange/${{ steps.get_version.outputs.tagnum }}/
+          ./ossutil64 -e ${{ secrets.OSS_ENDPOINT }} \
             -i ${{ secrets.OSS_ID }} \
             -k ${{ secrets.OSS_SECRET }} \
-            -f cp nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-${{ github.ref }}.jar oss://nebula-graph/maven2/nebula-exchange/${{ github.ref }}
+            -f cp nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-${{ steps.get_version.outputs.tagnum }}.jar oss://nebula-graph/maven2/nebula-exchange/${{ steps.get_version.outputs.tagnum }}/
