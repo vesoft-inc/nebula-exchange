@@ -21,9 +21,9 @@ Exchange 目前支持 Spark 2.2， Spark 2.4， Spark 3.0， 对应的工具包�
     $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0 
     ```
 
-    编译打包完成后，可以在 nebula-exchange/nebula-exchange_spark_2.2/target/ 目录下看到 nebula-exchange_spark_2.2-2.5-SNAPSHOT.jar 文件，
-    在 nebula-exchange/nebula-exchange_spark_2.4/target/ 目录下看到 nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar 文件，
-    在 nebula-exchange/nebula-exchange_spark_3.0/target/ 目录下看到 nebula-exchange_spark_3.0-2.5-SNAPSHOT.jar 文件。
+    编译打包完成后，可以在 nebula-exchange/nebula-exchange_spark_2.2/target/ 目录下看到 nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar 文件，
+    在 nebula-exchange/nebula-exchange_spark_2.4/target/ 目录下看到 nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar 文件，
+    在 nebula-exchange/nebula-exchange_spark_3.0/target/ 目录下看到 nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar 文件。
 2. 在官网或 github 下载
     
     正式版本:
@@ -43,8 +43,11 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 |       2.1.0             |  2.0.0, 2.0.1  |
 |       2.5.0             |  2.5.0, 2.5.1  |
 |       2.5.1             |  2.5.0, 2.5.1  |
-|       2.6.0             |     2.6.0      |
-|     2.5-SNAPSHOT        |     nightly    |
+|       2.5.2             |  2.5.0, 2.5.1  |
+|       2.6.0             |  2.6.0, 2.6.1  |
+|       2.6.1             |  2.6.0, 2.6.1  |
+|       2.6.2             |  2.6.0, 2.6.1  |
+|     3.0-SNAPSHOT        |     nightly    |
 ## 使用说明
 
 特性 & 注意事项：
@@ -63,7 +66,7 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 
 *7. Exchange 2.0 的导入命令：*
 ```
-$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar -c /path/to/application.conf
+$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar -c /path/to/application.conf
 ```
 如果数据源有HIVE，则导入命令最后还需要加 `-h` 表示启用HIVE数据源。
 
@@ -74,7 +77,7 @@ $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --files application.conf \
 --conf spark.driver.extraClassPath=./ \
 --conf spark.executor.extraClassPath=./ \
-nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar \
+nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
 -c application.conf
 ```
 
@@ -83,7 +86,7 @@ nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar \
 $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --master local \
 --conf spark.sql.shuffle.partitions=200 \
-nebula-exchange_spark_2.4-2.5-SNAPSHOT.jar \
+nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
 -c application.conf
 ```
 
