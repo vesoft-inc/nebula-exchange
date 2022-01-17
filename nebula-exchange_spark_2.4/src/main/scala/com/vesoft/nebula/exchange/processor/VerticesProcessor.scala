@@ -22,6 +22,7 @@ import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.exchange.common.writer.{GenerateSstFile, NebulaGraphClientWriter, NebulaSSTWriter}
 import com.vesoft.exchange.common.VidType
 import com.vesoft.nebula.encoder.NebulaCodecImpl
+import com.vesoft.nebula.exchange.TooManyErrorsException
 import com.vesoft.nebula.meta.TagItem
 import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.log4j.Logger
@@ -81,6 +82,11 @@ class VerticesProcessor(spark: SparkSession,
       } else {
         errorBuffer.append(failStatement)
         batchFailure.add(1)
+        if (batchFailure.value >= config.errorConfig.errorMaxSize) {
+          throw TooManyErrorsException(
+            s"There are too many failed batches, batch amount: ${batchFailure.value}, " +
+              s"your config max error size: ${config.errorConfig.errorMaxSize}")
+        }
       }
     }
     if (errorBuffer.nonEmpty) {
