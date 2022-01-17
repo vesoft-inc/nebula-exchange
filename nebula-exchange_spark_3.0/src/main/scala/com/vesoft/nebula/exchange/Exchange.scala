@@ -6,7 +6,6 @@
 package com.vesoft.nebula.exchange
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
 import java.io.File
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.{CheckPointHandler, ErrorHandler}
@@ -22,6 +21,7 @@ import com.vesoft.exchange.common.config.{
   MaxComputeConfigEntry,
   MySQLSourceConfigEntry,
   Neo4JSourceConfigEntry,
+  OracleConfigEntry,
   PostgreSQLSourceConfigEntry,
   PulsarSourceConfigEntry,
   SinkCategory,
@@ -38,6 +38,7 @@ import com.vesoft.nebula.exchange.reader.{
   MaxcomputeReader,
   MySQLReader,
   Neo4JReader,
+  OracleReader,
   ORCReader,
   ParquetReader,
   PostgreSQLReader,
@@ -312,6 +313,11 @@ object Exchange {
       case SourceCategory.CLICKHOUSE => {
         val clickhouseConfigEntry = config.asInstanceOf[ClickHouseConfigEntry]
         val reader                = new ClickhouseReader(session, clickhouseConfigEntry)
+        Some(reader.read())
+      }
+      case SourceCategory.ORACLE => {
+        val oracleConfig = config.asInstanceOf[OracleConfigEntry]
+        val reader       = new OracleReader(session, oracleConfig)
         Some(reader.read())
       }
       case _ => {

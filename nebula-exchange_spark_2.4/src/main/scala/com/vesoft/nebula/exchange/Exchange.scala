@@ -10,8 +10,41 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import java.io.File
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.{CheckPointHandler, ErrorHandler}
-import com.vesoft.exchange.common.config.{ClickHouseConfigEntry, Configs, DataSourceConfigEntry, FileBaseSourceConfigEntry, HBaseSourceConfigEntry, HiveSourceConfigEntry, JanusGraphSourceConfigEntry, KafkaSourceConfigEntry, MaxComputeConfigEntry, MySQLSourceConfigEntry, Neo4JSourceConfigEntry, PostgreSQLSourceConfigEntry, PulsarSourceConfigEntry, SinkCategory, SourceCategory}
-import com.vesoft.nebula.exchange.reader.{CSVReader, ClickhouseReader, HBaseReader, HiveReader, JSONReader, JanusGraphReader, KafkaReader, MaxcomputeReader, MySQLReader, Neo4JReader, ORCReader, ParquetReader, PostgreSQLReader, PulsarReader}
+import com.vesoft.exchange.common.config.{
+  ClickHouseConfigEntry,
+  Configs,
+  DataSourceConfigEntry,
+  FileBaseSourceConfigEntry,
+  HBaseSourceConfigEntry,
+  HiveSourceConfigEntry,
+  JanusGraphSourceConfigEntry,
+  KafkaSourceConfigEntry,
+  MaxComputeConfigEntry,
+  MySQLSourceConfigEntry,
+  Neo4JSourceConfigEntry,
+  OracleConfigEntry,
+  PostgreSQLSourceConfigEntry,
+  PulsarSourceConfigEntry,
+  SinkCategory,
+  SourceCategory
+}
+import com.vesoft.nebula.exchange.reader.{
+  CSVReader,
+  ClickhouseReader,
+  HBaseReader,
+  HiveReader,
+  JSONReader,
+  JanusGraphReader,
+  KafkaReader,
+  MaxcomputeReader,
+  MySQLReader,
+  Neo4JReader,
+  OracleReader,
+  ORCReader,
+  PostgreSQLReader,
+  ParquetReader,
+  PulsarReader
+}
 import com.vesoft.exchange.common.processor.ReloadProcessor
 import com.vesoft.nebula.exchange.processor.{EdgeProcessor, VerticesProcessor}
 import org.apache.log4j.Logger
@@ -281,6 +314,11 @@ object Exchange {
       case SourceCategory.CLICKHOUSE => {
         val clickhouseConfigEntry = config.asInstanceOf[ClickHouseConfigEntry]
         val reader                = new ClickhouseReader(session, clickhouseConfigEntry)
+        Some(reader.read())
+      }
+      case SourceCategory.ORACLE => {
+        val oracleConfig = config.asInstanceOf[OracleConfigEntry]
+        val reader       = new OracleReader(session, oracleConfig)
         Some(reader.read())
       }
       case _ => {
