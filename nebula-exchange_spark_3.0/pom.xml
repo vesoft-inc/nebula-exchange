@@ -380,7 +380,11 @@
             <artifactId>pulsar-spark-connector_2.12</artifactId>
             <version>${pulsar.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <version>21.4.0.0</version>
+        </dependency>
         <dependency>
             <groupId>com.vesoft</groupId>
             <artifactId>exchange-common</artifactId>

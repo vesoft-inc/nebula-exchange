@@ -13,6 +13,7 @@ import com.vesoft.exchange.common.config.{
   MaxComputeConfigEntry,
   MySQLSourceConfigEntry,
   Neo4JSourceConfigEntry,
+  OracleConfigEntry,
   PostgreSQLSourceConfigEntry,
   ServerDataSourceConfigEntry
 }
@@ -84,8 +85,7 @@ class MySQLReader(override val session: SparkSession, mysqlConfig: MySQLSourceCo
 }
 
 /**
-  * The PosrgreReader
-  * TODO
+  * The PostgreSQLReader
   *
   * @param session
   * @param postgreConfig
@@ -234,6 +234,33 @@ class ClickhouseReader(override val session: SparkSession,
       .option("numPartitions", clickHouseConfigEntry.numPartition)
       .option("query", clickHouseConfigEntry.sentence)
       .load()
+    df
+  }
+}
+
+/**
+  * Oracle reader
+  */
+class OracleReader(override val session: SparkSession, oracleConfig: OracleConfigEntry)
+    extends ServerBaseReader(session, oracleConfig.sentence) {
+  Class.forName(oracleConfig.driver)
+  override def read(): DataFrame = {
+    var df = session.read
+      .format("jdbc")
+      .option("url", oracleConfig.url)
+      .option("dbtable", oracleConfig.table)
+      .option("user", oracleConfig.user)
+      .option("password", oracleConfig.passwd)
+      .option("driver", oracleConfig.driver)
+      .load()
+
+    if (oracleConfig.sentence != null) {
+      val tableName = if (oracleConfig.table.contains(".")) {
+        oracleConfig.table.split("\\.")(1)
+      } else oracleConfig.table
+      df.createOrReplaceTempView(tableName)
+      df = session.sql(sentence)
+    }
     df
   }
 }
