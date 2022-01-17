@@ -179,6 +179,9 @@ trait Processor extends Serializable {
         val jtsGeom = new org.locationtech.jts.io.WKTReader().read(wkt)
         convertJTSGeometryToGeography(jtsGeom)
       }
+      case PropertyType.DURATION => {
+        throw new IllegalArgumentException("do not support data type duration.")
+      }
     }
   }
 
