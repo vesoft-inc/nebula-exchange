@@ -659,6 +659,18 @@ object Configs {
           config.getString("password"),
           getOrElse(config, "sentence", "")
         )
+      case SourceCategory.POSTGRESQL =>
+        PostgresSQLSourceConfigEntry(
+          SourceCategory.POSTGRESQL,
+          config.getString("host"),
+          config.getInt("port"),
+          config.getString("database"),
+          config.getString("schema"),
+          config.getString("table"),
+          config.getString("user"),
+          config.getString("password"),
+          getOrElse(config, "sentence", "")
+        )
       case SourceCategory.KAFKA =>
         val intervalSeconds =
           if (config.hasPath("interval.seconds")) config.getInt("interval.seconds")

@@ -5,16 +5,7 @@
 
 package com.vesoft.nebula.exchange.reader
 
-import com.vesoft.exchange.common.config.{
-  ClickHouseConfigEntry,
-  HBaseSourceConfigEntry,
-  HiveSourceConfigEntry,
-  JanusGraphSourceConfigEntry,
-  MaxComputeConfigEntry,
-  MySQLSourceConfigEntry,
-  Neo4JSourceConfigEntry,
-  ServerDataSourceConfigEntry
-}
+import com.vesoft.exchange.common.config.{ClickHouseConfigEntry, HBaseSourceConfigEntry, HiveSourceConfigEntry, JanusGraphSourceConfigEntry, MaxComputeConfigEntry, MySQLSourceConfigEntry, Neo4JSourceConfigEntry, PostgresSQLSourceConfigEntry, ServerDataSourceConfigEntry}
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
@@ -74,6 +65,30 @@ class MySQLReader(override val session: SparkSession, mysqlConfig: MySQLSourceCo
       .option("password", mysqlConfig.password)
       .load()
     df.createOrReplaceTempView(mysqlConfig.table)
+    session.sql(sentence)
+  }
+}
+
+/**
+ * The PosrgreReader
+ * TODO
+ *
+ * @param session
+ * @param postgreConfig
+ */
+class PostgreSQLReader(override val session: SparkSession, postgreConfig: PostgresSQLSourceConfigEntry)
+    extends ServerBaseReader(session, postgreConfig.sentence) {
+  override def read(): DataFrame = {
+    val url =
+      s"jdbc:postgresql://${postgreConfig.host}:${postgreConfig.port}/${postgreConfig.database}"
+    val df = session.read
+      .format("jdbc")
+      .option("url", url)
+      .option("dbtable", s"${postgreConfig.schema}.${postgreConfig.table}")
+      .option("user", postgreConfig.user)
+      .option("password", postgreConfig.password)
+      .load()
+    df.createOrReplaceTempView(postgreConfig.table)
     session.sql(sentence)
   }
 }

@@ -26,6 +26,7 @@ object SourceCategory extends Enumeration {
   val HBASE       = Value("HBASE")
   val MAXCOMPUTE  = Value("MAXCOMPUTE")
   val CLICKHOUSE  = Value("CLICKHOUSE")
+  val POSTGRESQL    = Value("POSTGRESQL")
 
   val SOCKET = Value("SOCKET")
   val KAFKA  = Value("KAFKA")
@@ -153,6 +154,38 @@ case class MySQLSourceConfigEntry(override val category: SourceCategory.Value,
 
   override def toString: String = {
     s"MySql source host: ${host}, port: ${port}, database: ${database}, table: ${table}, " +
+      s"user: ${user}, password: ${password}, sentence: ${sentence}"
+  }
+}
+
+/**
+ * PostgreSQLSourceConfigEntry
+ *
+ * @param category
+ * @param host
+ * @param port
+ * @param database
+ * @param table
+ * @param user
+ * @param password
+ * @param sentence
+ */
+case class PostgresSQLSourceConfigEntry(override val category: SourceCategory.Value,
+                                        host: String,
+                                        port: Int,
+                                        database: String,
+                                        schema: String,
+                                        table: String,
+                                        user: String,
+                                        password: String,
+                                        override val sentence: String
+                                       )
+  extends ServerDataSourceConfigEntry {
+  require(
+    host.trim.length != 0 && port > 0 && database.trim.length > 0 && table.trim.length > 0 && user.trim.length > 0)
+
+  override def toString: String = {
+    s"PostgreSql source host: ${host}, port: ${port}, database: ${database}, table: ${table}, " +
       s"user: ${user}, password: ${password}, sentence: ${sentence}"
   }
 }

@@ -17,6 +17,7 @@ import com.vesoft.exchange.common.config.{
   HBaseSourceConfigEntry,
   HiveSourceConfigEntry,
   MySQLSourceConfigEntry,
+  PostgresSQLSourceConfigEntry,
   Neo4JSourceConfigEntry,
   SinkCategory,
   SourceCategory
@@ -155,6 +156,18 @@ class ConfigsSuite {
           assert(mysql.password.equals("nebula"))
           assert(mysql.database.equals("database"))
           assert(mysql.table.equals("table"))
+        }
+        case SourceCategory.POSTGRESQL => {
+          val postgresql = tagConfig.dataSourceConfigEntry.asInstanceOf[PostgresSQLSourceConfigEntry]
+          assert(label.equals("tag9"))
+          assert(postgresql.database.equals("database"))
+          assert(postgresql.host.equals("127.0.0.1"))
+          assert(postgresql.port == 5432)
+          assert(postgresql.user.equals("root"))
+          assert(postgresql.password.equals("nebula"))
+          assert(postgresql.schema.equals("public"))
+          assert(postgresql.database.equals("database"))
+          assert(postgresql.table.equals("table"))
         }
         case _ => {}
       }
