@@ -165,7 +165,6 @@ class ConfigsSuite {
           assert(postgresql.port == 5432)
           assert(postgresql.user.equals("root"))
           assert(postgresql.password.equals("nebula"))
-          assert(postgresql.schema.equals("public"))
           assert(postgresql.database.equals("database"))
           assert(postgresql.table.equals("table"))
         }

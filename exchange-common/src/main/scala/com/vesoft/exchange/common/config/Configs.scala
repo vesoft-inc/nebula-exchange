@@ -665,7 +665,6 @@ object Configs {
           config.getString("host"),
           config.getInt("port"),
           config.getString("database"),
-          config.getString("schema"),
           config.getString("table"),
           config.getString("user"),
           config.getString("password"),

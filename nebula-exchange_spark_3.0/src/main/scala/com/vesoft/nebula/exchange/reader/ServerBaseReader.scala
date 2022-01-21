@@ -84,7 +84,7 @@ class PostgreSQLReader(override val session: SparkSession, postgreConfig: Postgr
     val df = session.read
       .format("jdbc")
       .option("url", url)
-      .option("dbtable", s"${postgreConfig.schema}.${postgreConfig.table}")
+      .option("dbtable", postgreConfig.table)
       .option("user", postgreConfig.user)
       .option("password", postgreConfig.password)
       .load()

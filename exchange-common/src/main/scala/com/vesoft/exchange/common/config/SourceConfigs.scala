@@ -174,7 +174,6 @@ case class PostgresSQLSourceConfigEntry(override val category: SourceCategory.Va
                                         host: String,
                                         port: Int,
                                         database: String,
-                                        schema: String,
                                         table: String,
                                         user: String,
                                         password: String,
