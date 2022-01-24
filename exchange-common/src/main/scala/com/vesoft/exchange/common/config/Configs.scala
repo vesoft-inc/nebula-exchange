@@ -571,6 +571,7 @@ object Configs {
       case "HBASE"      => SourceCategory.HBASE
       case "MAXCOMPUTE" => SourceCategory.MAXCOMPUTE
       case "CLICKHOUSE" => SourceCategory.CLICKHOUSE
+      case "POSTGRESQL" => SourceCategory.POSTGRESQL
       case _            => throw new IllegalArgumentException(s"${category} not support")
     }
   }
