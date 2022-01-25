@@ -170,14 +170,14 @@ case class MySQLSourceConfigEntry(override val category: SourceCategory.Value,
  * @param password
  * @param sentence
  */
-case class PostgresSQLSourceConfigEntry(override val category: SourceCategory.Value,
-                                        host: String,
-                                        port: Int,
-                                        database: String,
-                                        table: String,
-                                        user: String,
-                                        password: String,
-                                        override val sentence: String
+case class PostgreSQLSourceConfigEntry(override val category: SourceCategory.Value,
+                                       host: String,
+                                       port: Int,
+                                       database: String,
+                                       table: String,
+                                       user: String,
+                                       password: String,
+                                       override val sentence: String
                                        )
   extends ServerDataSourceConfigEntry {
   require(

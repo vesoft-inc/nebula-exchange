@@ -661,7 +661,7 @@ object Configs {
           getOrElse(config, "sentence", "")
         )
       case SourceCategory.POSTGRESQL =>
-        PostgresSQLSourceConfigEntry(
+        PostgreSQLSourceConfigEntry(
           SourceCategory.POSTGRESQL,
           config.getString("host"),
           config.getInt("port"),

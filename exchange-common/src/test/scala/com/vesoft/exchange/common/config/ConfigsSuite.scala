@@ -17,7 +17,7 @@ import com.vesoft.exchange.common.config.{
   HBaseSourceConfigEntry,
   HiveSourceConfigEntry,
   MySQLSourceConfigEntry,
-  PostgresSQLSourceConfigEntry,
+  PostgreSQLSourceConfigEntry,
   Neo4JSourceConfigEntry,
   SinkCategory,
   SourceCategory
@@ -158,7 +158,7 @@ class ConfigsSuite {
           assert(mysql.table.equals("table"))
         }
         case SourceCategory.POSTGRESQL => {
-          val postgresql = tagConfig.dataSourceConfigEntry.asInstanceOf[PostgresSQLSourceConfigEntry]
+          val postgresql = tagConfig.dataSourceConfigEntry.asInstanceOf[PostgreSQLSourceConfigEntry]
           assert(label.equals("tag9"))
           assert(postgresql.database.equals("database"))
           assert(postgresql.host.equals("127.0.0.1"))
