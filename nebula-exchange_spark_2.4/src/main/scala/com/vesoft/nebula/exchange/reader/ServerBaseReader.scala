@@ -6,16 +6,7 @@
 package com.vesoft.nebula.exchange.reader
 
 import com.google.common.collect.Maps
-import com.vesoft.exchange.common.config.{
-  ClickHouseConfigEntry,
-  HBaseSourceConfigEntry,
-  HiveSourceConfigEntry,
-  JanusGraphSourceConfigEntry,
-  MaxComputeConfigEntry,
-  MySQLSourceConfigEntry,
-  Neo4JSourceConfigEntry,
-  ServerDataSourceConfigEntry
-}
+import com.vesoft.exchange.common.config.{ClickHouseConfigEntry, HBaseSourceConfigEntry, HiveSourceConfigEntry, JanusGraphSourceConfigEntry, MaxComputeConfigEntry, MySQLSourceConfigEntry, Neo4JSourceConfigEntry, PostgreSQLSourceConfigEntry, ServerDataSourceConfigEntry}
 import com.vesoft.exchange.common.utils.HDFSUtils
 import com.vesoft.nebula.exchange.utils.Neo4jUtils
 import org.apache.hadoop.hbase.HBaseConfiguration
@@ -29,10 +20,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.{DataTypes, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.{
-  ClusterCountMapReduce,
-  PeerPressureVertexProgram
-}
+import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.{ClusterCountMapReduce, PeerPressureVertexProgram}
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory
@@ -92,6 +80,28 @@ class MySQLReader(override val session: SparkSession, mysqlConfig: MySQLSourceCo
       .option("password", mysqlConfig.password)
       .load()
     df.createOrReplaceTempView(mysqlConfig.table)
+    session.sql(sentence)
+  }
+}
+
+/**
+ * The PostgreSQLReader extends the ServerBaseReader
+ *
+ */
+class PostgreSQLReader(override val session: SparkSession, postgreConfig: PostgreSQLSourceConfigEntry)
+  extends ServerBaseReader(session, postgreConfig.sentence) {
+  override def read(): DataFrame = {
+    val url =
+      s"jdbc:postgresql://${postgreConfig.host}:${postgreConfig.port}/${postgreConfig.database}"
+    val df = session.read
+      .format("jdbc")
+      .option("driver", "org.postgresql.Driver")
+      .option("url", url)
+      .option("dbtable", postgreConfig.table)
+      .option("user", postgreConfig.user)
+      .option("password", postgreConfig.password)
+      .load()
+    df.createOrReplaceTempView(postgreConfig.table)
     session.sql(sentence)
   }
 }
