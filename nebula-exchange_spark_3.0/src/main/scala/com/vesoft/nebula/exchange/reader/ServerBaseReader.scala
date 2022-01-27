@@ -100,7 +100,8 @@ class PostgreSQLReader(override val session: SparkSession, postgreConfig: Postgr
       .option("password", postgreConfig.password)
       .load()
     df.createOrReplaceTempView(postgreConfig.table)
-    session.sql(sentence)
+    if(!"".equals(sentence.trim)) session.sql(sentence)
+    else session.sql(s"select * from ${postgreConfig.table}")
   }
 }
 
