@@ -13,6 +13,7 @@ import com.vesoft.exchange.common.config.{
   MaxComputeConfigEntry,
   MySQLSourceConfigEntry,
   Neo4JSourceConfigEntry,
+  PostgreSQLSourceConfigEntry,
   ServerDataSourceConfigEntry
 }
 import org.apache.hadoop.hbase.HBaseConfiguration
@@ -75,6 +76,32 @@ class MySQLReader(override val session: SparkSession, mysqlConfig: MySQLSourceCo
       .load()
     df.createOrReplaceTempView(mysqlConfig.table)
     session.sql(sentence)
+  }
+}
+
+/**
+ * The PosrgreReader
+ * TODO
+ *
+ * @param session
+ * @param postgreConfig
+ */
+class PostgreSQLReader(override val session: SparkSession, postgreConfig: PostgreSQLSourceConfigEntry)
+    extends ServerBaseReader(session, postgreConfig.sentence) {
+  override def read(): DataFrame = {
+    val url =
+      s"jdbc:postgresql://${postgreConfig.host}:${postgreConfig.port}/${postgreConfig.database}"
+    val df = session.read
+      .format("jdbc")
+      .option("driver", "org.postgresql.Driver")
+      .option("url", url)
+      .option("dbtable", postgreConfig.table)
+      .option("user", postgreConfig.user)
+      .option("password", postgreConfig.password)
+      .load()
+    df.createOrReplaceTempView(postgreConfig.table)
+    if(!"".equals(sentence.trim)) session.sql(sentence)
+    else session.sql(s"select * from ${postgreConfig.table}")
   }
 }
 

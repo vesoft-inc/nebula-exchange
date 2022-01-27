@@ -6,8 +6,8 @@
 package com.vesoft.nebula.exchange
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import java.io.File
 
+import java.io.File
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.{CheckPointHandler, ErrorHandler}
 import com.vesoft.exchange.common.config.{
@@ -22,6 +22,7 @@ import com.vesoft.exchange.common.config.{
   MaxComputeConfigEntry,
   MySQLSourceConfigEntry,
   Neo4JSourceConfigEntry,
+  PostgreSQLSourceConfigEntry,
   PulsarSourceConfigEntry,
   SinkCategory,
   SourceCategory
@@ -39,6 +40,7 @@ import com.vesoft.nebula.exchange.reader.{
   Neo4JReader,
   ORCReader,
   ParquetReader,
+  PostgreSQLReader,
   PulsarReader
 }
 import com.vesoft.exchange.common.processor.ReloadProcessor
@@ -284,6 +286,11 @@ object Exchange {
         val mysqlConfig = config.asInstanceOf[MySQLSourceConfigEntry]
         LOG.info(s"Loading from mysql com.vesoft.exchange.common.config: ${mysqlConfig}")
         val reader = new MySQLReader(session, mysqlConfig)
+        Some(reader.read())
+      case SourceCategory.POSTGRESQL =>
+        val postgreConfig = config.asInstanceOf[PostgreSQLSourceConfigEntry]
+        LOG.info(s"Loading from postgre com.vesoft.exchange.common.config: ${postgreConfig}")
+        val reader = new PostgreSQLReader(session, postgreConfig)
         Some(reader.read())
       case SourceCategory.PULSAR =>
         val pulsarConfig = config.asInstanceOf[PulsarSourceConfigEntry]

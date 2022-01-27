@@ -571,6 +571,7 @@ object Configs {
       case "HBASE"      => SourceCategory.HBASE
       case "MAXCOMPUTE" => SourceCategory.MAXCOMPUTE
       case "CLICKHOUSE" => SourceCategory.CLICKHOUSE
+      case "POSTGRESQL" => SourceCategory.POSTGRESQL
       case _            => throw new IllegalArgumentException(s"${category} not support")
     }
   }
@@ -651,6 +652,17 @@ object Configs {
       case SourceCategory.MYSQL =>
         MySQLSourceConfigEntry(
           SourceCategory.MYSQL,
+          config.getString("host"),
+          config.getInt("port"),
+          config.getString("database"),
+          config.getString("table"),
+          config.getString("user"),
+          config.getString("password"),
+          getOrElse(config, "sentence", "")
+        )
+      case SourceCategory.POSTGRESQL =>
+        PostgreSQLSourceConfigEntry(
+          SourceCategory.POSTGRESQL,
           config.getString("host"),
           config.getInt("port"),
           config.getString("database"),
