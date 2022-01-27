@@ -74,19 +74,24 @@ class MySQLReader(override val session: SparkSession, mysqlConfig: MySQLSourceCo
       .option("user", mysqlConfig.user)
       .option("password", mysqlConfig.password)
       .load()
-    df.createOrReplaceTempView(mysqlConfig.table)
-    session.sql(sentence)
+    if (sentence != null) {
+      df.createOrReplaceTempView(mysqlConfig.table)
+      session.sql(sentence)
+    } else {
+      df
+    }
   }
 }
 
 /**
- * The PosrgreReader
- * TODO
- *
- * @param session
- * @param postgreConfig
- */
-class PostgreSQLReader(override val session: SparkSession, postgreConfig: PostgreSQLSourceConfigEntry)
+  * The PosrgreReader
+  * TODO
+  *
+  * @param session
+  * @param postgreConfig
+  */
+class PostgreSQLReader(override val session: SparkSession,
+                       postgreConfig: PostgreSQLSourceConfigEntry)
     extends ServerBaseReader(session, postgreConfig.sentence) {
   override def read(): DataFrame = {
     val url =
@@ -99,9 +104,12 @@ class PostgreSQLReader(override val session: SparkSession, postgreConfig: Postgr
       .option("user", postgreConfig.user)
       .option("password", postgreConfig.password)
       .load()
-    df.createOrReplaceTempView(postgreConfig.table)
-    if(!"".equals(sentence.trim)) session.sql(sentence)
-    else session.sql(s"select * from ${postgreConfig.table}")
+    if (sentence != null) {
+      df.createOrReplaceTempView(postgreConfig.table)
+      session.sql(sentence)
+    } else {
+      df
+    }
   }
 }
 
