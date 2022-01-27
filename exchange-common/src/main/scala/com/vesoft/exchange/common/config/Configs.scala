@@ -658,7 +658,7 @@ object Configs {
           config.getString("table"),
           config.getString("user"),
           config.getString("password"),
-          getOrElse(config, "sentence", "")
+          getOrElse(config, "sentence", null)
         )
       case SourceCategory.POSTGRESQL =>
         PostgreSQLSourceConfigEntry(
@@ -669,7 +669,7 @@ object Configs {
           config.getString("table"),
           config.getString("user"),
           config.getString("password"),
-          getOrElse(config, "sentence", "")
+          getOrElse(config, "sentence", null)
         )
       case SourceCategory.KAFKA =>
         val intervalSeconds =
