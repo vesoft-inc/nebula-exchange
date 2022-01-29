@@ -61,28 +61,28 @@ trait Processor extends Serializable {
 
     if (row.isNullAt(index)) return null
 
+    val value = row.get(index).toString.trim
     PropertyType.findByValue(fieldTypeMap(field)) match {
       case PropertyType.STRING | PropertyType.FIXED_STRING => {
-        var value = row.get(index).toString
+        var stringValue = value
         if (value.equals(DEFAULT_EMPTY_VALUE)) {
-          value = ""
+          stringValue = ""
         }
-        val result = NebulaUtils.escapeUtil(value).mkString("\"", "", "\"")
+        val result = NebulaUtils.escapeUtil(stringValue).mkString("\"", "", "\"")
         result
       }
-      case PropertyType.DATE     => "date(\"" + row.get(index) + "\")"
-      case PropertyType.DATETIME => "datetime(\"" + row.get(index) + "\")"
-      case PropertyType.TIME     => "time(\"" + row.get(index) + "\")"
+      case PropertyType.DATE     => "date(\"" + value + "\")"
+      case PropertyType.DATETIME => "datetime(\"" + value + "\")"
+      case PropertyType.TIME     => "time(\"" + value + "\")"
       case PropertyType.TIMESTAMP => {
-        val value = row.get(index).toString
         if (NebulaUtils.isNumic(value)) {
           value
         } else {
-          "timestamp(\"" + row.get(index) + "\")"
+          "timestamp(\"" + value + "\")"
         }
       }
-      case PropertyType.GEOGRAPHY => "ST_GeogFromText(\"" + row.get(index) + "\")"
-      case _                      => row.get(index)
+      case PropertyType.GEOGRAPHY => "ST_GeogFromText(\"" + value + "\")"
+      case _                      => value
     }
   }
 
@@ -98,18 +98,18 @@ trait Processor extends Serializable {
       case PropertyType.UNKNOWN =>
         throw new IllegalArgumentException("date type in nebula is UNKNOWN.")
       case PropertyType.STRING | PropertyType.FIXED_STRING => {
-        val value = row.get(index).toString
+        val value = row.get(index).toString.trim
         if (value.equals(DEFAULT_EMPTY_VALUE)) "" else value
       }
-      case PropertyType.BOOL                     => row.get(index).toString.toBoolean
-      case PropertyType.DOUBLE                   => row.get(index).toString.toDouble
-      case PropertyType.FLOAT                    => row.get(index).toString.toFloat
-      case PropertyType.INT8                     => row.get(index).toString.toByte
-      case PropertyType.INT16                    => row.get(index).toString.toShort
-      case PropertyType.INT32                    => row.get(index).toString.toInt
-      case PropertyType.INT64 | PropertyType.VID => row.get(index).toString.toLong
+      case PropertyType.BOOL                     => row.get(index).toString.trim.toBoolean
+      case PropertyType.DOUBLE                   => row.get(index).toString.trim.toDouble
+      case PropertyType.FLOAT                    => row.get(index).toString.trim.toFloat
+      case PropertyType.INT8                     => row.get(index).toString.trim.toByte
+      case PropertyType.INT16                    => row.get(index).toString.trim.toShort
+      case PropertyType.INT32                    => row.get(index).toString.trim.toInt
+      case PropertyType.INT64 | PropertyType.VID => row.get(index).toString.trim.toLong
       case PropertyType.TIME => {
-        val values = row.get(index).toString.split(":")
+        val values = row.get(index).toString.trim.split(":")
         if (values.size < 3) {
           throw new UnsupportedOperationException(
             s"wrong format for time value: ${row.get(index)}, correct format is 12:00:00:0000")
@@ -120,7 +120,7 @@ trait Processor extends Serializable {
         new Time(values(0).toByte, values(1).toByte, sec, microSec)
       }
       case PropertyType.DATE => {
-        val values = row.get(index).toString.split("-")
+        val values = row.get(index).toString.trim.split("-")
         if (values.size < 3) {
           throw new UnsupportedOperationException(
             s"wrong format for date value: ${row.get(index)}, correct format is 2020-01-01")
@@ -128,7 +128,7 @@ trait Processor extends Serializable {
         new Date(values(0).toShort, values(1).toByte, values(2).toByte)
       }
       case PropertyType.DATETIME => {
-        val rowValue                     = row.get(index).toString
+        val rowValue                     = row.get(index).toString.trim
         var dateTimeValue: Array[String] = null
         if (rowValue.contains("T")) {
           dateTimeValue = rowValue.split("T")
@@ -140,7 +140,7 @@ trait Processor extends Serializable {
               s"correct format is 2020-01-01T12:00:00.0000 or 2020-01-01 12:00:00.0000")
         }
 
-        if (dateTimeValue.size < 2) {
+        if (dateTimeValue.length < 2) {
           throw new UnsupportedOperationException(
             s"wrong format for datetime value: $rowValue, " +
               s"correct format is 2020-01-01T12:00:00.0000 or 2020-01-01 12:00:00.0000")
@@ -167,15 +167,15 @@ trait Processor extends Serializable {
                      microsec)
       }
       case PropertyType.TIMESTAMP => {
-        val value = row.get(index).toString
+        val value = row.get(index).toString.trim
         if (!NebulaUtils.isNumic(value)) {
           throw new IllegalArgumentException(
             s"timestamp only support long type, your value is ${value}")
         }
-        row.get(index).toString.toLong
+        value.toLong
       }
       case PropertyType.GEOGRAPHY => {
-        val wkt     = row.get(index).toString
+        val wkt     = row.get(index).toString.trim
         val jtsGeom = new org.locationtech.jts.io.WKTReader().read(wkt)
         convertJTSGeometryToGeography(jtsGeom)
       }
