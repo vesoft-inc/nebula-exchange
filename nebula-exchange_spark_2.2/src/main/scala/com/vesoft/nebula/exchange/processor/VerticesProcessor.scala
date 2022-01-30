@@ -176,7 +176,7 @@ class VerticesProcessor(spark: SparkSession,
       return false
     }
 
-    val vertexId = row.get(index).toString
+    val vertexId = row.get(index).toString.trim
     // process int type vid
     if (tagConfig.vertexPolicy.isEmpty && !isVidStringType && !NebulaUtils.isNumic(vertexId)) {
       printChoice(
@@ -203,7 +203,7 @@ class VerticesProcessor(spark: SparkSession,
                       fieldKeys: List[String],
                       fieldTypeMap: Map[String, Int]): Vertex = {
     val index    = row.schema.fieldIndex(tagConfig.vertexField)
-    var vertexId = row.get(index).toString
+    var vertexId = row.get(index).toString.trim
     if (vertexId.equals(DEFAULT_EMPTY_VALUE)) {
       vertexId = ""
     }
@@ -231,7 +231,7 @@ class VerticesProcessor(spark: SparkSession,
     isVertexValid(row, tagConfig, false, vidType == VidType.STRING)
 
     val index: Int       = row.schema.fieldIndex(tagConfig.vertexField)
-    var vertexId: String = row.get(index).toString
+    var vertexId: String = row.get(index).toString.trim
     if (vertexId.equals(DEFAULT_EMPTY_VALUE)) {
       vertexId = ""
     }

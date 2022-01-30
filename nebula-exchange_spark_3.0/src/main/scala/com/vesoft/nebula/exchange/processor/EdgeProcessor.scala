@@ -211,7 +211,7 @@ class EdgeProcessor(spark: SparkSession,
       if (index < 0 || row.isNullAt(index)) {
         printChoice(streamFlag, s"rank must exist and cannot be null, your row data is $row")
       }
-      val ranking = row.get(index).toString
+      val ranking = row.get(index).toString.trim
       if (!NebulaUtils.isNumic(ranking)) {
         printChoice(streamFlag,
                     s"Not support non-Numeric type for ranking field.your row data is $row")
@@ -239,7 +239,7 @@ class EdgeProcessor(spark: SparkSession,
       if (index < 0 || row.isNullAt(index)) {
         printChoice(streamFlag, s"$fieldType must exist and cannot be null, your row data is $row")
         None
-      } else Some(row.get(index).toString)
+      } else Some(row.get(index).toString.trim)
     }
 
     val idFlag = fieldValue.isDefined
@@ -285,7 +285,7 @@ class EdgeProcessor(spark: SparkSession,
 
     if (edgeConfig.rankingField.isDefined) {
       val index   = row.schema.fieldIndex(edgeConfig.rankingField.get)
-      val ranking = row.get(index).toString
+      val ranking = row.get(index).toString.trim
       Edge(sourceField, targetField, Some(ranking.toLong), values)
     } else {
       Edge(sourceField, targetField, None, values)
@@ -306,7 +306,7 @@ class EdgeProcessor(spark: SparkSession,
       indexCells(lat, lng).mkString(",")
     } else {
       val index = row.schema.fieldIndex(field)
-      val value = row.get(index).toString
+      val value = row.get(index).toString.trim
       if (value.equals(DEFAULT_EMPTY_VALUE)) "" else value
     }
     // process string type vid
@@ -328,13 +328,13 @@ class EdgeProcessor(spark: SparkSession,
     isEdgeValid(row, edgeConfig, false, vidType == VidType.STRING)
 
     val srcIndex: Int = row.schema.fieldIndex(edgeConfig.sourceField)
-    var srcId: String = row.get(srcIndex).toString
+    var srcId: String = row.get(srcIndex).toString.trim
     if (srcId.equals(DEFAULT_EMPTY_VALUE)) {
       srcId = ""
     }
 
     val dstIndex: Int = row.schema.fieldIndex(edgeConfig.targetField)
-    var dstId: String = row.get(dstIndex).toString
+    var dstId: String = row.get(dstIndex).toString.trim
     if (dstId.equals(DEFAULT_EMPTY_VALUE)) {
       dstId = ""
     }
@@ -366,7 +366,7 @@ class EdgeProcessor(spark: SparkSession,
 
     val ranking: Long = if (edgeConfig.rankingField.isDefined) {
       val rankIndex = row.schema.fieldIndex(edgeConfig.rankingField.get)
-      row.get(rankIndex).toString.toLong
+      row.get(rankIndex).toString.trim.toLong
     } else {
       0
     }
