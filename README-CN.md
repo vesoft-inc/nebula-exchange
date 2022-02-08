@@ -62,7 +62,7 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 
 *5. Exchange 2.5.0 支持SST导入，但不支持属性的 default 值。*
 
-*6. 配置文件参考 [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf )。*
+*6. 配置文件参考 [application.conf](https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf)。*
 
 *7. Exchange 2.0 的导入命令：*
 ```
@@ -90,7 +90,7 @@ nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
 -c application.conf
 ```
 
-关于 Nebula Exchange 的更多说明，请参考 Exchange 2.0 的[使用手册](https://docs.nebula-graph.com.cn/2.0.1/nebula-exchange/about-exchange/ex-ug-what-is-exchange/) 。
+关于 Nebula Exchange 的更多说明，请参考 Exchange 2.0 的[使用手册](https://docs.nebula-graph.com.cn/2.6.2/nebula-exchange/about-exchange/ex-ug-what-is-exchange/) 。
 
 ## 贡献
 
