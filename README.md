@@ -64,7 +64,7 @@ nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
 -c application.conf
 ```
 
-For more details about Exchange, please refer to [Exchange 2.0](https://docs.nebula-graph.io/2.0.1/16.eco-tools/1.nebula-exchange/) .
+For more details about Exchange, please refer to [Exchange 2.0](https://docs.nebula-graph.io/2.6.2/16.eco-tools/1.nebula-exchange/) .
 
 ## Version match
 
