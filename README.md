@@ -92,4 +92,4 @@ There are the version correspondence between Nebula Exchange and Nebula:
 5. Supports SST import, but not support property's default value yet.
 6. Supports Spark 2.2, Spark 2.4 and Spark 3.0.
 
-Refer to [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf) as an example to edit the configuration file.
+Refer to [application.conf](https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf) as an example to edit the configuration file.
