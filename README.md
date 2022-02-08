@@ -64,7 +64,7 @@ nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
 -c application.conf
 ```
 
-For more details about Exchange, please refer to [Exchange 2.0](https://docs.nebula-graph.io/2.0.1/16.eco-tools/1.nebula-exchange/) .
+For more details about Exchange, please refer to [Exchange 2.0](https://docs.nebula-graph.io/2.6.2/16.eco-tools/1.nebula-exchange/) .
 
 ## Version match
 
@@ -92,4 +92,4 @@ There are the version correspondence between Nebula Exchange and Nebula:
 5. Supports SST import, but not support property's default value yet.
 6. Supports Spark 2.2, Spark 2.4 and Spark 3.0.
 
-Refer to [application.conf](https://github.com/vesoft-inc/nebula-exchange/tree/master/nebula-exchange/src/main/resources/application.conf) as an example to edit the configuration file.
+Refer to [application.conf](https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf) as an example to edit the configuration file.
