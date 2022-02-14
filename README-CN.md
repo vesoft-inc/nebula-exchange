@@ -1,9 +1,9 @@
-# 欢迎使用 Nebula Exchange 2.0         
+# 欢迎使用 Nebula Exchange       
 [English](https://github.com/vesoft-inc/nebula-exchange/blob/master/README.md)
 
-Nebula Exchange 2.0（简称为 Exchange 2.0）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到 Nebula Graph 中，能支持多种不同格式的批式数据和流式数据的迁移。
+Nebula Exchange（简称为 Exchange）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到 Nebula Graph 中，能支持多种不同格式的批式数据和流式数据的迁移。
 
-Exchange 2.0 仅支持 Nebula Graph 2.x。
+Exchange 2.0/3.0 仅支持 Nebula Graph 2.x/3.x。
 
 如果您正在使用 Nebula Graph v1.x，请使用 [Nebula Exchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange) ，或参考 Exchange 1.0 的使用文档[《Nebula Exchange 用户手册》](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
 
@@ -21,9 +21,9 @@ Exchange 目前支持 Spark 2.2， Spark 2.4， Spark 3.0， 对应的工具包�
     $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0 
     ```
 
-    编译打包完成后，可以在 nebula-exchange/nebula-exchange_spark_2.2/target/ 目录下看到 nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar 文件，
-    在 nebula-exchange/nebula-exchange_spark_2.4/target/ 目录下看到 nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar 文件，
-    在 nebula-exchange/nebula-exchange_spark_3.0/target/ 目录下看到 nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar 文件。
+    编译打包完成后，可以在 nebula-exchange/nebula-exchange_spark_2.2/target/ 目录下看到 nebula-exchange_spark_2.2-3.0.0.jar 文件，
+    在 nebula-exchange/nebula-exchange_spark_2.4/target/ 目录下看到 nebula-exchange_spark_2.4-3.0.0.jar 文件，
+    在 nebula-exchange/nebula-exchange_spark_3.0/target/ 目录下看到 nebula-exchange_spark_3.0-3.0.0.jar 文件。
 2. 在官网或 github 下载
     
     正式版本:
@@ -47,6 +47,7 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 |       2.6.0             |  2.6.0, 2.6.1  |
 |       2.6.1             |  2.6.0, 2.6.1  |
 |       2.6.2             |  2.6.0, 2.6.1  |
+|       3.0.0             |     3.0.0      |
 |     3.0-SNAPSHOT        |     nightly    |
 ## 使用说明
 
@@ -66,7 +67,7 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 
 *7. Exchange 2.0 的导入命令：*
 ```
-$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar -c /path/to/application.conf
+$SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange_spark_2.4-3.0.0.jar -c /path/to/application.conf
 ```
 如果数据源有HIVE，则导入命令最后还需要加 `-h` 表示启用HIVE数据源。
 
@@ -77,7 +78,7 @@ $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --files application.conf \
 --conf spark.driver.extraClassPath=./ \
 --conf spark.executor.extraClassPath=./ \
-nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
+nebula-exchange_spark_2.4-3.0.0.jar \
 -c application.conf
 ```
 
@@ -86,15 +87,15 @@ nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
 $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --master local \
 --conf spark.sql.shuffle.partitions=200 \
-nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
+nebula-exchange_spark_2.4-3.0.0.jar \
 -c application.conf
 ```
 
-关于 Nebula Exchange 的更多说明，请参考 Exchange 2.0 的[使用手册](https://docs.nebula-graph.com.cn/2.0.1/nebula-exchange/about-exchange/ex-ug-what-is-exchange/) 。
+关于 Nebula Exchange 的更多说明，请参考 Exchange 的[使用手册](https://docs.nebula-graph.com.cn/2.0.1/nebula-exchange/about-exchange/ex-ug-what-is-exchange/) 。
 
 ## 贡献
 
-Nebula Exchange 2.0 是一个完全开源的项目，欢迎开源爱好者通过以下方式参与：
+Nebula Exchange 是一个完全开源的项目，欢迎开源爱好者通过以下方式参与：
 
 - 前往 [Nebula Graph 论坛](https://discuss.nebula-graph.com.cn/ "点击前往“Nebula Graph 论坛") 上参与 Issue 讨论，如答疑、提供想法或者报告无法解决的问题
 - 撰写或改进文档
