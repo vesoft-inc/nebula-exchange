@@ -27,9 +27,13 @@ Exchange 目前支持 Spark 2.2， Spark 2.4， Spark 3.0， 对应的工具包�
 2. 在官网或 github 下载
     
     正式版本:
-    https://github.com/vesoft-inc/nebula-exchange/releases or https://nebula-graph.com.cn/release/?exchange
+    
+    https://github.com/vesoft-inc/nebula-exchange/releases 
+    或
+    https://nebula-graph.com.cn/release/?exchange
     
     快照版本: （进入页面点击任意workflow后，snapshot版本的jar包在Artifacts中，根据需求自行下载）
+    
     https://github.com/vesoft-inc/nebula-exchange/actions/workflows/deploy_snapshot.yml
     
 ## 版本匹配
@@ -47,6 +51,8 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 |       2.6.0             |  2.6.0, 2.6.1  |
 |       2.6.1             |  2.6.0, 2.6.1  |
 |       2.6.2             |  2.6.0, 2.6.1  |
+|       2.6.3             |  2.6.0, 2.6.1  |
+|       3.0.0             |     3.0.0      |
 |     3.0-SNAPSHOT        |     nightly    |
 ## 使用说明
 
