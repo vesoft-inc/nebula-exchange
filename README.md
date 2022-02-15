@@ -26,13 +26,12 @@ Exchange currently supports spark2.2, spark2.4 and spark3.0, and the correspondi
    
    **release version:**
    
-   `https://github.com/vesoft-inc/nebula-exchange/releases`
-   or
-   `https://nebula-graph.com.cn/release/?exchange`
+   https://github.com/vesoft-inc/nebula-exchange/releases
+   or https://nebula-graph.com.cn/release/?exchange
    
    **snapshot version:**
    
-   `https://github.com/vesoft-inc/nebula-exchange/actions/workflows/deploy_snapshot.yml`
+   https://github.com/vesoft-inc/nebula-exchange/actions/workflows/deploy_snapshot.yml
 ## How to use
 
 Import command:
@@ -81,6 +80,8 @@ There are the version correspondence between Nebula Exchange and Nebula:
 |       2.6.0             |  2.6.0, 2.6.1  |
 |       2.6.1             |  2.6.0, 2.6.1  |
 |       2.6.2             |  2.6.0, 2.6.1  |
+|       2.6.3             |  2.6.0, 2.6.1  |
+|       3.0.0             |     3.0.0      |
 |     3.0-SNAPSHOT        |     nightly    |
 
 ## New Features
