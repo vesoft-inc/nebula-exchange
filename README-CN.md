@@ -1,11 +1,11 @@
-# 欢迎使用 Nebula Exchange 2.0         
+# 欢迎使用 Nebula Exchange
 [English](https://github.com/vesoft-inc/nebula-exchange/blob/master/README.md)
 
-Nebula Exchange 2.0（简称为 Exchange 2.0）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到 Nebula Graph 中，能支持多种不同格式的批式数据和流式数据的迁移。
+Nebula Exchange（简称为 Exchange）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到 Nebula Graph 中，能支持多种不同格式的批式数据和流式数据的迁移。
 
-Exchange 2.0 仅支持 Nebula Graph 2.x。
+Exchange 仅支持 Nebula Graph 2.x 和 3.x。
 
-如果您正在使用 Nebula Graph v1.x，请使用 [Nebula Exchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange) ，或参考 Exchange 1.0 的使用文档[《Nebula Exchange 用户手册》](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
+如果您正在使用 Nebula Graph v1.x，请使用 [Nebula Exchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange) ，或参考 Exchange 1.0 的使用文档[Nebula Exchange 用户手册](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
 
 Exchange 目前支持 Spark 2.2， Spark 2.4， Spark 3.0， 对应的工具包名分别是 nebula-exchange_spark_2.2，nebula-exchange_spark_2.4，nebula-exchange_spark_3.0。
 
