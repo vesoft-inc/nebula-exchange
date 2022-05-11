@@ -91,6 +91,7 @@ class MySQLReader(override val session: SparkSession, mysqlConfig: MySQLSourceCo
       .option("dbtable", mysqlConfig.table)
       .option("user", mysqlConfig.user)
       .option("password", mysqlConfig.password)
+      .option("driver","com.mysql.jdbc.Driver")
       .load()
     if (sentence != null) {
       df.createOrReplaceTempView(mysqlConfig.table)
