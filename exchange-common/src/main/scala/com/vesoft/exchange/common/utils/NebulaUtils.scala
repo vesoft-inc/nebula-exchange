@@ -6,6 +6,8 @@
 package com.vesoft.exchange.common.utils
 
 import java.nio.charset.Charset
+import java.nio.ByteBuffer
+
 
 import com.google.common.primitives.UnsignedLong
 import com.vesoft.exchange.common.MetaProvider
@@ -89,7 +91,12 @@ object NebulaUtils {
     val hashValue: Long = if (vidType == VidType.STRING) {
       // todo charset must be the same with Nebula Space
       val byteId = id.getBytes(Charset.forName("UTF-8"))
-      MurmurHash2.hash64(byteId, byteId.length, 0xc70f6907)
+      if (byteId.length == 8) {
+        //byte array to long
+        ByteBuffer.wrap(byteId).getLong
+      } else {
+        MurmurHash2.hash64(byteId, byteId.length, 0xc70f6907)
+      }
     } else {
       id.toLong
     }
