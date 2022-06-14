@@ -96,11 +96,7 @@ object NebulaUtils {
       val byteId = id.getBytes(Charset.forName("UTF-8"))
       if (byteId.length == 8) {
         //byte array to long, need to take care of endianess
-        if (ByteOrder.nativeOrder()==ByteOrder.BIG_ENDIAN){
-          ByteBuffer.wrap(byteId).getLong
-        }else{
-          ByteBuffer.wrap(byteId.reverse).getLong
-        }
+        ByteBuffer.wrap(byteId).order(ByteOrder.nativeOrder).getLong
       } else {
         MurmurHash2.hash64(byteId, byteId.length, 0xc70f6907)
       }
