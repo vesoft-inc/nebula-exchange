@@ -7,6 +7,7 @@ package com.vesoft.exchange.common.utils
 
 import java.nio.charset.Charset
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 
 import com.google.common.primitives.UnsignedLong
@@ -87,13 +88,19 @@ object NebulaUtils {
     s
   }
 
+
+
   def getPartitionId(id: String, partitionSize: Int, vidType: VidType.Value): Int = {
     val hashValue: Long = if (vidType == VidType.STRING) {
       // todo charset must be the same with Nebula Space
       val byteId = id.getBytes(Charset.forName("UTF-8"))
       if (byteId.length == 8) {
-        //byte array to long
-        ByteBuffer.wrap(byteId).getLong
+        //byte array to long, need to take care of endianess
+        if (ByteOrder.nativeOrder()==ByteOrder.BIG_ENDIAN){
+          ByteBuffer.wrap(byteId).getLong
+        }else{
+          ByteBuffer.wrap(byteId.reverse).getLong
+        }
       } else {
         MurmurHash2.hash64(byteId, byteId.length, 0xc70f6907)
       }
