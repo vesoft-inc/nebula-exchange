@@ -57,7 +57,7 @@ object ErrorHandler {
 
     try {
       for (error <- buffer) {
-        errors.writeBytes(error)
+        errors.write(error.getBytes)
         errors.writeBytes("\n")
       }
     } finally {
