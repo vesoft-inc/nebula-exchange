@@ -26,7 +26,8 @@ object SourceCategory extends Enumeration {
   val HBASE       = Value("HBASE")
   val MAXCOMPUTE  = Value("MAXCOMPUTE")
   val CLICKHOUSE  = Value("CLICKHOUSE")
-  val POSTGRESQL    = Value("POSTGRESQL")
+  val POSTGRESQL  = Value("POSTGRESQL")
+  val ORACLE      = Value("ORACLE")
 
   val SOCKET = Value("SOCKET")
   val KAFKA  = Value("KAFKA")
@@ -159,17 +160,17 @@ case class MySQLSourceConfigEntry(override val category: SourceCategory.Value,
 }
 
 /**
- * PostgreSQLSourceConfigEntry
- *
- * @param category
- * @param host
- * @param port
- * @param database
- * @param table
- * @param user
- * @param password
- * @param sentence
- */
+  * PostgreSQLSourceConfigEntry
+  *
+  * @param category
+  * @param host
+  * @param port
+  * @param database
+  * @param table
+  * @param user
+  * @param password
+  * @param sentence
+  */
 case class PostgreSQLSourceConfigEntry(override val category: SourceCategory.Value,
                                        host: String,
                                        port: Int,
@@ -177,9 +178,8 @@ case class PostgreSQLSourceConfigEntry(override val category: SourceCategory.Val
                                        table: String,
                                        user: String,
                                        password: String,
-                                       override val sentence: String
-                                       )
-  extends ServerDataSourceConfigEntry {
+                                       override val sentence: String)
+    extends ServerDataSourceConfigEntry {
   require(
     host.trim.length != 0 && port > 0 && database.trim.length > 0 && table.trim.length > 0 && user.trim.length > 0)
 
@@ -294,5 +294,21 @@ case class ClickHouseConfigEntry(override val category: SourceCategory.Value,
     extends ServerDataSourceConfigEntry {
   override def toString: String = {
     s"ClickHouse source {url:$url, user:$user, passwd:$passwd, numPartition:$numPartition, table:$table, sentence:$sentence}"
+  }
+}
+
+/**
+  * OracleConfigEntry
+  */
+case class OracleConfigEntry(override val category: SourceCategory.Value,
+                             url: String,
+                             driver: String,
+                             user: String,
+                             passwd: String,
+                             table: String,
+                             override val sentence: String)
+    extends ServerDataSourceConfigEntry {
+  override def toString: String = {
+    s"Oracle source {url:$url, driver:$driver, user:$user, passwd:$passwd, table:$table, sentence:$sentence}"
   }
 }
