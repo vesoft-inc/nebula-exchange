@@ -572,6 +572,7 @@ object Configs {
       case "MAXCOMPUTE" => SourceCategory.MAXCOMPUTE
       case "CLICKHOUSE" => SourceCategory.CLICKHOUSE
       case "POSTGRESQL" => SourceCategory.POSTGRESQL
+      case "ORACLE"     => SourceCategory.ORACLE
       case _            => throw new IllegalArgumentException(s"${category} not support")
     }
   }
@@ -669,6 +670,16 @@ object Configs {
           config.getString("table"),
           config.getString("user"),
           config.getString("password"),
+          getOrElse(config, "sentence", null)
+        )
+      case SourceCategory.ORACLE =>
+        OracleConfigEntry(
+          SourceCategory.ORACLE,
+          config.getString("url"),
+          config.getString("driver"),
+          config.getString("user"),
+          config.getString("passwd"),
+          config.getString("table"),
           getOrElse(config, "sentence", null)
         )
       case SourceCategory.KAFKA =>
