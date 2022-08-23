@@ -160,6 +160,11 @@ class NebulaUtilsSuite {
     assert(NebulaUtils.getPartitionId("蒙DPP8EC", 10, VidType.STRING) == 4)
     assert(NebulaUtils.getPartitionId("赣F6893_Vehicle", 10, VidType.STRING) == 2)
     assert(NebulaUtils.getPartitionId("湘3Z4A1E_vehicle", 10, VidType.STRING) == 1)
+
+    // for string with length 8 byte
+    assert(NebulaUtils.getPartitionId("abcdefgh", 10, VidType.STRING) == 10)
+    assert(NebulaUtils.getPartitionId("上下左右前后测试", 10, VidType.STRING) == 7)
+    assert(NebulaUtils.getPartitionId("0123456789", 10, VidType.STRING) == 8)
   }
 
   @Test
