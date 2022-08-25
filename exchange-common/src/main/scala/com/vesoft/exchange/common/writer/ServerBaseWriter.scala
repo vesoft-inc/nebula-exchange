@@ -54,7 +54,6 @@ abstract class ServerBaseWriter extends Writer {
     )
   }
 
-  //todo add ut, modify " to ` for edge id
   def toExecuteSentence(name: String, edges: Edges): String = {
     val values = edges.values
       .map { edge =>
