@@ -9,7 +9,6 @@ import java.nio.charset.Charset
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-
 import com.google.common.primitives.UnsignedLong
 import com.vesoft.exchange.common.MetaProvider
 import com.vesoft.exchange.common.VidType
@@ -46,7 +45,12 @@ object NebulaUtils {
 
     val sourceSchemaMap: mutable.Map[String, Int] = mutable.HashMap[String, Int]()
     for (i <- nebulaFields.indices) {
-      sourceSchemaMap.put(sourceFields.get(i), nebulaSchemaMap(nebulaFields.get(i)))
+      val nebulaField = nebulaFields.get(i)
+      if (!nebulaSchemaMap.contains(nebulaField)) {
+        throw new IllegalArgumentException(
+          s"property name $nebulaField is not defined in NebulaGraph")
+      }
+      sourceSchemaMap.put(sourceFields.get(i), nebulaSchemaMap(nebulaField))
     }
     sourceSchemaMap.toMap
   }
@@ -87,8 +91,6 @@ object NebulaUtils {
     }
     s
   }
-
-
 
   def getPartitionId(id: String, partitionSize: Int, vidType: VidType.Value): Int = {
     val hashValue: Long = if (vidType == VidType.STRING) {
