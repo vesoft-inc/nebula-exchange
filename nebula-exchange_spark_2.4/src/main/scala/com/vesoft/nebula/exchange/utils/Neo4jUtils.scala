@@ -18,7 +18,7 @@ object Neo4jUtils {
         value.asString()
       }
       case "INTEGER" => {
-        value.asInt().toString
+        value.asLong().toString
       }
       case "FLOAT" | "DOUBLE" => {
         value.asDouble().toString
