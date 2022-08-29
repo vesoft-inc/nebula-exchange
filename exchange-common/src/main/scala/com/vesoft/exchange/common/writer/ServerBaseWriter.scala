@@ -57,39 +57,35 @@ abstract class ServerBaseWriter extends Writer {
   def toExecuteSentence(name: String, edges: Edges): String = {
     val values = edges.values
       .map { edge =>
-        (for (element <- edge.source.split(","))
-          yield {
-            val source = edges.sourcePolicy match {
-              case Some(KeyPolicy.HASH) =>
-                ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, element)
-              case Some(KeyPolicy.UUID) =>
-                ENDPOINT_TEMPLATE.format(KeyPolicy.UUID.toString, element)
-              case None =>
-                element
-              case _ =>
-                throw new IllegalArgumentException(
-                  s"invalidate source policy ${edges.sourcePolicy.get}")
-            }
+        val source = edges.sourcePolicy match {
+          case Some(KeyPolicy.HASH) =>
+            ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.source)
+          case Some(KeyPolicy.UUID) =>
+            ENDPOINT_TEMPLATE.format(KeyPolicy.UUID.toString, edge.source)
+          case None =>
+            edge.source
+          case _ =>
+            throw new IllegalArgumentException(
+              s"invalidate source policy ${edges.sourcePolicy.get}")
+        }
 
-            val target = edges.targetPolicy match {
-              case Some(KeyPolicy.HASH) =>
-                ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.destination)
-              case Some(KeyPolicy.UUID) =>
-                ENDPOINT_TEMPLATE.format(KeyPolicy.UUID.toString, edge.destination)
-              case None =>
-                edge.destination
-              case _ =>
-                throw new IllegalArgumentException(
-                  s"invalidate target policy ${edges.targetPolicy.get}")
-            }
+        val target = edges.targetPolicy match {
+          case Some(KeyPolicy.HASH) =>
+            ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.destination)
+          case Some(KeyPolicy.UUID) =>
+            ENDPOINT_TEMPLATE.format(KeyPolicy.UUID.toString, edge.destination)
+          case None =>
+            edge.destination
+          case _ =>
+            throw new IllegalArgumentException(
+              s"invalidate target policy ${edges.targetPolicy.get}")
+        }
 
-            if (edge.ranking.isEmpty)
-              EDGE_VALUE_WITHOUT_RANKING_TEMPLATE
-                .format(source, target, edge.propertyValues)
-            else
-              EDGE_VALUE_TEMPLATE.format(source, target, edge.ranking.get, edge.propertyValues)
-          }).mkString(", ")
-
+        if (edge.ranking.isEmpty)
+          EDGE_VALUE_WITHOUT_RANKING_TEMPLATE
+            .format(source, target, edge.propertyValues)
+        else
+          EDGE_VALUE_TEMPLATE.format(source, target, edge.ranking.get, edge.propertyValues)
       }
       .mkString(", ")
     BATCH_INSERT_TEMPLATE.format(Type.EDGE.toString, name, edges.propertyNames, values)
