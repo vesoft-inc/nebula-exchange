@@ -28,6 +28,7 @@ object SourceCategory extends Enumeration {
   val CLICKHOUSE  = Value("CLICKHOUSE")
   val POSTGRESQL  = Value("POSTGRESQL")
   val ORACLE      = Value("ORACLE")
+  val JDBC        = Value("JDBC")
 
   val SOCKET = Value("SOCKET")
   val KAFKA  = Value("KAFKA")
@@ -310,5 +311,36 @@ case class OracleConfigEntry(override val category: SourceCategory.Value,
     extends ServerDataSourceConfigEntry {
   override def toString: String = {
     s"Oracle source {url:$url, driver:$driver, user:$user, passwd:$passwd, table:$table, sentence:$sentence}"
+  }
+}
+
+/**
+  * JdbcConfigEntry
+  *
+  * @param url JDBC database url of the form `jdbc:subprotocol:subname`.
+  * @param table Name of the table in the external database.
+  * @param partitionColumn the name of a column of integral type that will be used for partitioning.
+  * @param lowerBound the minimum value of `columnName` used to decide partition stride.
+  * @param upperBound the maximum value of `columnName` used to decide partition stride.
+  * @param numPartitions the number of partitions. This, along with `lowerBound` (inclusive),
+  *                      `upperBound` (exclusive), form partition strides for generated WHERE
+  *                 clause expressions used to split the column `columnName` evenly. When
+  *                  the input is less than 1, the number is set to 1.
+  */
+case class JdbcConfigEntry(override val category: SourceCategory.Value,
+                           url: String,
+                           driver: String,
+                           user: String,
+                           passwd: String,
+                           table: String,
+                           partitionColumn: Option[String] = None,
+                           lowerBound: Option[Long] = None,
+                           upperBound: Option[Long] = None,
+                           numPartitions: Option[Long] = None,
+                           fetchSize: Option[Long] = None,
+                           override val sentence: String)
+    extends ServerDataSourceConfigEntry {
+  override def toString: String = {
+    s"Jdbc source {url:$url, driver:$driver, user:$user, passwd:$passwd, table:$table, sentence:$sentence}"
   }
 }

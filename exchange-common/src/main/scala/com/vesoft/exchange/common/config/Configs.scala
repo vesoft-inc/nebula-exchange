@@ -573,6 +573,7 @@ object Configs {
       case "CLICKHOUSE" => SourceCategory.CLICKHOUSE
       case "POSTGRESQL" => SourceCategory.POSTGRESQL
       case "ORACLE"     => SourceCategory.ORACLE
+      case "JDBC"       => SourceCategory.JDBC
       case _            => throw new IllegalArgumentException(s"${category} not support")
     }
   }
@@ -680,6 +681,46 @@ object Configs {
           config.getString("user"),
           config.getString("passwd"),
           config.getString("table"),
+          getOrElse(config, "sentence", null)
+        )
+      case SourceCategory.JDBC =>
+        val partitionColumn =
+          if (config.hasPath("partitionColumn"))
+            Some(config.getString("partitionColumn"))
+          else None
+
+        val lowerBound =
+          if (config.hasPath("lowerBound"))
+            Some(config.getLong("lowerBound"))
+          else None
+
+        val upperBound =
+          if (config.hasPath("upperBound"))
+            Some(config.getLong("upperBound"))
+          else None
+
+        val numPartitions =
+          if (config.hasPath("numPartitions"))
+            Some(config.getLong("numPartitions"))
+          else None
+
+        val fetchSize =
+          if (config.hasPath("fetchSize"))
+            Some(config.getLong("fetchSize"))
+          else None
+
+        JdbcConfigEntry(
+          SourceCategory.JDBC,
+          config.getString("url"),
+          config.getString("driver"),
+          config.getString("user"),
+          config.getString("password"),
+          config.getString("table"),
+          partitionColumn,
+          lowerBound,
+          upperBound,
+          numPartitions,
+          fetchSize,
           getOrElse(config, "sentence", null)
         )
       case SourceCategory.KAFKA =>

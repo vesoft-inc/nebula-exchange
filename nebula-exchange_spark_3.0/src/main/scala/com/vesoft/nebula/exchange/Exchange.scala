@@ -7,6 +7,7 @@ package com.vesoft.nebula.exchange
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import java.io.File
+
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.{CheckPointHandler, ErrorHandler}
 import com.vesoft.exchange.common.config.{
@@ -17,6 +18,7 @@ import com.vesoft.exchange.common.config.{
   HBaseSourceConfigEntry,
   HiveSourceConfigEntry,
   JanusGraphSourceConfigEntry,
+  JdbcConfigEntry,
   KafkaSourceConfigEntry,
   MaxComputeConfigEntry,
   MySQLSourceConfigEntry,
@@ -34,12 +36,13 @@ import com.vesoft.nebula.exchange.reader.{
   HiveReader,
   JSONReader,
   JanusGraphReader,
+  JdbcReader,
   KafkaReader,
   MaxcomputeReader,
   MySQLReader,
   Neo4JReader,
-  OracleReader,
   ORCReader,
+  OracleReader,
   ParquetReader,
   PostgreSQLReader,
   PulsarReader
@@ -318,6 +321,11 @@ object Exchange {
       case SourceCategory.ORACLE => {
         val oracleConfig = config.asInstanceOf[OracleConfigEntry]
         val reader       = new OracleReader(session, oracleConfig)
+        Some(reader.read())
+      }
+      case SourceCategory.JDBC => {
+        val jdbcConfig = config.asInstanceOf[JdbcConfigEntry]
+        val reader     = new JdbcReader(session, jdbcConfig)
         Some(reader.read())
       }
       case _ => {

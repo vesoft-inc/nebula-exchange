@@ -11,6 +11,7 @@ import com.vesoft.exchange.common.config.{
   HBaseSourceConfigEntry,
   HiveSourceConfigEntry,
   JanusGraphSourceConfigEntry,
+  JdbcConfigEntry,
   MaxComputeConfigEntry,
   MySQLSourceConfigEntry,
   Neo4JSourceConfigEntry,
@@ -369,6 +370,50 @@ class OracleReader(override val session: SparkSession, oracleConfig: OracleConfi
       val tableName = if (oracleConfig.table.contains(".")) {
         oracleConfig.table.split("\\.")(1)
       } else oracleConfig.table
+      df.createOrReplaceTempView(tableName)
+      df = session.sql(sentence)
+    }
+    df
+  }
+}
+
+/**
+  * Jdbc reader
+  */
+class JdbcReader(override val session: SparkSession, jdbcConfig: JdbcConfigEntry)
+    extends ServerBaseReader(session, jdbcConfig.sentence) {
+  Class.forName(jdbcConfig.driver)
+  override def read(): DataFrame = {
+    var dfReader = session.read
+      .format("jdbc")
+      .option("url", jdbcConfig.url)
+      .option("dbtable", jdbcConfig.table)
+      .option("user", jdbcConfig.user)
+      .option("password", jdbcConfig.passwd)
+      .option("driver", jdbcConfig.driver)
+
+    if (jdbcConfig.partitionColumn.isDefined) {
+      dfReader.option("partitionColumn", jdbcConfig.partitionColumn.get)
+    }
+    if (jdbcConfig.numPartitions.isDefined) {
+      dfReader.option("numPartitions", jdbcConfig.numPartitions.get)
+    }
+    if (jdbcConfig.lowerBound.isDefined) {
+      dfReader.option("lowerBound", jdbcConfig.lowerBound.get)
+    }
+    if (jdbcConfig.upperBound.isDefined) {
+      dfReader.option("upperBound", jdbcConfig.upperBound.get)
+    }
+    if (jdbcConfig.fetchSize.isDefined) {
+      dfReader.option("fetchsize", jdbcConfig.fetchSize.get)
+    }
+
+    var df = dfReader.load()
+
+    if (jdbcConfig.sentence != null) {
+      val tableName = if (jdbcConfig.table.contains(".")) {
+        jdbcConfig.table.split("\\.")(1)
+      } else jdbcConfig.table
       df.createOrReplaceTempView(tableName)
       df = session.sql(sentence)
     }
