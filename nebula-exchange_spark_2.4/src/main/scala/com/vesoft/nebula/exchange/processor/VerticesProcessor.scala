@@ -121,7 +121,6 @@ class VerticesProcessor(spark: SparkSession,
 
       val spaceVidLen = metaProvider.getSpaceVidLen(space)
       val tagItem     = metaProvider.getTagItem(space, tagName)
-      val emptyValue  = ByteBuffer.allocate(0).array()
 
       var sstKeyValueData = data
         .dropDuplicates(tagConfig.vertexField)
@@ -129,10 +128,7 @@ class VerticesProcessor(spark: SparkSession,
           iter.map { row =>
             encodeVertex(row, partitionNum, vidType, spaceVidLen, tagItem, fieldTypeMap)
           }
-        }(Encoders.tuple(Encoders.BINARY, Encoders.BINARY, Encoders.BINARY))
-        .flatMap(line => {
-          List((line._1, emptyValue), (line._2, line._3))
-        })(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
+        }(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
 
       // repartition dataframe according to nebula part, to make sure sst files for one part has no overlap
       if (tagConfig.repartitionWithNebula) {
@@ -245,7 +241,7 @@ class VerticesProcessor(spark: SparkSession,
                    vidType: VidType.Value,
                    spaceVidLen: Int,
                    tagItem: TagItem,
-                   fieldTypeMap: Map[String, Int]): (Array[Byte], Array[Byte], Array[Byte]) = {
+                   fieldTypeMap: Map[String, Int]): (Array[Byte], Array[Byte]) = {
     // check if vertex id is valid, if not, throw AssertException
     isVertexValid(row, tagConfig, false, vidType == VidType.STRING)
 
@@ -279,15 +275,14 @@ class VerticesProcessor(spark: SparkSession,
     } else {
       vertexId.getBytes()
     }
-    val codec           = new NebulaCodecImpl()
-    val vertexKey       = codec.vertexKey(spaceVidLen, partitionId, vidBytes, tagItem.getTag_id)
-    val orphanVertexKey = codec.orphanVertexKey(spaceVidLen, partitionId, vidBytes)
+    val codec     = new NebulaCodecImpl()
+    val vertexKey = codec.vertexKey(spaceVidLen, partitionId, vidBytes, tagItem.getTag_id)
     val values = for {
       property <- fieldKeys if property.trim.length != 0
     } yield
       extraValueForSST(row, property, fieldTypeMap)
         .asInstanceOf[AnyRef]
     val vertexValue = codec.encodeTag(tagItem, nebulaKeys.asJava, values.asJava)
-    (orphanVertexKey, vertexKey, vertexValue)
+    (vertexKey, vertexValue)
   }
 }

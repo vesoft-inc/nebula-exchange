@@ -138,14 +138,12 @@ class VerticesProcessorSuite {
     val tagItem = new TagItem(1, "person".getBytes(), -1, schema)
     val map     = getFieldType()
 
-    val (orphanKey, key, value) =
+    val (key, value) =
       processClazz.encodeVertex(row, 10, VidType.STRING, 10, tagItem, map)
 
-    val keyHex       = Hex.encodeHexString(key)
-    val orphanKeyHex = Hex.encodeHexString(orphanKey)
-    val valueHex     = Hex.encodeHexString(value)
+    val keyHex   = Hex.encodeHexString(key)
+    val valueHex = Hex.encodeHexString(value)
     assert(keyHex.equals("010600003100000000000000000001000000"))
-    assert(orphanKeyHex.equals("0706000031000000000000000000"))
   }
 
   private def getRow(): Row = {
