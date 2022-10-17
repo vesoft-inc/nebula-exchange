@@ -121,13 +121,31 @@ class VerticesProcessor(spark: SparkSession,
       val tagItem     = metaProvider.getTagItem(space, tagName)
       val emptyValue  = ByteBuffer.allocate(0).array()
 
-      var sstKeyValueData = data
-        .dropDuplicates(tagConfig.vertexField)
-        .mapPartitions { iter =>
-          iter.map { row =>
-            encodeVertex(row, partitionNum, vidType, spaceVidLen, tagItem, fieldTypeMap)
-          }
-        }(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
+      var sstKeyValueData = if (tagConfig.enableTagless) {
+        data
+          .dropDuplicates(tagConfig.vertexField)
+          .mapPartitions { iter =>
+            iter.map { row =>
+              encodeVertexForTageless(row,
+                                      partitionNum,
+                                      vidType,
+                                      spaceVidLen,
+                                      tagItem,
+                                      fieldTypeMap)
+            }
+          }(Encoders.tuple(Encoders.BINARY, Encoders.BINARY, Encoders.BINARY))
+          .flatMap(line => {
+            List((line._1, emptyValue), (line._2, line._3))
+          })(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
+      } else {
+        data
+          .dropDuplicates(tagConfig.vertexField)
+          .mapPartitions { iter =>
+            iter.map { row =>
+              encodeVertex(row, partitionNum, vidType, spaceVidLen, tagItem, fieldTypeMap)
+            }
+          }(Encoders.tuple(Encoders.BINARY, Encoders.BINARY))
+      }
 
       // repartition dataframe according to nebula part, to make sure sst files for one part has no overlap
       if (tagConfig.repartitionWithNebula) {
@@ -224,6 +242,34 @@ class VerticesProcessor(spark: SparkSession,
                    spaceVidLen: Int,
                    tagItem: TagItem,
                    fieldTypeMap: Map[String, Int]): (Array[Byte], Array[Byte]) = {
+    val (orphanVertexKey, vertexKey, vertexValue) =
+      getVertexKeyValue(row, partitionNum, vidType, spaceVidLen, tagItem, fieldTypeMap)
+    (vertexKey, vertexValue)
+  }
+
+  /**
+    * encode vertex for tagless
+    */
+  def encodeVertexForTageless(
+      row: Row,
+      partitionNum: Int,
+      vidType: VidType.Value,
+      spaceVidLen: Int,
+      tagItem: TagItem,
+      fieldTypeMap: Map[String, Int]): (Array[Byte], Array[Byte], Array[Byte]) = {
+    getVertexKeyValue(row, partitionNum, vidType, spaceVidLen, tagItem, fieldTypeMap)
+  }
+
+  /**
+    *encode vertex for tagless vertex key, vertex key with tag, vertex value
+    */
+  private def getVertexKeyValue(
+      row: Row,
+      partitionNum: Int,
+      vidType: VidType.Value,
+      spaceVidLen: Int,
+      tagItem: TagItem,
+      fieldTypeMap: Map[String, Int]): (Array[Byte], Array[Byte], Array[Byte]) = {
     // check if vertex id is valid, if not, throw AssertException
     isVertexValid(row, tagConfig, false, vidType == VidType.STRING)
 
@@ -259,12 +305,14 @@ class VerticesProcessor(spark: SparkSession,
     }
     val codec     = new NebulaCodecImpl()
     val vertexKey = codec.vertexKey(spaceVidLen, partitionId, vidBytes, tagItem.getTag_id)
+
     val values = for {
       property <- fieldKeys if property.trim.length != 0
     } yield
       extraValueForSST(row, property, fieldTypeMap)
         .asInstanceOf[AnyRef]
-    val vertexValue = codec.encodeTag(tagItem, nebulaKeys.asJava, values.asJava)
-    (vertexKey, vertexValue)
+    val vertexValue     = codec.encodeTag(tagItem, nebulaKeys.asJava, values.asJava)
+    val orphanVertexKey = codec.orphanVertexKey(spaceVidLen, partitionId, vidBytes)
+    (orphanVertexKey, vertexKey, vertexValue)
   }
 }

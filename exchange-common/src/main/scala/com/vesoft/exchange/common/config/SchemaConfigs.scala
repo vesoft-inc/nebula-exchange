@@ -60,7 +60,8 @@ case class TagConfigEntry(override val name: String,
                           override val batch: Int,
                           override val partition: Int,
                           override val checkPointPath: Option[String],
-                          repartitionWithNebula: Boolean = false)
+                          repartitionWithNebula: Boolean = false,
+                          enableTagless: Boolean = false)
     extends SchemaConfigEntry {
   require(name.trim.nonEmpty && vertexField.trim.nonEmpty && batch > 0)
 

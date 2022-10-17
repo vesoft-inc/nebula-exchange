@@ -267,6 +267,7 @@ object Configs {
 
     val space         = nebulaConfig.getString("space")
     val databaseEntry = DataBaseConfigEntry(addresses, space, metaAddresses)
+    val enableTagless = getOrElse(nebulaConfig, "enableTagless", false)
     LOG.info(s"DataBase Config ${databaseEntry}")
 
     val user      = nebulaConfig.getString("user")
@@ -409,7 +410,8 @@ object Configs {
                                    batch,
                                    partition,
                                    checkPointPath,
-                                   repartitionWithNebula)
+                                   repartitionWithNebula,
+                                   enableTagless)
         LOG.info(s"Tag Config: ${entry}")
         tags += entry
       }
