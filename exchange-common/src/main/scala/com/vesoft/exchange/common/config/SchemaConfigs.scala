@@ -72,7 +72,9 @@ case class TagConfigEntry(override val name: String,
       s"vertex field: $vertexField, " +
       s"vertex policy: $vertexPolicy, " +
       s"batch: $batch, " +
-      s"partition: $partition."
+      s"partition: $partition, " +
+      s"repartitionWithNebula: $repartitionWithNebula, " +
+      s"enableTagless: $enableTagless."
   }
 }
 
