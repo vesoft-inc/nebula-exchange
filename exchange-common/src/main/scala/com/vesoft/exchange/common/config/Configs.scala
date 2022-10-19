@@ -397,7 +397,7 @@ object Configs {
         val remotePath = getOptOrElse(tagConfig, "remote.path")
 
         val partition             = getOrElse(tagConfig, "partition", DEFAULT_PARTITION)
-        val repartitionWithNebula = getOrElse(tagConfig, "repartitionWithNebula", false)
+        val repartitionWithNebula = getOrElse(tagConfig, "repartitionWithNebula", true)
 
         LOG.info(s"name ${tagName}  batch ${batch}")
         val entry = TagConfigEntry(tagName,
