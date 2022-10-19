@@ -71,6 +71,7 @@ class GenerateSstFile extends Serializable {
     val taskID                  = TaskContext.get().taskAttemptId()
     var writer: NebulaSSTWriter = null
     var currentPart             = -1
+    var currentPrefix           = -1
     val localPath               = fileBaseConfig.localPath
     val remotePath              = fileBaseConfig.remotePath
     try {
@@ -84,18 +85,22 @@ class GenerateSstFile extends Serializable {
         if (part <= 0) {
           part = part + partitionNum
         }
+        // extract the prefix value for vertex key, there's two values
+        // 1: vertex key with tag, 7: vertex key without tag
+        val prefix: Int = ByteBuffer.wrap(key, 0, 1).get
 
-        if (part != currentPart) {
+        if (part != currentPart || prefix != currentPrefix) {
           if (writer != null) {
             writer.close()
-            val localFile = s"$localPath/$currentPart-$taskID.sst"
+            val localFile = s"$localPath/$currentPart-$taskID-$currentPrefix.sst"
             HDFSUtils.upload(localFile,
-                             s"$remotePath/${currentPart}/$currentPart-$taskID.sst",
+                             s"$remotePath/${currentPart}/$currentPart-$taskID-$currentPrefix.sst",
                              namenode)
             Files.delete(Paths.get(localFile))
           }
           currentPart = part
-          val tmp = s"$localPath/$currentPart-$taskID.sst"
+          currentPrefix = prefix
+          val tmp = s"$localPath/$currentPart-$taskID-$currentPrefix.sst"
           writer = new NebulaSSTWriter(tmp)
           writer.prepare()
         }
@@ -109,9 +114,9 @@ class GenerateSstFile extends Serializable {
     } finally {
       if (writer != null) {
         writer.close()
-        val localFile = s"$localPath/$currentPart-$taskID.sst"
+        val localFile = s"$localPath/$currentPart-$taskID-$currentPrefix.sst"
         HDFSUtils.upload(localFile,
-                         s"$remotePath/${currentPart}/$currentPart-$taskID.sst",
+                         s"$remotePath/${currentPart}/$currentPart-$taskID-$currentPrefix.sst",
                          namenode)
         Files.delete(Paths.get(localFile))
       }
