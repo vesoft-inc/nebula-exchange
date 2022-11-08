@@ -36,7 +36,7 @@ class VerticesProcessorSuite {
   private[this] lazy val LOG = Logger.getLogger(this.getClass)
 
   val config: Configs =
-    Configs.parse(new File("../exchange-common/src/test/resources/process_application.conf"))
+    Configs.parse("../exchange-common/src/test/resources/process_application.conf")
 
   var data: DataFrame           = null
   var tagConfig: TagConfigEntry = config.tagsConfig.head
