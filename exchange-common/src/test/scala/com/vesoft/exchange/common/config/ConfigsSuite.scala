@@ -42,7 +42,7 @@ class ConfigsSuite {
     assert(c.hive)
     assert(c.directly)
 
-    val configs             = Configs.parse(new File(c.config))
+    val configs             = Configs.parse(c.config)
     val dataBaseConfigEntry = configs.databaseConfig
     val userConfig          = configs.userConfig
     val connectionConfig    = configs.connectionConfig

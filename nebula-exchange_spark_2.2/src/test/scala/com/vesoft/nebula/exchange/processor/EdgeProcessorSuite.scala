@@ -33,7 +33,7 @@ import scala.collection.JavaConverters._
 
 class EdgeProcessorSuite {
   val config: Configs =
-    Configs.parse(new File("../exchange-common/src/test/resources/process_application.conf"))
+    Configs.parse("../exchange-common/src/test/resources/process_application.conf")
 
   var data: DataFrame             = null
   var edgeConfig: EdgeConfigEntry = config.edgesConfig.head

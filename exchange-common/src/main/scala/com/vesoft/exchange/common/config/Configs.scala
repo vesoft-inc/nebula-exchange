@@ -5,13 +5,15 @@
 
 package com.vesoft.exchange.common.config
 
-import java.io.File
+import java.io.{File, InputStreamReader}
 import java.nio.file.Files
 
 import com.google.common.net.HostAndPort
 import com.typesafe.config.{Config, ConfigFactory}
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.KeyPolicy
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.log4j.Logger
 
 import scala.collection.mutable
@@ -255,12 +257,21 @@ object Configs {
     * @param configPath
     * @return
     */
-  def parse(configPath: File): Configs = {
-    if (!Files.exists(configPath.toPath)) {
-      throw new IllegalArgumentException(s"${configPath} not exist")
+  def parse(configPath: String): Configs = {
+    var config: Config = null
+    if (configPath.startsWith("hdfs://")) {
+      val hadoopConfig: Configuration = new Configuration()
+      val fs: FileSystem              = org.apache.hadoop.fs.FileSystem.get(hadoopConfig)
+      val file: FSDataInputStream     = fs.open(new Path(configPath))
+      val reader                      = new InputStreamReader(file)
+      config = ConfigFactory.parseReader(reader)
+    } else {
+      if (!Files.exists(new File(configPath).toPath)) {
+        throw new IllegalArgumentException(s"${configPath} not exist")
+      }
+      config = ConfigFactory.parseFile(new File(configPath))
     }
 
-    val config        = ConfigFactory.parseFile(configPath)
     val nebulaConfig  = config.getConfig("nebula")
     val addresses     = nebulaConfig.getStringList("address.graph").asScala.toList
     val metaAddresses = nebulaConfig.getStringList("address.meta").asScala.toList
