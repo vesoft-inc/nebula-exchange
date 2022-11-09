@@ -48,6 +48,7 @@ import com.vesoft.nebula.exchange.reader.{
   PulsarReader
 }
 import com.vesoft.exchange.common.processor.ReloadProcessor
+import com.vesoft.exchange.common.utils.SparkValidate
 import com.vesoft.nebula.exchange.processor.{EdgeProcessor, VerticesProcessor}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkConf
@@ -108,6 +109,8 @@ object Exchange {
     }
 
     val spark = session.getOrCreate()
+    // check the spark version
+    SparkValidate.validate(spark.version, "3.0.*", "3.1.*", "3.2.*", "3.3.*")
 
     // reload for failed import tasks
     if (!c.reload.isEmpty) {
