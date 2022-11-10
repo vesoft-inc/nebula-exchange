@@ -40,21 +40,28 @@ Exchange 目前支持 Spark 2.2， Spark 2.4， Spark 3.0， 对应的工具包�
 
 Nebula Exchange 和 Nebula 的版本对应关系如下:
 
-| Nebula Exchange Version | Nebula Version |
-|:-----------------------:|:--------------:|
-|       2.0.0             |  2.0.0, 2.0.1  |
-|       2.0.1             |  2.0.0, 2.0.1  |
-|       2.1.0             |  2.0.0, 2.0.1  |
-|       2.5.0             |  2.5.0, 2.5.1  |
-|       2.5.1             |  2.5.0, 2.5.1  |
-|       2.5.2             |  2.5.0, 2.5.1  |
-|       2.6.0             |  2.6.0, 2.6.1  |
-|       2.6.1             |  2.6.0, 2.6.1  |
-|       2.6.2             |  2.6.0, 2.6.1  |
-|       2.6.3             |  2.6.0, 2.6.1  |
-|       3.0.0             |  3.0.x, 3.1.x, 3.2.x, 3.3.x  |
-|       3.3.0             |  3.0.x, 3.1.x, 3.2.x, 3.3.x  |
-|     3.0-SNAPSHOT        |     nightly    |
+| Nebula Exchange Version | Nebula Version | Spark Version |
+|:-----------------------:|:--------------:|:--------------:|
+|nebula-exchange-2.0.0.jar|  2.0.0, 2.0.1  |2.4.*|
+|nebula-exchange-2.0.1.jar|  2.0.0, 2.0.1  |2.4.*|
+|nebula-exchange-2.1.0.jar|  2.0.0, 2.0.1  |2.4.*|
+|nebula-exchange-2.5.0.jar|  2.5.0, 2.5.1  |2.4.*|
+|nebula-exchange-2.5.1.jar|  2.5.0, 2.5.1  |2.4.*|
+|nebula-exchange-2.5.2.jar|  2.5.0, 2.5.1  |2.4.*|
+|nebula-exchange-2.6.0.jar|  2.6.0, 2.6.1  |2.4.*|
+|nebula-exchange-2.6.1.jar|  2.6.0, 2.6.1  |2.4.*|
+|nebula-exchange-2.6.2.jar|  2.6.0, 2.6.1  |2.4.*|
+|nebula-exchange-2.6.3.jar|  2.6.0, 2.6.1  |2.4.*|
+|nebula-exchange_spark_2.2-3.0.0.jar|  3.x.x  |2.2.*|
+|nebula-exchange_spark_2.4-3.0.0.jar|  3.x.x  |2.4.*|
+|nebula-exchange_spark_3.0-3.0.0.jar|  3.x.x  |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
+|nebula-exchange_spark_2.2-3.3.0.jar|  3.x.x  |2.2.*|
+|nebula-exchange_spark_2.4-3.3.0.jar|  3.x.x  |2.4.*|
+|nebula-exchange_spark_3.0-3.3.0.jar|  3.x.x  |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
+|nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar|     nightly    |2.2.*|
+|nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar|     nightly    |2.4.*|
+|nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar|     nightly    |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
+
 ## 使用说明
 
 特性 & 注意事项：
