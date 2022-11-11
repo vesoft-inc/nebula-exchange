@@ -133,6 +133,8 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
     if (rateLimiter.tryAcquire(rateConfig.timeout, TimeUnit.MILLISECONDS)) {
       val result = graphProvider.submit(session, sentence)
       if (result.isSucceeded) {
+        LOG.info(
+          s" write ${config.name}, batch size(${vertices.values.size}), latency(${result.getLatency})")
         return null
       }
       LOG.error(s"write vertex failed for ${result.getErrorMessage}")
@@ -147,6 +149,8 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
     if (rateLimiter.tryAcquire(rateConfig.timeout, TimeUnit.MILLISECONDS)) {
       val result = graphProvider.submit(session, sentence)
       if (result.isSucceeded) {
+        LOG.info(
+          s" write ${config.name}, batch size(${edges.values.size}), latency(${result.getLatency}us)")
         return null
       }
       LOG.error(s"write edge failed for ${result.getErrorMessage}")
