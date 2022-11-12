@@ -243,7 +243,7 @@ object Configs {
   private[this] val DEFAULT_ENABLE_SSL            = false
   private[this] val DEFAULT_SSL_SIGN_TYPE         = "CA"
   private[this] val DEFAULT_EDGE_RANKING          = 0L
-  private[this] val DEFAULT_BATCH                 = 2
+  private[this] val DEFAULT_BATCH                 = 500
   private[this] val DEFAULT_PARTITION             = -1
   private[this] val DEFAULT_CHECK_POINT_PATH      = None
   private[this] val DEFAULT_LOCAL_PATH            = None
