@@ -261,6 +261,7 @@ object Configs {
     var config: Config = null
     var paths: Map[String,String] = null
     if (file) {
+      if (paths.isEmpty) throw new IllegalArgumentException(s"-p must to set ")
       paths = path.split(",").map(path => {
         val kv = path.split("=")
         (kv(0), kv(1))
