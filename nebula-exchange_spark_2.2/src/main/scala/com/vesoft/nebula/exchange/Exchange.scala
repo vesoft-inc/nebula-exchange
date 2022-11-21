@@ -71,7 +71,7 @@ object Exchange {
         sys.exit(-1)
     }
 
-    val configs = Configs.parse(c.config)
+    val configs = Configs.parse(c.config,c.file,c.path)
     LOG.info(s"Config ${configs}")
 
     val session = SparkSession
