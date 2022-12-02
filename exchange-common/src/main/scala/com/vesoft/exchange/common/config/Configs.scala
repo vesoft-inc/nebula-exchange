@@ -711,7 +711,7 @@ object Configs {
           config.getString("url"),
           config.getString("driver"),
           config.getString("user"),
-          config.getString("passwd"),
+          config.getString("password"),
           config.getString("table"),
           getOrElse(config, "sentence", null)
         )
