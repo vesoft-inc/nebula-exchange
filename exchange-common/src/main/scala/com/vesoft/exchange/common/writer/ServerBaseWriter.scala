@@ -17,6 +17,7 @@ import com.vesoft.exchange.common.config.{
   Type,
   UserConfigEntry
 }
+import com.vesoft.nebula.ErrorCode
 import org.apache.log4j.Logger
 
 abstract class ServerBaseWriter extends Writer {
@@ -138,6 +139,10 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
         return null
       }
       LOG.error(s"write vertex failed for ${result.getErrorMessage}")
+      if (result.getErrorCode == ErrorCode.E_BAD_PERMISSION.getValue) {
+        throw new RuntimeException(
+          s"write ${config.name} failed for E_BAD_PERMISSION: ${result.getErrorMessage}")
+      }
     } else {
       LOG.error(s"write vertex failed because write speed is too fast")
     }
@@ -154,6 +159,10 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
         return null
       }
       LOG.error(s"write edge failed for ${result.getErrorMessage}")
+      if (result.getErrorCode == ErrorCode.E_BAD_PERMISSION.getValue) {
+        throw new RuntimeException(
+          s"write ${config.name} failed for E_BAD_PERMISSION: ${result.getErrorMessage}")
+      }
     } else {
       LOG.error(s"write vertex failed because write speed is too fast")
     }
