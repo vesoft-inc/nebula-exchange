@@ -7,7 +7,9 @@ package com.vesoft.exchange.common
 
 import com.google.common.net.HostAndPort
 import com.vesoft.exchange.common.config.{SslConfigEntry, SslType, Type}
+import com.vesoft.nebula.client.meta.exception.ExecuteFailedException
 import org.junit.{After, Before, Test}
+import org.scalatest.Assertions.assertThrows
 
 class MetaProviderSuite {
 
@@ -66,6 +68,7 @@ class MetaProviderSuite {
   def getSpaceVidLenSuite(): Unit = {
     assert(metaProvider.getSpaceVidLen("test_string") == 8)
     assert(metaProvider.getSpaceVidLen("test_int") == 8)
+    assertThrows[ExecuteFailedException](metaProvider.getSpaceVidLen("not_exist_space"))
   }
 
   @Test

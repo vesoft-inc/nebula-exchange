@@ -7,15 +7,17 @@ package com.vesoft.exchange.common
 
 import com.google.common.net.HostAndPort
 import com.vesoft.exchange.common.config.{SslConfigEntry, SslType, UserConfigEntry}
+import com.vesoft.nebula.client.graph.exception.AuthFailedException
 import com.vesoft.nebula.client.graph.net.Session
 import org.junit.{After, Before, Test}
+import org.scalatest.Assertions.assertThrows
 
 class GraphProviderSuite {
   var graphProvider: GraphProvider = _
   var session: Session             = _
   val userConfig                   = UserConfigEntry("root", "nebula")
 
-  @Before
+  //@Before
   def setUp(): Unit = {
     val mockData = new NebulaGraphMock
     mockData.mockStringIdGraph()
@@ -38,6 +40,15 @@ class GraphProviderSuite {
     assert(graphProvider.switchSpace(session, "test_string").isSucceeded)
     assert(graphProvider.switchSpace(session, "test_int").isSucceeded)
     graphProvider.releaseGraphClient(session)
+  }
+
+  @Test
+  def switchSpaceWithoutPermissionSuite(): Unit = {
+    val wrongUserConfig = UserConfigEntry("user", "12345")
+    val sslConfig       = SslConfigEntry(false, false, SslType.CA, null, null)
+    graphProvider =
+      new GraphProvider(List(HostAndPort.fromParts("127.0.0.1", 9669)), 5000, sslConfig)
+    assertThrows[AuthFailedException](graphProvider.getGraphClient(wrongUserConfig))
   }
 
   @Test
