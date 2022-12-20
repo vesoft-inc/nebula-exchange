@@ -17,7 +17,7 @@ class GraphProviderSuite {
   var session: Session             = _
   val userConfig                   = UserConfigEntry("root", "nebula")
 
-  //@Before
+  @Before
   def setUp(): Unit = {
     val mockData = new NebulaGraphMock
     mockData.mockStringIdGraph()
@@ -43,19 +43,16 @@ class GraphProviderSuite {
   }
 
   @Test
-  def switchSpaceWithoutPermissionSuite(): Unit = {
-    val wrongUserConfig = UserConfigEntry("user", "12345")
-    val sslConfig       = SslConfigEntry(false, false, SslType.CA, null, null)
-    graphProvider =
-      new GraphProvider(List(HostAndPort.fromParts("127.0.0.1", 9669)), 5000, sslConfig)
-    assertThrows[AuthFailedException](graphProvider.getGraphClient(wrongUserConfig))
-  }
-
-  @Test
   def submitSuite(): Unit = {
     session = graphProvider.getGraphClient(userConfig)
     assert(graphProvider.submit(session, "show hosts").isSucceeded)
     graphProvider.releaseGraphClient(session)
+  }
+
+  @Test
+  def switchSpaceWithoutPermissionSuite(): Unit = {
+    val wrongUserConfig = UserConfigEntry("user", "12345")
+    assertThrows[AuthFailedException](graphProvider.getGraphClient(wrongUserConfig))
   }
 
 }
