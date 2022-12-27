@@ -98,5 +98,5 @@ final case class Argument(config: String = "application.conf",
                           directly: Boolean = false,
                           dry: Boolean = false,
                           reload: String = "",
-                          file: Boolean = false,
-                          path: String = "")
+                          variable: Boolean = false,
+                          param: String = "")

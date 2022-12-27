@@ -257,12 +257,12 @@ object Configs {
     * @param configPath
     * @return
     */
-  def parse(configPath: String, file:Boolean=false, path:String = ""): Configs = {
+  def parse(configPath: String, variable: Boolean = false, param: String = ""): Configs = {
     var config: Config = null
     var paths: Map[String,String] = null
-    if (file) {
+    if (variable) {
       if (paths.isEmpty) throw new IllegalArgumentException(s"-p must to set ")
-      paths = path.split(",").map(path => {
+      paths = param.split(",").map(path => {
         val kv = path.split("=")
         (kv(0), kv(1))
       }).toMap
@@ -399,7 +399,7 @@ object Configs {
         }
 
         val sourceCategory = toSourceCategory(tagConfig.getString("type.source"))
-        val sourceConfig   = dataSourceConfig(sourceCategory, tagConfig, nebulaConfig,file,paths)
+        val sourceConfig   = dataSourceConfig(sourceCategory, tagConfig, nebulaConfig, variable, paths)
         LOG.info(s"Source Config ${sourceConfig}")
         hasKafka = sourceCategory == SourceCategory.KAFKA
 
@@ -463,7 +463,7 @@ object Configs {
           edgeConfig.hasPath("longitude")
 
         val sourceCategory = toSourceCategory(edgeConfig.getString("type.source"))
-        val sourceConfig   = dataSourceConfig(sourceCategory, edgeConfig, nebulaConfig,file,paths)
+        val sourceConfig   = dataSourceConfig(sourceCategory, edgeConfig, nebulaConfig, variable, paths)
         LOG.info(s"Source Config ${sourceConfig}")
         hasKafka = sourceCategory == SourceCategory.KAFKA
 
@@ -623,17 +623,17 @@ object Configs {
   private[this] def dataSourceConfig(category: SourceCategory.Value,
                                      config: Config,
                                      nebulaConfig: Config,
-                                     file:Boolean,
+                                     variable: Boolean,
                                      paths: Map[String,String]): DataSourceConfigEntry = {
     category match {
       case SourceCategory.PARQUET =>
-        if (file) FileBaseSourceConfigEntry(SourceCategory.PARQUET, paths(config.getString("path")))
+        if (variable) FileBaseSourceConfigEntry(SourceCategory.PARQUET, paths(config.getString("path")))
         else FileBaseSourceConfigEntry(SourceCategory.PARQUET, config.getString("path"))
       case SourceCategory.ORC =>
-        if (file) FileBaseSourceConfigEntry(SourceCategory.ORC, paths(config.getString("path")))
+        if (variable) FileBaseSourceConfigEntry(SourceCategory.ORC, paths(config.getString("path")))
         else FileBaseSourceConfigEntry(SourceCategory.ORC, config.getString("path"))
       case SourceCategory.JSON =>
-        if (file) FileBaseSourceConfigEntry(SourceCategory.JSON, paths(config.getString("path")))
+        if (variable) FileBaseSourceConfigEntry(SourceCategory.JSON, paths(config.getString("path")))
         else FileBaseSourceConfigEntry(SourceCategory.JSON, config.getString("path"))
       case SourceCategory.CSV =>
         val separator =
@@ -645,11 +645,11 @@ object Configs {
             config.getBoolean("header")
           else
             false
-        if (file)
+        if (variable)
           FileBaseSourceConfigEntry(SourceCategory.CSV,
-                                  paths(config.getString("path")),
-                                  Some(separator),
-                                  Some(header))
+            paths(config.getString("path")),
+            Some(separator),
+            Some(header))
         else
           FileBaseSourceConfigEntry(SourceCategory.CSV,
             config.getString("path"),
@@ -986,13 +986,13 @@ object Configs {
         .action((x, c) => c.copy(reload = x))
         .text("reload path")
 
-      opt[Unit]('f', "file")
-        .action((_, c) => c.copy(file = true))
+      opt[Unit]('v', "variable")
+        .action((_, c) => c.copy(variable = true))
         .text("enable file param")
 
-      opt[String]('p', "paths")
+      opt[String]('p', "param")
         .valueName("<param>")
-        .action((x, c) => c.copy(path = x))
+        .action((x, c) => c.copy(param = x))
         .text("file param path")
 
     }
