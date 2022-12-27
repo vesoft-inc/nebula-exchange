@@ -254,6 +254,66 @@ class ConfigsSuite {
     }
   }
 
+
+  @Test
+  def configsWithVariableSuite(): Unit = {
+    val args    = List("-c", "src/test/resources/application.conf", "-v", "-p", "path0=/app/test1.parquet,path1=/app/test2.csv,path2=/app/test2.json,path3=/app/test3.json")
+    val options = Configs.parser(args.toArray, "test")
+    val c: Argument = options match {
+      case Some(config) => config
+      case _ =>
+        assert(false)
+        sys.exit(-1)
+    }
+    assert(c.variable)
+
+    val configs             = Configs.parse(c.config, c.variable, c.param)
+    val tagsConfig          = configs.tagsConfig
+    val edgesConfig         = configs.edgesConfig
+    for (tagConfig <- tagsConfig) {
+      val source = tagConfig.dataSourceConfigEntry
+
+      source.category match {
+        case SourceCategory.CSV => {
+          val csv = tagConfig.dataSourceConfigEntry.asInstanceOf[FileBaseSourceConfigEntry]
+          assert(csv.path.equals("/app/test2.csv"))
+        }
+        case SourceCategory.JSON => {
+          val json = tagConfig.dataSourceConfigEntry.asInstanceOf[FileDataSourceConfigEntry]
+          assert(json.path.equals("/app/test3.json"))
+        }
+        case SourceCategory.PARQUET => {
+          val parquet = tagConfig.dataSourceConfigEntry.asInstanceOf[FileDataSourceConfigEntry]
+          assert(parquet.path.equals("/app/test1.parquet"))
+        }
+
+        case _ => {}
+      }
+    }
+
+    for (edgeConfig <- edgesConfig) {
+      val source = edgeConfig.dataSourceConfigEntry
+      val sink   = edgeConfig.dataSinkConfigEntry
+      assert(sink.category == SinkCategory.CLIENT || sink.category == SinkCategory.SST)
+
+      source.category match {
+        case SourceCategory.CSV => {
+          val csv = edgeConfig.dataSourceConfigEntry.asInstanceOf[FileBaseSourceConfigEntry]
+          assert(csv.path.equals("/app/test2.csv"))
+        }
+        case SourceCategory.JSON => {
+          val json = edgeConfig.dataSourceConfigEntry.asInstanceOf[FileDataSourceConfigEntry]
+          assert(json.path.equals("/app/test2.json"))
+        }
+        case SourceCategory.PARQUET => {
+          val parquet = edgeConfig.dataSourceConfigEntry.asInstanceOf[FileDataSourceConfigEntry]
+          assert(parquet.path.equals("/app/test1.parquet"))
+        }
+        case _ => {}
+      }
+    }
+
+  }
   /**
     * correct com.vesoft.exchange.common.config
     */
