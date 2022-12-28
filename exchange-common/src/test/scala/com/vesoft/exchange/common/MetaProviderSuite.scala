@@ -7,7 +7,9 @@ package com.vesoft.exchange.common
 
 import com.google.common.net.HostAndPort
 import com.vesoft.exchange.common.config.{SslConfigEntry, SslType, Type}
+import com.vesoft.nebula.client.meta.exception.ExecuteFailedException
 import org.junit.{After, Before, Test}
+import org.scalatest.Assertions.assertThrows
 
 class MetaProviderSuite {
 
@@ -66,6 +68,7 @@ class MetaProviderSuite {
   def getSpaceVidLenSuite(): Unit = {
     assert(metaProvider.getSpaceVidLen("test_string") == 8)
     assert(metaProvider.getSpaceVidLen("test_int") == 8)
+    assertThrows[ExecuteFailedException](metaProvider.getSpaceVidLen("not_exist_space"))
   }
 
   @Test
@@ -75,9 +78,19 @@ class MetaProviderSuite {
   }
 
   @Test
+  def getNoExistTagSuite(): Unit = {
+    assertThrows[IllegalArgumentException](metaProvider.getTagItem("test_string", "no_exist_tag"))
+  }
+
+  @Test
   def getEdgeItemSuite(): Unit = {
     val edgeItem = metaProvider.getEdgeItem("test_string", "friend")
     assert(new String(edgeItem.edge_name).equals("friend"))
+  }
+
+  @Test
+  def getNoExistEdgeSuite(): Unit = {
+    assertThrows[IllegalArgumentException](metaProvider.getEdgeItem("test_string", "no_exist_edge"))
   }
 
 }

@@ -7,8 +7,10 @@ package com.vesoft.exchange.common
 
 import com.google.common.net.HostAndPort
 import com.vesoft.exchange.common.config.{SslConfigEntry, SslType, UserConfigEntry}
+import com.vesoft.nebula.client.graph.exception.AuthFailedException
 import com.vesoft.nebula.client.graph.net.Session
 import org.junit.{After, Before, Test}
+import org.scalatest.Assertions.assertThrows
 
 class GraphProviderSuite {
   var graphProvider: GraphProvider = _
@@ -45,6 +47,12 @@ class GraphProviderSuite {
     session = graphProvider.getGraphClient(userConfig)
     assert(graphProvider.submit(session, "show hosts").isSucceeded)
     graphProvider.releaseGraphClient(session)
+  }
+
+  @Test
+  def switchSpaceWithoutPermissionSuite(): Unit = {
+    val wrongUserConfig = UserConfigEntry("user", "12345")
+    assertThrows[AuthFailedException](graphProvider.getGraphClient(wrongUserConfig))
   }
 
 }

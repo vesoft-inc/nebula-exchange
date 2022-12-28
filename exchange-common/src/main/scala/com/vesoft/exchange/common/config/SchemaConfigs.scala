@@ -63,7 +63,9 @@ case class TagConfigEntry(override val name: String,
                           repartitionWithNebula: Boolean = true,
                           enableTagless: Boolean = false)
     extends SchemaConfigEntry {
-  require(name.trim.nonEmpty && vertexField.trim.nonEmpty && batch > 0)
+  require(
+    name.trim.nonEmpty && vertexField.trim.nonEmpty
+      && batch > 0 && fields.size == nebulaFields.size)
 
   override def toString: String = {
     s"Tag name: $name, " +
@@ -116,8 +118,8 @@ case class EdgeConfigEntry(override val name: String,
                            repartitionWithNebula: Boolean = false)
     extends SchemaConfigEntry {
   require(
-    name.trim.nonEmpty && sourceField.trim.nonEmpty &&
-      targetField.trim.nonEmpty && batch > 0)
+    name.trim.nonEmpty && sourceField.trim.nonEmpty && targetField.trim.nonEmpty
+      && batch > 0 && fields.size == nebulaFields.size)
 
   override def toString: String = {
     if (isGeo) {
