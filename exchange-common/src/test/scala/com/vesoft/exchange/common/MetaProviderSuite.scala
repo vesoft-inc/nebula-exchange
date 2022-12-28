@@ -78,9 +78,19 @@ class MetaProviderSuite {
   }
 
   @Test
+  def getNoExistTagSuite(): Unit = {
+    assertThrows[IllegalArgumentException](metaProvider.getTagItem("test_string", "no_exist_tag"))
+  }
+
+  @Test
   def getEdgeItemSuite(): Unit = {
     val edgeItem = metaProvider.getEdgeItem("test_string", "friend")
     assert(new String(edgeItem.edge_name).equals("friend"))
+  }
+
+  @Test
+  def getNoExistEdgeSuite(): Unit = {
+    assertThrows[IllegalArgumentException](metaProvider.getEdgeItem("test_string", "no_exist_edge"))
   }
 
 }

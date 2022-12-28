@@ -21,6 +21,7 @@ import com.vesoft.exchange.common.config.{
 import com.vesoft.exchange.common.utils.NebulaUtils
 import org.apache.log4j.Logger
 import org.junit.{After, Before, Test}
+import org.scalatest.Assertions.assertThrows
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ListBuffer
@@ -112,6 +113,35 @@ class NebulaUtilsSuite {
     assert(map("col12") == PropertyType.FLOAT.getValue)
     assert(map("col13") == PropertyType.TIME.getValue)
     assert(map("col14") == PropertyType.GEOGRAPHY.getValue)
+
+    // not exist nebula fields
+    val wrongNebulaFields = List("col0",
+                                 "col2",
+                                 "col3",
+                                 "col4",
+                                 "col5",
+                                 "col6",
+                                 "col7",
+                                 "col8",
+                                 "col9",
+                                 "col10",
+                                 "col11",
+                                 "col12",
+                                 "col13",
+                                 "col14")
+    val wrongSourceConfig = TagConfigEntry(label,
+                                           null,
+                                           dataSinkConfigEntry,
+                                           sourceFields,
+                                           wrongNebulaFields,
+                                           "id",
+                                           Some(KeyPolicy.UUID),
+                                           1,
+                                           1,
+                                           Some(""))
+
+    assertThrows[IllegalArgumentException](
+      NebulaUtils.getDataSourceFieldType(wrongSourceConfig, space, metaProvider))
   }
 
   @Test

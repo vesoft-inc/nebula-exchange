@@ -10,6 +10,7 @@ import java.io.File
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.KeyPolicy
 import com.vesoft.exchange.common.config.{
+  CaSignParam,
   Configs,
   DataBaseConfigEntry,
   FileBaseSourceConfigEntry,
@@ -17,11 +18,15 @@ import com.vesoft.exchange.common.config.{
   HBaseSourceConfigEntry,
   HiveSourceConfigEntry,
   MySQLSourceConfigEntry,
-  PostgreSQLSourceConfigEntry,
   Neo4JSourceConfigEntry,
+  PostgreSQLSourceConfigEntry,
+  SelfSignParam,
   SinkCategory,
-  SourceCategory
+  SourceCategory,
+  SslConfigEntry,
+  SslType
 }
+import com.vesoft.nebula.client.graph.data.CASignedSSLParam
 import org.apache.log4j.Logger
 import org.junit.Test
 import org.scalatest.Assertions.assertThrows
@@ -302,5 +307,21 @@ class ConfigsSuite {
     assertThrows[IllegalArgumentException] {
       DataBaseConfigEntry(graphAddress, space, wrongMetaAddress)
     }
+  }
+
+  @Test
+  def sslConfigSuite: Unit = {
+    val enableGraph   = true
+    val enableMeta    = true
+    val caSignParam   = CaSignParam("caPath", "crtPath", "keyPath")
+    val selfSignParam = SelfSignParam("crtPath", "keyPath", "nebula")
+
+    SslConfigEntry(enableGraph, enableMeta, SslType.CA, caSignParam, null)
+    SslConfigEntry(enableGraph, enableMeta, SslType.SELF, null, selfSignParam)
+
+    assertThrows[IllegalArgumentException](
+      SslConfigEntry(enableGraph, enableMeta, SslType.CA, null, null))
+    assertThrows[IllegalArgumentException](
+      SslConfigEntry(enableGraph, enableMeta, SslType.SELF, null, null))
   }
 }

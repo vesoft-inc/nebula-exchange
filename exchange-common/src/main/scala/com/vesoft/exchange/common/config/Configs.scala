@@ -149,10 +149,12 @@ case class SslConfigEntry(enableGraph: Boolean,
     signType match {
       case SslType.CA =>
         require(
-          !caSignParam.caCrtFilePath.isEmpty && !caSignParam.crtFilePath.isEmpty && !caSignParam.keyFilePath.isEmpty)
+          caSignParam != null && !caSignParam.caCrtFilePath.isEmpty
+            && !caSignParam.crtFilePath.isEmpty && !caSignParam.keyFilePath.isEmpty)
       case SslType.SELF =>
         require(
-          !selfSignParam.crtFilePath.isEmpty && !selfSignParam.keyFilePath.isEmpty && !selfSignParam.password.isEmpty)
+          selfSignParam != null && !selfSignParam.crtFilePath.isEmpty
+            && !selfSignParam.keyFilePath.isEmpty && !selfSignParam.password.isEmpty)
       case _ => None
     }
   }
