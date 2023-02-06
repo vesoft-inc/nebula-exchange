@@ -89,6 +89,9 @@ There are the version correspondence between Nebula Exchange and Nebula:
 |nebula-exchange_spark_2.2-3.3.0.jar|  3.x.x  |2.2.*|
 |nebula-exchange_spark_2.4-3.3.0.jar|  3.x.x  |2.4.*|
 |nebula-exchange_spark_3.0-3.3.0.jar|  3.x.x  |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
+|nebula-exchange_spark_2.2-3.4.0.jar|  3.x.x  |2.2.*|
+|nebula-exchange_spark_2.4-3.4.0.jar|  3.x.x  |2.4.*|
+|nebula-exchange_spark_3.0-3.4.0.jar|  3.x.x  |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
 |nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar|     nightly    |2.2.*|
 |nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar|     nightly    |2.4.*|
 |nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar|     nightly    |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
