@@ -259,8 +259,16 @@ object Configs {
     * @param configPath
     * @return
     */
-  def parse(configPath: String): Configs = {
+  def parse(configPath: String, variable: Boolean = false, param: String = ""): Configs = {
     var config: Config = null
+    var paths: Map[String,String] = null
+    if (variable) {
+      if (param.isEmpty) throw new IllegalArgumentException(s"-p must to set ")
+      paths = param.split(",").map(path => {
+        val kv = path.split("=")
+        (kv(0), kv(1))
+      }).toMap
+    }
     if (configPath.startsWith("hdfs://")) {
       val hadoopConfig: Configuration = new Configuration()
       val fs: FileSystem              = org.apache.hadoop.fs.FileSystem.get(hadoopConfig)
@@ -393,7 +401,7 @@ object Configs {
         }
 
         val sourceCategory = toSourceCategory(tagConfig.getString("type.source"))
-        val sourceConfig   = dataSourceConfig(sourceCategory, tagConfig, nebulaConfig)
+        val sourceConfig   = dataSourceConfig(sourceCategory, tagConfig, nebulaConfig, variable, paths)
         LOG.info(s"Source Config ${sourceConfig}")
         hasKafka = sourceCategory == SourceCategory.KAFKA
 
@@ -457,7 +465,7 @@ object Configs {
           edgeConfig.hasPath("longitude")
 
         val sourceCategory = toSourceCategory(edgeConfig.getString("type.source"))
-        val sourceConfig   = dataSourceConfig(sourceCategory, edgeConfig, nebulaConfig)
+        val sourceConfig   = dataSourceConfig(sourceCategory, edgeConfig, nebulaConfig, variable, paths)
         LOG.info(s"Source Config ${sourceConfig}")
         hasKafka = sourceCategory == SourceCategory.KAFKA
 
@@ -616,14 +624,19 @@ object Configs {
     */
   private[this] def dataSourceConfig(category: SourceCategory.Value,
                                      config: Config,
-                                     nebulaConfig: Config): DataSourceConfigEntry = {
+                                     nebulaConfig: Config,
+                                     variable: Boolean,
+                                     paths: Map[String,String]): DataSourceConfigEntry = {
     category match {
       case SourceCategory.PARQUET =>
-        FileBaseSourceConfigEntry(SourceCategory.PARQUET, config.getString("path"))
+        if (variable) FileBaseSourceConfigEntry(SourceCategory.PARQUET, paths(config.getString("path")))
+        else FileBaseSourceConfigEntry(SourceCategory.PARQUET, config.getString("path"))
       case SourceCategory.ORC =>
-        FileBaseSourceConfigEntry(SourceCategory.ORC, config.getString("path"))
+        if (variable) FileBaseSourceConfigEntry(SourceCategory.ORC, paths(config.getString("path")))
+        else FileBaseSourceConfigEntry(SourceCategory.ORC, config.getString("path"))
       case SourceCategory.JSON =>
-        FileBaseSourceConfigEntry(SourceCategory.JSON, config.getString("path"))
+        if (variable) FileBaseSourceConfigEntry(SourceCategory.JSON, paths(config.getString("path")))
+        else FileBaseSourceConfigEntry(SourceCategory.JSON, config.getString("path"))
       case SourceCategory.CSV =>
         val separator =
           if (config.hasPath("separator"))
@@ -634,10 +647,16 @@ object Configs {
             config.getBoolean("header")
           else
             false
-        FileBaseSourceConfigEntry(SourceCategory.CSV,
-                                  config.getString("path"),
-                                  Some(separator),
-                                  Some(header))
+        if (variable)
+          FileBaseSourceConfigEntry(SourceCategory.CSV,
+            paths(config.getString("path")),
+            Some(separator),
+            Some(header))
+        else
+          FileBaseSourceConfigEntry(SourceCategory.CSV,
+            config.getString("path"),
+            Some(separator),
+            Some(header))
       case SourceCategory.HIVE =>
         HiveSourceConfigEntry(SourceCategory.HIVE, config.getString("exec"))
       case SourceCategory.NEO4J =>
@@ -968,6 +987,16 @@ object Configs {
         .valueName("<path>")
         .action((x, c) => c.copy(reload = x))
         .text("reload path")
+
+      opt[Unit]('v', "variable")
+        .action((_, c) => c.copy(variable = true))
+        .text("enable file param")
+
+      opt[String]('p', "param")
+        .valueName("<param>")
+        .action((x, c) => c.copy(param = x))
+        .text("file param path")
+
     }
     parser.parse(args, Argument())
   }

@@ -97,4 +97,6 @@ final case class Argument(config: String = "application.conf",
                           hive: Boolean = false,
                           directly: Boolean = false,
                           dry: Boolean = false,
-                          reload: String = "")
+                          reload: String = "",
+                          variable: Boolean = false,
+                          param: String = "")
