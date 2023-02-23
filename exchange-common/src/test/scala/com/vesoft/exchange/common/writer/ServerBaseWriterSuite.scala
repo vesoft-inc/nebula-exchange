@@ -25,7 +25,7 @@ class ServerBaseWriterSuite extends ServerBaseWriter {
     vertices.append(Vertex("\"vid2\"", props2))
     val nebulaVertices = Vertices(propNames, vertices.toList)
 
-    val sentence = toExecuteSentence(tagName, nebulaVertices)
+    val sentence = toExecuteSentence(tagName, nebulaVertices, false)
     val expectSentence =
       "INSERT VERTEX `person`(`name`,`age`,`gender`,`high`,`weight`) VALUES " +
         "\"vid1\": (\"Tom\", 10, 0, 172.5, 55), " +
@@ -45,7 +45,7 @@ class ServerBaseWriterSuite extends ServerBaseWriter {
     vertices.append(Vertex("\"vid,2\"", props2))
     val nebulaVertices = Vertices(propNames, vertices.toList)
 
-    val sentence = toExecuteSentence(tagName, nebulaVertices)
+    val sentence = toExecuteSentence(tagName, nebulaVertices, false)
     val expectSentence =
       "INSERT VERTEX `person,test_with^symbol#`(`name_1`,`age-1`,`gender&1`,`high%1`,`weight,1`) VALUES " +
         "\"vid_1\": (\"Tom\", 10, 0, 172.5, 55), " +
@@ -64,7 +64,7 @@ class ServerBaseWriterSuite extends ServerBaseWriter {
     edges.append(Edge("\"vid1\"", "\"vid2\"", Some(0L), props1))
     edges.append(Edge("\"vid2\"", "\"vid3\"", Some(1L), props2))
     val nebulaEdges = Edges(propNames, edges.toList)
-    val sentence    = toExecuteSentence(edgeType, nebulaEdges)
+    val sentence    = toExecuteSentence(edgeType, nebulaEdges, false)
     val expectSentence = "INSERT EDGE `friend`(`src_name`,`dst_name`,`time`,`address`,`relation`) VALUES" +
       " \"vid1\"->\"vid2\"@0: (\"Tom\", \"Jena\", 2022-08-25, hangzhou, friend), " +
       "\"vid2\"->\"vid3\"@1: (\"Jena\", \"Bob\", 2022-08-25, shanghai, friend)"
@@ -82,16 +82,16 @@ class ServerBaseWriterSuite extends ServerBaseWriter {
     edges.append(Edge("\"vid_1\"", "\"vid_2\"", Some(0L), props1))
     edges.append(Edge("\"vid_2,test-1\"", "\"vid&3^test*a\"", Some(1L), props2))
     val nebulaEdges = Edges(propNames, edges.toList)
-    val sentence    = toExecuteSentence(edgeType, nebulaEdges)
+    val sentence    = toExecuteSentence(edgeType, nebulaEdges, false)
     val expectSentence = "INSERT EDGE `friend`(`src_name`,`dst_name`,`time`,`address`,`relation`) VALUES " +
       "\"vid_1\"->\"vid_2\"@0: (\"Tom\", \"Jena\", 2022-08-25, hangzhou, friend), " +
       "\"vid_2,test-1\"->\"vid&3^test*a\"@1: (\"Jena\", \"Bob\", 2022-08-25, shanghai, friend)"
     assert(sentence.equals(expectSentence))
   }
 
-  override def writeVertices(vertices: Vertices): String = ???
+  override def writeVertices(vertices: Vertices, ignoreIndex: Boolean): String = ???
 
-  override def writeEdges(edges: common.Edges): String = ???
+  override def writeEdges(edges: common.Edges, ignoreIndex: Boolean): String = ???
 
   override def writeNgql(ngql: String): String = ???
 

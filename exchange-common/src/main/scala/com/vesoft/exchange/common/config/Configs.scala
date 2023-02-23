@@ -260,14 +260,17 @@ object Configs {
     * @return
     */
   def parse(configPath: String, variable: Boolean = false, param: String = ""): Configs = {
-    var config: Config = null
-    var paths: Map[String,String] = null
+    var config: Config             = null
+    var paths: Map[String, String] = null
     if (variable) {
       if (param.isEmpty) throw new IllegalArgumentException(s"-p must to set ")
-      paths = param.split(",").map(path => {
-        val kv = path.split("=")
-        (kv(0), kv(1))
-      }).toMap
+      paths = param
+        .split(",")
+        .map(path => {
+          val kv = path.split("=")
+          (kv(0), kv(1))
+        })
+        .toMap
     }
     if (configPath.startsWith("hdfs://")) {
       val hadoopConfig: Configuration = new Configuration()
@@ -401,7 +404,8 @@ object Configs {
         }
 
         val sourceCategory = toSourceCategory(tagConfig.getString("type.source"))
-        val sourceConfig   = dataSourceConfig(sourceCategory, tagConfig, nebulaConfig, variable, paths)
+        val sourceConfig =
+          dataSourceConfig(sourceCategory, tagConfig, nebulaConfig, variable, paths)
         LOG.info(s"Source Config ${sourceConfig}")
         hasKafka = sourceCategory == SourceCategory.KAFKA
 
@@ -419,20 +423,24 @@ object Configs {
 
         val partition             = getOrElse(tagConfig, "partition", DEFAULT_PARTITION)
         val repartitionWithNebula = getOrElse(tagConfig, "repartitionWithNebula", true)
+        val ignoreIndex           = getOrElse(tagConfig, "ignoreIndex", false)
 
         LOG.info(s"name ${tagName}  batch ${batch}")
-        val entry = TagConfigEntry(tagName,
-                                   sourceConfig,
-                                   sinkConfig,
-                                   fields,
-                                   nebulaFields,
-                                   vertexField,
-                                   policyOpt,
-                                   batch,
-                                   partition,
-                                   checkPointPath,
-                                   repartitionWithNebula,
-                                   enableTagless)
+        val entry = TagConfigEntry(
+          tagName,
+          sourceConfig,
+          sinkConfig,
+          fields,
+          nebulaFields,
+          vertexField,
+          policyOpt,
+          batch,
+          partition,
+          checkPointPath,
+          repartitionWithNebula,
+          enableTagless,
+          ignoreIndex
+        )
         LOG.info(s"Tag Config: ${entry}")
         tags += entry
       }
@@ -465,7 +473,8 @@ object Configs {
           edgeConfig.hasPath("longitude")
 
         val sourceCategory = toSourceCategory(edgeConfig.getString("type.source"))
-        val sourceConfig   = dataSourceConfig(sourceCategory, edgeConfig, nebulaConfig, variable, paths)
+        val sourceConfig =
+          dataSourceConfig(sourceCategory, edgeConfig, nebulaConfig, variable, paths)
         LOG.info(s"Source Config ${sourceConfig}")
         hasKafka = sourceCategory == SourceCategory.KAFKA
 
@@ -536,6 +545,7 @@ object Configs {
         val remotePath = getOptOrElse(edgeConfig, "path.remote")
 
         val repartitionWithNebula = getOrElse(edgeConfig, "repartitionWithNebula", false)
+        val ignoreIndex           = getOrElse(edgeConfig, "ignoreIndex", false)
 
         val entry = EdgeConfigEntry(
           edgeName,
@@ -554,7 +564,8 @@ object Configs {
           batch,
           partition,
           checkPointPath,
-          repartitionWithNebula
+          repartitionWithNebula,
+          ignoreIndex
         )
         LOG.info(s"Edge Config: ${entry}")
         edges += entry
@@ -626,16 +637,18 @@ object Configs {
                                      config: Config,
                                      nebulaConfig: Config,
                                      variable: Boolean,
-                                     paths: Map[String,String]): DataSourceConfigEntry = {
+                                     paths: Map[String, String]): DataSourceConfigEntry = {
     category match {
       case SourceCategory.PARQUET =>
-        if (variable) FileBaseSourceConfigEntry(SourceCategory.PARQUET, paths(config.getString("path")))
+        if (variable)
+          FileBaseSourceConfigEntry(SourceCategory.PARQUET, paths(config.getString("path")))
         else FileBaseSourceConfigEntry(SourceCategory.PARQUET, config.getString("path"))
       case SourceCategory.ORC =>
         if (variable) FileBaseSourceConfigEntry(SourceCategory.ORC, paths(config.getString("path")))
         else FileBaseSourceConfigEntry(SourceCategory.ORC, config.getString("path"))
       case SourceCategory.JSON =>
-        if (variable) FileBaseSourceConfigEntry(SourceCategory.JSON, paths(config.getString("path")))
+        if (variable)
+          FileBaseSourceConfigEntry(SourceCategory.JSON, paths(config.getString("path")))
         else FileBaseSourceConfigEntry(SourceCategory.JSON, config.getString("path"))
       case SourceCategory.CSV =>
         val separator =
@@ -649,14 +662,14 @@ object Configs {
             false
         if (variable)
           FileBaseSourceConfigEntry(SourceCategory.CSV,
-            paths(config.getString("path")),
-            Some(separator),
-            Some(header))
+                                    paths(config.getString("path")),
+                                    Some(separator),
+                                    Some(header))
         else
           FileBaseSourceConfigEntry(SourceCategory.CSV,
-            config.getString("path"),
-            Some(separator),
-            Some(header))
+                                    config.getString("path"),
+                                    Some(separator),
+                                    Some(header))
       case SourceCategory.HIVE =>
         HiveSourceConfigEntry(SourceCategory.HIVE, config.getString("exec"))
       case SourceCategory.NEO4J =>

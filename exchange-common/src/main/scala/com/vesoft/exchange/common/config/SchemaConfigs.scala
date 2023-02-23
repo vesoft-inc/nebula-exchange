@@ -61,7 +61,8 @@ case class TagConfigEntry(override val name: String,
                           override val partition: Int,
                           override val checkPointPath: Option[String],
                           repartitionWithNebula: Boolean = true,
-                          enableTagless: Boolean = false)
+                          enableTagless: Boolean = false,
+                          ignoreIndex: Boolean = false)
     extends SchemaConfigEntry {
   require(
     name.trim.nonEmpty && vertexField.trim.nonEmpty
@@ -115,7 +116,8 @@ case class EdgeConfigEntry(override val name: String,
                            override val batch: Int,
                            override val partition: Int,
                            override val checkPointPath: Option[String],
-                           repartitionWithNebula: Boolean = false)
+                           repartitionWithNebula: Boolean = false,
+                           ignoreIndex: Boolean = false)
     extends SchemaConfigEntry {
   require(
     name.trim.nonEmpty && sourceField.trim.nonEmpty && targetField.trim.nonEmpty
