@@ -21,41 +21,44 @@ import com.vesoft.nebula.ErrorCode
 import org.apache.log4j.Logger
 
 abstract class ServerBaseWriter extends Writer {
-  private[this] val BATCH_INSERT_TEMPLATE               = "INSERT %s `%s`(%s) VALUES %s"
+  private[this] val BATCH_INSERT_TEMPLATE = "INSERT %s `%s`(%s) VALUES %s"
+  private[this] val BATCH_INSERT_IGNORE_INDEX_TEMPLATE =
+    "INSERT %s IGNORE_EXISTED_INDEX `%s`(%s) VALUES %s"
   private[this] val INSERT_VALUE_TEMPLATE               = "%s: (%s)"
   private[this] val INSERT_VALUE_TEMPLATE_WITH_POLICY   = "%s(\"%s\"): (%s)"
   private[this] val ENDPOINT_TEMPLATE                   = "%s(\"%s\")"
   private[this] val EDGE_VALUE_WITHOUT_RANKING_TEMPLATE = "%s->%s: (%s)"
   private[this] val EDGE_VALUE_TEMPLATE                 = "%s->%s@%d: (%s)"
 
-  def toExecuteSentence(name: String, vertices: Vertices): String = {
-    BATCH_INSERT_TEMPLATE.format(
-      Type.VERTEX.toString,
-      name,
-      vertices.propertyNames,
-      vertices.values
-        .map { vertex =>
-          if (vertices.policy.isEmpty) {
-            INSERT_VALUE_TEMPLATE.format(vertex.vertexID, vertex.propertyValues)
-          } else {
-            vertices.policy.get match {
-              case KeyPolicy.HASH =>
-                INSERT_VALUE_TEMPLATE_WITH_POLICY
-                  .format(KeyPolicy.HASH.toString, vertex.vertexID, vertex.propertyValues)
-              case KeyPolicy.UUID =>
-                INSERT_VALUE_TEMPLATE_WITH_POLICY
-                  .format(KeyPolicy.UUID.toString, vertex.vertexID, vertex.propertyValues)
-              case _ =>
-                throw new IllegalArgumentException(
-                  s"invalidate vertex policy ${vertices.policy.get}")
+  def toExecuteSentence(name: String, vertices: Vertices, ignoreIndex: Boolean): String = {
+    { if (ignoreIndex) BATCH_INSERT_IGNORE_INDEX_TEMPLATE else BATCH_INSERT_TEMPLATE }
+      .format(
+        Type.VERTEX.toString,
+        name,
+        vertices.propertyNames,
+        vertices.values
+          .map { vertex =>
+            if (vertices.policy.isEmpty) {
+              INSERT_VALUE_TEMPLATE.format(vertex.vertexID, vertex.propertyValues)
+            } else {
+              vertices.policy.get match {
+                case KeyPolicy.HASH =>
+                  INSERT_VALUE_TEMPLATE_WITH_POLICY
+                    .format(KeyPolicy.HASH.toString, vertex.vertexID, vertex.propertyValues)
+                case KeyPolicy.UUID =>
+                  INSERT_VALUE_TEMPLATE_WITH_POLICY
+                    .format(KeyPolicy.UUID.toString, vertex.vertexID, vertex.propertyValues)
+                case _ =>
+                  throw new IllegalArgumentException(
+                    s"invalidate vertex policy ${vertices.policy.get}")
+              }
             }
           }
-        }
-        .mkString(", ")
-    )
+          .mkString(", ")
+      )
   }
 
-  def toExecuteSentence(name: String, edges: Edges): String = {
+  def toExecuteSentence(name: String, edges: Edges, ignoreIndex: Boolean): String = {
     val values = edges.values
       .map { edge =>
         val source = edges.sourcePolicy match {
@@ -89,12 +92,17 @@ abstract class ServerBaseWriter extends Writer {
           EDGE_VALUE_TEMPLATE.format(source, target, edge.ranking.get, edge.propertyValues)
       }
       .mkString(", ")
-    BATCH_INSERT_TEMPLATE.format(Type.EDGE.toString, name, edges.propertyNames, values)
+
+    (if (ignoreIndex) BATCH_INSERT_IGNORE_INDEX_TEMPLATE else BATCH_INSERT_TEMPLATE).format(
+      Type.EDGE.toString,
+      name,
+      edges.propertyNames,
+      values)
   }
 
-  def writeVertices(vertices: Vertices): String
+  def writeVertices(vertices: Vertices, ignoreIndex: Boolean): String
 
-  def writeEdges(edges: Edges): String
+  def writeEdges(edges: Edges, ignoreIndex: Boolean): String
 
   def writeNgql(ngql: String): String
 }
@@ -129,8 +137,8 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
     LOG.info(s"Connection to ${dataBaseConfigEntry.graphAddress}")
   }
 
-  override def writeVertices(vertices: Vertices): String = {
-    val sentence = toExecuteSentence(config.name, vertices)
+  override def writeVertices(vertices: Vertices, ignoreIndex: Boolean = false): String = {
+    val sentence = toExecuteSentence(config.name, vertices, ignoreIndex)
     if (rateLimiter.tryAcquire(rateConfig.timeout, TimeUnit.MILLISECONDS)) {
       val result = graphProvider.submit(session, sentence)
       if (result.isSucceeded) {
@@ -149,8 +157,8 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
     sentence
   }
 
-  override def writeEdges(edges: Edges): String = {
-    val sentence = toExecuteSentence(config.name, edges)
+  override def writeEdges(edges: Edges, ignoreIndex: Boolean = false): String = {
+    val sentence = toExecuteSentence(config.name, edges, ignoreIndex)
     if (rateLimiter.tryAcquire(rateConfig.timeout, TimeUnit.MILLISECONDS)) {
       val result = graphProvider.submit(session, sentence)
       if (result.isSucceeded) {

@@ -74,7 +74,7 @@ class VerticesProcessor(spark: SparkSession,
     val startTime = System.currentTimeMillis
     iterator.grouped(tagConfig.batch).foreach { vertex =>
       val vertices      = Vertices(nebulaKeys, vertex.toList, tagConfig.vertexPolicy)
-      val failStatement = writer.writeVertices(vertices)
+      val failStatement = writer.writeVertices(vertices, tagConfig.ignoreIndex)
       if (failStatement == null) {
         batchSuccess.add(1)
       } else {
