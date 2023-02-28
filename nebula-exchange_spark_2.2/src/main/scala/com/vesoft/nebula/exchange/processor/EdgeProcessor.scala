@@ -26,7 +26,7 @@ import com.vesoft.nebula.exchange.TooManyErrorsException
 import com.vesoft.nebula.meta.EdgeItem
 import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.log4j.Logger
-import org.apache.spark.TaskContext
+import org.apache.spark.{SparkEnv, TaskContext}
 import org.apache.spark.sql.streaming.Trigger
 import org.apache.spark.sql.{DataFrame, Encoders, Row, SparkSession}
 import org.apache.spark.util.LongAccumulator
@@ -81,9 +81,10 @@ class EdgeProcessor(spark: SparkSession,
       }
     }
     if (errorBuffer.nonEmpty) {
+      val appId = SparkEnv.get.blockManager.conf.getAppId
       ErrorHandler.save(
         errorBuffer,
-        s"${config.errorConfig.errorPath}/${edgeConfig.name}.${TaskContext.getPartitionId}")
+        s"${config.errorConfig.errorPath}/${appId}/${edgeConfig.name}.${TaskContext.getPartitionId}")
       errorBuffer.clear()
     }
     LOG.info(s"edge ${edgeConfig.name} import in spark partition ${TaskContext

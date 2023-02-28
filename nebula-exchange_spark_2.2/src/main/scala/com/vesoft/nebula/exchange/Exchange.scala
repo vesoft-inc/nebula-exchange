@@ -51,7 +51,7 @@ import com.vesoft.exchange.common.processor.ReloadProcessor
 import com.vesoft.exchange.common.utils.SparkValidate
 import com.vesoft.nebula.exchange.processor.{EdgeProcessor, VerticesProcessor}
 import org.apache.log4j.Logger
-import org.apache.spark.SparkConf
+import org.apache.spark.{SparkConf, SparkEnv}
 
 final case class TooManyErrorsException(private val message: String) extends Exception(message)
 
@@ -230,12 +230,13 @@ object Exchange {
     }
 
     // reimport for failed tags and edges
-    if (failures > 0 && ErrorHandler.existError(configs.errorConfig.errorPath)) {
-      spark.sparkContext.setJobGroup("Reload", s"Reload: ${configs.errorConfig.errorPath}")
+    val errorPath = s"${configs.errorConfig.errorPath}/${SparkEnv.get.blockManager.conf.getAppId}"
+    if (failures > 0 && ErrorHandler.existError(errorPath)) {
+      spark.sparkContext.setJobGroup("Reload", s"Reload: ${errorPath}")
 
       val batchSuccess = spark.sparkContext.longAccumulator(s"batchSuccess.reimport")
       val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure.reimport")
-      val data         = spark.read.text(configs.errorConfig.errorPath)
+      val data         = spark.read.text(errorPath)
       val startTime    = System.currentTimeMillis()
       val processor    = new ReloadProcessor(data, configs, batchSuccess, batchFailure)
       processor.process()
