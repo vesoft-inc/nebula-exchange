@@ -73,7 +73,7 @@ class ConfigsSuite {
     assert(executionConfig.timeout == Integer.MAX_VALUE)
 
     assert(errorConfig.errorMaxSize == 32)
-    assert(errorConfig.errorPath.equals("/tmp/errors"))
+    assert(errorConfig.errorPath.equals("file:///tmp/errors"))
 
     assert(rateConfig.limit == 1024)
     assert(rateConfig.timeout == 1000)
@@ -258,11 +258,14 @@ class ConfigsSuite {
       }
     }
   }
-
-
   @Test
   def configsWithVariableSuite(): Unit = {
-    val args    = List("-c", "src/test/resources/application.conf", "-v", "-p", "path0=/app/test1.parquet,path1=/app/test2.csv,path2=/app/test2.json,path3=/app/test3.json")
+    val args = List(
+      "-c",
+      "src/test/resources/application.conf",
+      "-v",
+      "-p",
+      "path0=/app/test1.parquet,path1=/app/test2.csv,path2=/app/test2.json,path3=/app/test3.json")
     val options = Configs.parser(args.toArray, "test")
     val c: Argument = options match {
       case Some(config) => config
@@ -272,9 +275,9 @@ class ConfigsSuite {
     }
     assert(c.variable)
 
-    val configs             = Configs.parse(c.config, c.variable, c.param)
-    val tagsConfig          = configs.tagsConfig
-    val edgesConfig         = configs.edgesConfig
+    val configs     = Configs.parse(c.config, c.variable, c.param)
+    val tagsConfig  = configs.tagsConfig
+    val edgesConfig = configs.edgesConfig
     for (tagConfig <- tagsConfig) {
       val source = tagConfig.dataSourceConfigEntry
 
@@ -319,6 +322,7 @@ class ConfigsSuite {
     }
 
   }
+
   /**
     * correct com.vesoft.exchange.common.config
     */
