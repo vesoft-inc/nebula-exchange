@@ -238,7 +238,7 @@ object Configs {
   private[this] val DEFAULT_EXECUTION_RETRY       = 3
   private[this] val DEFAULT_EXECUTION_TIMEOUT     = Integer.MAX_VALUE
   private[this] val DEFAULT_EXECUTION_INTERVAL    = 3000
-  private[this] val DEFAULT_ERROR_OUTPUT_PATH     = "/tmp/nebula.writer.errors/"
+  private[this] val DEFAULT_ERROR_OUTPUT_PATH     = "file:///tmp/nebula.writer.errors/"
   private[this] val DEFAULT_ERROR_MAX_BATCH_SIZE  = Int.MaxValue
   private[this] val DEFAULT_RATE_LIMIT            = 1024
   private[this] val DEFAULT_RATE_TIMEOUT          = 100
@@ -312,8 +312,14 @@ object Configs {
     val executionEntry    = ExecutionConfigEntry(executionTimeout, executionRetry, executionInterval)
     LOG.info(s"Execution Config ${executionEntry}")
 
-    val errorConfig  = getConfigOrNone(nebulaConfig, "error")
-    val errorPath    = getOrElse(errorConfig, "output", DEFAULT_ERROR_OUTPUT_PATH)
+    val errorConfig = getConfigOrNone(nebulaConfig, "error")
+    var errorPath   = getOrElse(errorConfig, "output", DEFAULT_ERROR_OUTPUT_PATH)
+    if (!errorPath.startsWith("hdfs://")) {
+      if (!errorPath.startsWith("file://")) {
+        errorPath = s"file://${errorPath}"
+      }
+    }
+
     val errorMaxSize = getOrElse(errorConfig, "max", DEFAULT_ERROR_MAX_BATCH_SIZE)
     val errorEntry   = ErrorConfigEntry(errorPath, errorMaxSize)
 

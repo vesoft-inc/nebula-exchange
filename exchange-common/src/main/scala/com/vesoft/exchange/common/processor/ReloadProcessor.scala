@@ -10,7 +10,7 @@ import com.vesoft.exchange.common.GraphProvider
 import com.vesoft.exchange.common.config.Configs
 import com.vesoft.exchange.common.writer.NebulaGraphClientWriter
 import org.apache.log4j.Logger
-import org.apache.spark.TaskContext
+import org.apache.spark.{SparkEnv, TaskContext}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.util.LongAccumulator
 
@@ -55,8 +55,10 @@ class ReloadProcessor(data: DataFrame,
       }
     }
     if (errorBuffer.nonEmpty) {
-      ErrorHandler.save(errorBuffer,
-                        s"${config.errorConfig.errorPath}/reload.${TaskContext.getPartitionId()}")
+      ErrorHandler.save(
+        errorBuffer,
+        s"${config.errorConfig.errorPath}/${SparkEnv.get.blockManager.conf.getAppId}/reload.${TaskContext
+          .getPartitionId()}")
       errorBuffer.clear()
     }
     LOG.info(s"data reload in partition ${TaskContext
