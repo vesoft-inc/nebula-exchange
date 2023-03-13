@@ -5,7 +5,7 @@
 
 package com.vesoft.nebula.exchange
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import java.io.File
 
 import com.vesoft.exchange.Argument
@@ -27,7 +27,8 @@ import com.vesoft.exchange.common.config.{
   PostgreSQLSourceConfigEntry,
   PulsarSourceConfigEntry,
   SinkCategory,
-  SourceCategory
+  SourceCategory,
+  UdfConfigEntry
 }
 import com.vesoft.nebula.exchange.reader.{
   CSVReader,
@@ -51,7 +52,11 @@ import com.vesoft.exchange.common.processor.ReloadProcessor
 import com.vesoft.exchange.common.utils.SparkValidate
 import com.vesoft.nebula.exchange.processor.{EdgeProcessor, VerticesProcessor}
 import org.apache.log4j.Logger
+import org.apache.spark.sql.functions.{col, concat_ws}
+import org.apache.spark.sql.types.StringType
 import org.apache.spark.{SparkConf, SparkEnv}
+
+import scala.collection.mutable.ListBuffer
 
 final case class TooManyErrorsException(private val message: String) extends Exception(message)
 
@@ -142,8 +147,13 @@ object Exchange {
         val fields = tagConfig.vertexField :: tagConfig.fields
         val data   = createDataSource(spark, tagConfig.dataSourceConfigEntry, fields)
         if (data.isDefined && !c.dry) {
-          data.get.cache()
-          val count     = data.get.count()
+          val df = if (tagConfig.vertexUdf.isDefined) {
+            dataUdf(data.get, tagConfig.vertexUdf.get)
+          } else {
+            data.get
+          }
+          df.cache()
+          val count     = df.count()
           val startTime = System.currentTimeMillis()
           val batchSuccess =
             spark.sparkContext.longAccumulator(s"batchSuccess.${tagConfig.name}")
@@ -152,7 +162,7 @@ object Exchange {
 
           val processor = new VerticesProcessor(
             spark,
-            repartition(data.get, tagConfig.partition, tagConfig.dataSourceConfigEntry.category),
+            repartition(df, tagConfig.partition, tagConfig.dataSourceConfigEntry.category),
             tagConfig,
             fieldKeys,
             nebulaKeys,
@@ -161,7 +171,7 @@ object Exchange {
             batchFailure
           )
           processor.process()
-          data.get.unpersist()
+          df.unpersist()
           val costTime = ((System.currentTimeMillis() - startTime) / 1000.0).formatted("%.2f")
           LOG.info(s"import for tag ${tagConfig.name}, data count: $count, cost time: ${costTime}s")
           if (tagConfig.dataSinkConfigEntry.category == SinkCategory.CLIENT) {
@@ -194,15 +204,23 @@ object Exchange {
         }
         val data = createDataSource(spark, edgeConfig.dataSourceConfigEntry, fields)
         if (data.isDefined && !c.dry) {
-          data.get.cache()
-          val count        = data.get.count()
+          var df = data.get
+          if (edgeConfig.srcVertexUdf.isDefined) {
+            df = dataUdf(df, edgeConfig.srcVertexUdf.get)
+          }
+          if (edgeConfig.dstVertexUdf.isDefined) {
+            df = dataUdf(df, edgeConfig.dstVertexUdf.get)
+          }
+
+          df.cache()
+          val count        = df.count()
           val startTime    = System.currentTimeMillis()
           val batchSuccess = spark.sparkContext.longAccumulator(s"batchSuccess.${edgeConfig.name}")
           val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure.${edgeConfig.name}")
 
           val processor = new EdgeProcessor(
             spark,
-            repartition(data.get, edgeConfig.partition, edgeConfig.dataSourceConfigEntry.category),
+            repartition(df, edgeConfig.partition, edgeConfig.dataSourceConfigEntry.category),
             edgeConfig,
             fieldKeys,
             nebulaKeys,
@@ -211,7 +229,7 @@ object Exchange {
             batchFailure
           )
           processor.process()
-          data.get.unpersist()
+          df.unpersist()
           val costTime = ((System.currentTimeMillis() - startTime) / 1000.0).formatted("%.2f")
           LOG.info(
             s"import for edge ${edgeConfig.name}, data count: $count, cost time: ${costTime}s")
@@ -361,5 +379,18 @@ object Exchange {
     } else {
       frame
     }
+  }
+
+  private[this] def dataUdf(data: DataFrame, udfConfig: UdfConfigEntry): DataFrame = {
+    val oldCols                           = udfConfig.oldColNames
+    val sep                               = udfConfig.sep
+    val newCol                            = udfConfig.newColName
+    val originalFieldsNames               = data.schema.fieldNames.toList
+    val finalColNames: ListBuffer[Column] = new ListBuffer[Column]
+    for (field <- originalFieldsNames) {
+      finalColNames.append(col(field))
+    }
+    finalColNames.append(concat_ws(sep, oldCols.map(c => col(c)): _*).cast(StringType).as(newCol))
+    data.select(finalColNames: _*)
   }
 }

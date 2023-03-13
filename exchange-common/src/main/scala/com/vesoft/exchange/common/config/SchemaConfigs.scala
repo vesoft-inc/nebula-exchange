@@ -62,7 +62,8 @@ case class TagConfigEntry(override val name: String,
                           override val checkPointPath: Option[String],
                           repartitionWithNebula: Boolean = true,
                           enableTagless: Boolean = false,
-                          ignoreIndex: Boolean = false)
+                          ignoreIndex: Boolean = false,
+                          vertexUdf: Option[UdfConfigEntry] = None)
     extends SchemaConfigEntry {
   require(
     name.trim.nonEmpty && vertexField.trim.nonEmpty
@@ -77,7 +78,9 @@ case class TagConfigEntry(override val name: String,
       s"batch: $batch, " +
       s"partition: $partition, " +
       s"repartitionWithNebula: $repartitionWithNebula, " +
-      s"enableTagless: $enableTagless."
+      s"enableTagless: $enableTagless, " +
+      s"ignoreIndex: $ignoreIndex, " +
+      s"vertexUdf: $vertexUdf."
   }
 }
 
@@ -117,7 +120,9 @@ case class EdgeConfigEntry(override val name: String,
                            override val partition: Int,
                            override val checkPointPath: Option[String],
                            repartitionWithNebula: Boolean = false,
-                           ignoreIndex: Boolean = false)
+                           ignoreIndex: Boolean = false,
+                           srcVertexUdf: Option[UdfConfigEntry] = None,
+                           dstVertexUdf: Option[UdfConfigEntry] = None)
     extends SchemaConfigEntry {
   require(
     name.trim.nonEmpty && sourceField.trim.nonEmpty && targetField.trim.nonEmpty
@@ -136,7 +141,10 @@ case class EdgeConfigEntry(override val name: String,
         s"target field: $targetField, " +
         s"target policy: $targetPolicy, " +
         s"batch: $batch, " +
-        s"partition: $partition."
+        s"partition: $partition, " +
+        s"ignoreIndex: $ignoreIndex, " +
+        s"srcVertexUdf: $srcVertexUdf" +
+        s"dstVertexUdf: $dstVertexUdf."
     } else {
       s"Edge name: $name, " +
         s"source: $dataSourceConfigEntry, " +
@@ -147,7 +155,10 @@ case class EdgeConfigEntry(override val name: String,
         s"target field: $targetField, " +
         s"target policy: $targetPolicy, " +
         s"batch: $batch, " +
-        s"partition: $partition."
+        s"partition: $partition, " +
+        s"ignoreIndex: $ignoreIndex, " +
+        s"srcVertexUdf: $srcVertexUdf" +
+        s"dstVertexUdf: $dstVertexUdf."
     }
   }
 }
