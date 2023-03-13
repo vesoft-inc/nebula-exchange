@@ -16,6 +16,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.log4j.Logger
 
+import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConverters._
@@ -165,6 +166,12 @@ case class SslConfigEntry(enableGraph: Boolean,
 case class CaSignParam(caCrtFilePath: String, crtFilePath: String, keyFilePath: String)
 
 case class SelfSignParam(crtFilePath: String, keyFilePath: String, password: String)
+
+case class UdfConfigEntry(sep: String, oldColNames: List[String], newColName: String) {
+  override def toString(): String = {
+    s"sep:$sep, oldColNames: $oldColNames, newColName: $newColName"
+  }
+}
 
 /**
   *
@@ -431,6 +438,13 @@ object Configs {
         val repartitionWithNebula = getOrElse(tagConfig, "repartitionWithNebula", true)
         val ignoreIndex           = getOrElse(tagConfig, "ignoreIndex", false)
 
+        val vertexUdf = if (tagConfig.hasPath("vertex.udf")) {
+          val sep                = tagConfig.getString("vertex.udf.separator")
+          val cols: List[String] = tagConfig.getStringList("vertex.udf.oldColNames").toList
+          val newCol             = tagConfig.getString("vertex.udf.newColName")
+          Some(UdfConfigEntry(sep, cols, newCol))
+        } else None
+
         LOG.info(s"name ${tagName}  batch ${batch}")
         val entry = TagConfigEntry(
           tagName,
@@ -445,7 +459,8 @@ object Configs {
           checkPointPath,
           repartitionWithNebula,
           enableTagless,
-          ignoreIndex
+          ignoreIndex,
+          vertexUdf
         )
         LOG.info(s"Tag Config: ${entry}")
         tags += entry
@@ -553,6 +568,20 @@ object Configs {
         val repartitionWithNebula = getOrElse(edgeConfig, "repartitionWithNebula", false)
         val ignoreIndex           = getOrElse(edgeConfig, "ignoreIndex", false)
 
+        val srcUdf = if (edgeConfig.hasPath("source.udf")) {
+          val sep                = edgeConfig.getString("source.udf.separator")
+          val cols: List[String] = edgeConfig.getStringList("source.udf.oldColNames").toList
+          val newCol             = edgeConfig.getString("source.udf.newColName")
+          Some(UdfConfigEntry(sep, cols, newCol))
+        } else None
+
+        val dstUdf = if (edgeConfig.hasPath("target.udf")) {
+          val sep                = edgeConfig.getString("target.udf.separator")
+          val cols: List[String] = edgeConfig.getStringList("target.udf.oldColNames").toList
+          val newCol             = edgeConfig.getString("target.udf.newColName")
+          Some(UdfConfigEntry(sep, cols, newCol))
+        } else None
+
         val entry = EdgeConfigEntry(
           edgeName,
           sourceConfig,
@@ -571,7 +600,9 @@ object Configs {
           partition,
           checkPointPath,
           repartitionWithNebula,
-          ignoreIndex
+          ignoreIndex,
+          srcUdf,
+          dstUdf
         )
         LOG.info(s"Edge Config: ${entry}")
         edges += entry
