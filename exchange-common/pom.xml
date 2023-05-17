@@ -14,7 +14,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <nebula.version>3.0-SNAPSHOT</nebula.version>
+        <nebula.version>3.5.0</nebula.version>
         <scalatest.version>3.2.0</scalatest.version>
         <scala-logging.version>3.9.2</scala-logging.version>
     </properties>
