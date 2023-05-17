@@ -58,6 +58,9 @@ Nebula Exchange 和 Nebula 的版本对应关系如下:
 |nebula-exchange_spark_2.2-3.3.0.jar|  3.x.x  |2.2.*|
 |nebula-exchange_spark_2.4-3.3.0.jar|  3.x.x  |2.4.*|
 |nebula-exchange_spark_3.0-3.3.0.jar|  3.x.x  |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
+|nebula-exchange_spark_2.2-3.5.0.jar|  3.x.x  |2.2.*|
+|nebula-exchange_spark_2.4-3.5.0.jar|  3.x.x  |2.4.*|
+|nebula-exchange_spark_3.0-3.5.0.jar|  3.x.x  |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
 |nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar|     nightly    |2.2.*|
 |nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar|     nightly    |2.4.*|
 |nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar|     nightly    |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
