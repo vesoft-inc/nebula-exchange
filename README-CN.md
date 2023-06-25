@@ -5,7 +5,7 @@ Nebula Exchange（简称为 Exchange）是一款 Apache Spark&trade; 应用，�
 
 Exchange 仅支持 Nebula Graph 2.x 和 3.x。
 
-如果您正在使用 Nebula Graph v1.x，请使用 [Nebula Exchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange) ，或参考 Exchange 1.0 的使用文档[Nebula Exchange 用户手册](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
+如果您正在使用 Nebula Graph v1.x，请使用 [Nebula Exchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange) ，或参考 Exchange 1.0 的使用文档 [Nebula Exchange 用户手册](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
 
 Exchange 目前支持 Spark 2.2， Spark 2.4， Spark 3.0， 对应的工具包名分别是 nebula-exchange_spark_2.2，nebula-exchange_spark_2.4，nebula-exchange_spark_3.0。
 
@@ -104,7 +104,7 @@ nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
 -c application.conf
 ```
 
-关于 Nebula Exchange 的更多说明，请参考 Exchange 2.0 的[使用手册](https://docs.nebula-graph.com.cn/2.6.2/nebula-exchange/about-exchange/ex-ug-what-is-exchange/) 。
+关于 Nebula Exchange 的更多说明，请参考 Exchange 2.0 的 [使用手册](https://docs.nebula-graph.com.cn/2.6.2/nebula-exchange/about-exchange/ex-ug-what-is-exchange/) 。
 
 ## 贡献
 
