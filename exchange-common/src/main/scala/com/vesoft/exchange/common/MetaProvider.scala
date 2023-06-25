@@ -35,7 +35,7 @@ class MetaProvider(addresses: List[HostAndPort],
 
   val address: ListBuffer[HostAddress] = new ListBuffer[HostAddress]
   for (addr <- addresses) {
-    address.append(new HostAddress(addr.getHostText, addr.getPort))
+    address.append(new HostAddress(addr.getHost, addr.getPort))
   }
 
   private var metaClient: MetaClient = null

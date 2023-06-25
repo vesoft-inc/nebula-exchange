@@ -33,7 +33,7 @@ class GraphProvider(addresses: List[HostAndPort], timeout: Int, sslConfigEntry: 
   @transient val pool: NebulaPool = new NebulaPool
   val address                     = new ListBuffer[HostAddress]()
   for (addr <- addresses) {
-    address.append(new HostAddress(addr.getHostText, addr.getPort))
+    address.append(new HostAddress(addr.getHost, addr.getPort))
   }
   val randAddr = scala.util.Random.shuffle(address)
 
