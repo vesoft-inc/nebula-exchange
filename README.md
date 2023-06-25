@@ -103,11 +103,11 @@ Here is the version correspondence between Exchange and NebulaGraph:
 
 ## Feature History
 
-1. Exchange allows for the import of vertex data with both String and Integer type IDs.
-2. Exchange also supports importing data of various types, including Null, Date, DateTime (using UTC instead of local time), and Time.
-3. In addition to Hive on Spark, Exchange can import data from other Hive sources as well.
-4. If there are failures during the data import process, Exchange supports recording and retrying the INSERT statement.
-5. While SST import is supported by Exchange, property default values are not yet supported.
-6. Exchange is compatible with Spark 2.2, Spark 2.4, and Spark 3.0.
+1. *Since 2.0* Exchange allows for the import of vertex data with both String and Integer type IDs.
+2. *Since 2.0* Exchange also supports importing data of various types, including Null, Date, DateTime (using UTC instead of local time), and Time.
+3. *Since 2.0* In addition to Hive on Spark, Exchange can import data from other Hive sources as well.
+4. *Since 2.0* If there are failures during the data import process, Exchange supports recording and retrying the INSERT statement.
+5. *Since 2.5* While SST import is supported by Exchange, property default values are not yet supported.
+6. *Since 3.0* Exchange is compatible with Spark 2.2, Spark 2.4, and Spark 3.0.
 
 Refer to [application.conf](https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf) as an example to edit the configuration file.
