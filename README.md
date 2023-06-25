@@ -9,6 +9,8 @@ If you want to import data for Nebula Graph v1.x，please use [Nebula Exchange v
 
 Exchange currently supports spark2.2, spark2.4 and spark3.0, and the corresponding toolkits are nebula-exchange_spark_2.2,  nebula-exchange_spark_2.4, nebula-exchange_spark_3.0.
 
+> note: 3.4.0 version does not support kafka and pulsar. Please use 3.0.0 or 3.3.0 or 3.5.0 to import Kafka/pulsar into NebulaGraph.
+
 ## How to get
 
 1. Package latest Exchange
