@@ -326,6 +326,17 @@ class JdbcReader(override val session: SparkSession, jdbcConfig: JdbcConfigEntry
     extends ServerBaseReader(session, jdbcConfig.sentence) {
   Class.forName(jdbcConfig.driver)
   override def read(): DataFrame = {
+    import org.apache.spark.sql.jdbc.{JdbcDialects, JdbcDialect}
+    val GoogleDialect = new JdbcDialect {
+      override def canHandle(url: String): Boolean =
+        url.startsWith("jdbc:bigquery") || url.contains("bigquery")
+
+      override def quoteIdentifier(colName: String): String = {
+        s"`$colName`"
+      }
+    }
+    JdbcDialects.registerDialect(GoogleDialect)
+
     var dfReader = session.read
       .format("jdbc")
       .option("url", jdbcConfig.url)
