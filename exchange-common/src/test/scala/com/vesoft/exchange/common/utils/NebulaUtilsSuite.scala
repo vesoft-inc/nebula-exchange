@@ -92,8 +92,8 @@ class NebulaUtilsSuite {
                                       Some(""))
 
     val space   = "test_string"
-    val address = new ListBuffer[HostAndPort]()
-    address.append(HostAndPort.fromParts("127.0.0.1", 9559))
+    val address = new ListBuffer[HostAddress]()
+    address.append(new HostAddress("127.0.0.1", 9559))
     val sslConfig    = SslConfigEntry(false, false, null, null, null)
     val metaProvider = new MetaProvider(address.toList, 6000, 1, sslConfig)
 
