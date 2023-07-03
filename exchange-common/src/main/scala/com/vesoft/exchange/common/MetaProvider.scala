@@ -25,18 +25,13 @@ import scala.collection.mutable.ListBuffer
 /**
   * MetaProvider provide nebula graph meta query operations.
   */
-class MetaProvider(addresses: List[HostAndPort],
+class MetaProvider(addresses: List[HostAddress],
                    timeout: Int,
                    retry: Int,
                    sslConfigEntry: SslConfigEntry)
     extends AutoCloseable
     with Serializable {
   private[this] lazy val LOG = Logger.getLogger(this.getClass)
-
-  val address: ListBuffer[HostAddress] = new ListBuffer[HostAddress]
-  for (addr <- addresses) {
-    address.append(new HostAddress(addr.getHost, addr.getPort))
-  }
 
   private var metaClient: MetaClient = null
   var sslParam: SSLParam             = null
@@ -49,9 +44,9 @@ class MetaProvider(addresses: List[HostAndPort],
       val self = sslConfigEntry.selfSignParam
       sslParam = new SelfSignedSSLParam(self.crtFilePath, self.keyFilePath, self.password)
     }
-    metaClient = new MetaClient(address.asJava, timeout, retry, retry, true, sslParam)
+    metaClient = new MetaClient(addresses.asJava, timeout, retry, retry, true, sslParam)
   } else {
-    metaClient = new MetaClient(address.asJava, timeout, retry, retry)
+    metaClient = new MetaClient(addresses.asJava, timeout, retry, retry)
   }
 
   metaClient.connect()
