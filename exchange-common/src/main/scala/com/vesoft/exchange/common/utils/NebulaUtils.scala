@@ -147,9 +147,6 @@ object NebulaUtils {
 
     var port = -1;
     if (!Strings.isNullOrEmpty(portString)) {
-      if (portString.startsWith("+") || !CharMatcher.ascii().matchesAllOf(portString)) {
-        throw new IllegalArgumentException(s"Unparseable port number: $addr")
-      }
       port = Integer.parseInt(portString)
       if (port < 0 || port > 65535) {
         throw new IllegalArgumentException(s"Port number out of range: $addr")
