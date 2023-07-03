@@ -10,6 +10,8 @@ Exchange 支持的 Spark 版本包括 2.2、2.4 和 3.0，对应的工具包名�
 > - 3.4.0 版本不支持 kafka 和 pulsar， 若需将 kafka 或 pulsar 数据导入 NebulaGraph，请使用 3.0.0 或 3.3.0 或 3.5.0 版本。
 > - 本仓库仅支持 NebulaGraph 2.x 和 3.x，如果您在使用 NebulaGraph v1.x，请使用 [NebulaExchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange) ，或参考 Exchange 1.0 的使用文档[NebulaExchange 用户手册](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
 
+> 注意：3.4.0版本不支持 kafka 和 pulsar， 若需将 kafka 或 pulsar 数据导入 NebulaGraph，请使用 3.0.0 或 3.3.0 或 3.5.0 版本。
+
 ## 如何获取
 
 1. 编译打包最新的 Exchange。
