@@ -147,6 +147,11 @@ object NebulaUtils {
 
     var port = -1;
     if (!Strings.isNullOrEmpty(portString)) {
+      for (c <- portString.toCharArray) {
+        if (!Character.isDigit(c)) {
+          throw new IllegalArgumentException(s"Port must be numeric: $addr")
+        }
+      }
       port = Integer.parseInt(portString)
       if (port < 0 || port > 65535) {
         throw new IllegalArgumentException(s"Port number out of range: $addr")
@@ -168,8 +173,8 @@ object NebulaUtils {
       if (addr.charAt(closeBracketIndex + 1) != ':') {
         throw new IllegalArgumentException(s"only a colon may follow a close bracket: $addr")
       }
-      for (i <- closeBracketIndex + 2 to addr.length) {
-        if (Character.isDigit(addr.charAt(i))) {
+      for (i <- closeBracketIndex + 2 until addr.length) {
+        if (!Character.isDigit(addr.charAt(i))) {
           throw new IllegalArgumentException(s"Port must be numeric: $addr")
         }
       }
