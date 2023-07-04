@@ -7,6 +7,7 @@ package com.vesoft.exchange.common
 
 import com.google.common.net.HostAndPort
 import com.vesoft.exchange.common.config.{SslConfigEntry, SslType, UserConfigEntry}
+import com.vesoft.nebula.client.graph.data.HostAddress
 import com.vesoft.nebula.client.graph.exception.AuthFailedException
 import com.vesoft.nebula.client.graph.net.Session
 import org.junit.{After, Before, Test}
@@ -26,7 +27,7 @@ class GraphProviderSuite {
 
     val sslConfig = SslConfigEntry(false, false, SslType.CA, null, null)
     graphProvider =
-      new GraphProvider(List(HostAndPort.fromParts("127.0.0.1", 9669)), 5000, sslConfig)
+      new GraphProvider(List(new HostAddress("127.0.0.1", 9669)), 5000, sslConfig)
   }
 
   @After

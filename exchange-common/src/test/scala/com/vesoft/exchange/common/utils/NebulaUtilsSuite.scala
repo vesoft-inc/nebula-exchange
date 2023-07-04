@@ -92,8 +92,8 @@ class NebulaUtilsSuite {
                                       Some(""))
 
     val space   = "test_string"
-    val address = new ListBuffer[HostAndPort]()
-    address.append(HostAndPort.fromParts("127.0.0.1", 9559))
+    val address = new ListBuffer[HostAddress]()
+    address.append(new HostAddress("127.0.0.1", 9559))
     val sslConfig    = SslConfigEntry(false, false, null, null, null)
     val metaProvider = new MetaProvider(address.toList, 6000, 1, sslConfig)
 
@@ -218,5 +218,42 @@ class NebulaUtilsSuite {
     assert("`col1`".equals(escapeName.head))
     assert("`col2`".equals(escapeName.tail.head))
     assert("`col3`".equals(escapeName.tail.tail.head))
+  }
+
+  @Test
+  def getAddressFromString(): Unit = {
+    var addr = "127.0.0.1:9669"
+    var hostAddress = NebulaUtils.getAddressFromString(addr)
+    assert("127.0.0.1".equals(hostAddress.getHost))
+    assert(hostAddress.getPort==9669)
+
+    addr="localhost:9669"
+    hostAddress = NebulaUtils.getAddressFromString(addr)
+    assert("localhost".equals(hostAddress.getHost))
+
+    addr = "www.baidu.com:22"
+    hostAddress = NebulaUtils.getAddressFromString(addr)
+    assert(hostAddress.getPort==22)
+
+    addr = "[2023::2]:65535"
+    hostAddress = NebulaUtils.getAddressFromString(addr)
+    assert(hostAddress.getPort == 65535)
+
+    addr = "2023::3"
+    hostAddress = NebulaUtils.getAddressFromString(addr)
+    assert(hostAddress.getHost.equals("2023::3"))
+    assert(hostAddress.getPort== -1)
+
+    // bad address
+    addr = "localhost:65536"
+    assertThrows[IllegalArgumentException](NebulaUtils.getAddressFromString(addr))
+    addr = "localhost:-1"
+    assertThrows[IllegalArgumentException](NebulaUtils.getAddressFromString(addr))
+    addr = "[localhost]:9669"
+    assertThrows[IllegalArgumentException](NebulaUtils.getAddressFromString(addr))
+    addr = "www.baidu.com:+25"
+    assertThrows[IllegalArgumentException](NebulaUtils.getAddressFromString(addr))
+    addr = "[]:8080"
+    assertThrows[IllegalArgumentException](NebulaUtils.getAddressFromString(addr))
   }
 }

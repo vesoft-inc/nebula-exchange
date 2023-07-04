@@ -7,6 +7,7 @@ package com.vesoft.exchange.common
 
 import com.google.common.net.HostAndPort
 import com.vesoft.exchange.common.config.{SslConfigEntry, SslType, Type}
+import com.vesoft.nebula.client.graph.data.HostAddress
 import com.vesoft.nebula.client.meta.exception.ExecuteFailedException
 import org.junit.{After, Before, Test}
 import org.scalatest.Assertions.assertThrows
@@ -22,8 +23,7 @@ class MetaProviderSuite {
     mockData.close()
 
     val sslConfig = SslConfigEntry(false, false, SslType.CA, null, null)
-    metaProvider =
-      new MetaProvider(List(HostAndPort.fromParts("127.0.0.1", 9559)), 5000, 1, sslConfig)
+    metaProvider = new MetaProvider(List(new HostAddress("127.0.0.1", 9559)), 5000, 1, sslConfig)
   }
 
   @After

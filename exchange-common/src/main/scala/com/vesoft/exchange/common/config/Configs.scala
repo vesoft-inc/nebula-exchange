@@ -7,11 +7,12 @@ package com.vesoft.exchange.common.config
 
 import java.io.{File, InputStreamReader}
 import java.nio.file.Files
-
 import com.google.common.net.HostAndPort
 import com.typesafe.config.{Config, ConfigFactory}
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.KeyPolicy
+import com.vesoft.exchange.common.utils.NebulaUtils
+import com.vesoft.nebula.client.graph.data.HostAddress
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.log4j.Logger
@@ -60,18 +61,18 @@ case class DataBaseConfigEntry(graphAddress: List[String],
 
   override def toString: String = super.toString
 
-  def getGraphAddress: List[HostAndPort] = {
-    val hostAndPorts = new ListBuffer[HostAndPort]
+  def getGraphAddress: List[HostAddress] = {
+    val hostAndPorts = new ListBuffer[HostAddress]
     for (address <- graphAddress) {
-      hostAndPorts.append(HostAndPort.fromString(address))
+      hostAndPorts.append(NebulaUtils.getAddressFromString(address))
     }
     hostAndPorts.toList
   }
 
-  def getMetaAddress: List[HostAndPort] = {
-    val hostAndPorts = new ListBuffer[HostAndPort]
+  def getMetaAddress: List[HostAddress] = {
+    val hostAndPorts = new ListBuffer[HostAddress]
     for (address <- metaAddresses) {
-      hostAndPorts.append(HostAndPort.fromString(address))
+      hostAndPorts.append(NebulaUtils.getAddressFromString(address))
     }
     hostAndPorts.toList
   }

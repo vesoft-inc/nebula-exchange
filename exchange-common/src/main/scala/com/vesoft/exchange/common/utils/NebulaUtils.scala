@@ -5,14 +5,16 @@
 
 package com.vesoft.exchange.common.utils
 
+import com.google.common.base.{CharMatcher, Strings}
+
 import java.nio.charset.Charset
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-
 import com.google.common.primitives.UnsignedLong
 import com.vesoft.exchange.common.MetaProvider
 import com.vesoft.exchange.common.VidType
 import com.vesoft.exchange.common.config.{SchemaConfigEntry, Type}
+import com.vesoft.nebula.client.graph.data.HostAddress
 import org.apache.commons.codec.digest.MurmurHash2
 import org.apache.log4j.Logger
 
@@ -120,5 +122,63 @@ object NebulaUtils {
       propNames.append(sb.toString())
     }
     propNames.toList
+  }
+
+  def getAddressFromString(addr: String): HostAddress = {
+    if (addr == null) {
+      throw new IllegalArgumentException("wrong address format.")
+    }
+    var host: String       = null
+    var portString: String = null
+
+    if (addr.startsWith("[")) {
+      val hostAndPort = getHostAndPortFromBracketedHost(addr)
+      host = hostAndPort._1
+      portString = hostAndPort._2
+    } else {
+      val colonPos = addr.indexOf(":")
+      if (colonPos >= 0 && addr.indexOf(":", colonPos + 1) == -1) {
+        host = addr.substring(0, colonPos)
+        portString = addr.substring(colonPos + 1)
+      } else {
+        host = addr
+      }
+    }
+
+    var port = -1;
+    if (!Strings.isNullOrEmpty(portString)) {
+      for (c <- portString.toCharArray) {
+        if (!Character.isDigit(c)) {
+          throw new IllegalArgumentException(s"Port must be numeric: $addr")
+        }
+      }
+      port = Integer.parseInt(portString)
+      if (port < 0 || port > 65535) {
+        throw new IllegalArgumentException(s"Port number out of range: $addr")
+      }
+    }
+    new HostAddress(host, port)
+  }
+
+  def getHostAndPortFromBracketedHost(addr: String): (String, String) = {
+    val colonIndex        = addr.indexOf(":")
+    val closeBracketIndex = addr.lastIndexOf("]")
+    if (colonIndex < 0 || closeBracketIndex < colonIndex) {
+      throw new IllegalArgumentException(s"invalid bracketed host/port: $addr")
+    }
+    val host: String = addr.substring(1, closeBracketIndex)
+    if (closeBracketIndex + 1 == addr.length) {
+      return (host, "")
+    } else {
+      if (addr.charAt(closeBracketIndex + 1) != ':') {
+        throw new IllegalArgumentException(s"only a colon may follow a close bracket: $addr")
+      }
+      for (i <- closeBracketIndex + 2 until addr.length) {
+        if (!Character.isDigit(addr.charAt(i))) {
+          throw new IllegalArgumentException(s"Port must be numeric: $addr")
+        }
+      }
+    }
+    (host, addr.substring(closeBracketIndex + 2))
   }
 }
