@@ -37,7 +37,7 @@ class NebulaUtilsSuite {
   val randAddr = scala.util.Random.shuffle(address)
   pool.init(randAddr.asJava, nebulaPoolConfig)
 
-  //@Before
+  @Before
   def setUp(): Unit = {
     val mockData = new NebulaGraphMock
     mockData.mockStringIdGraph()
