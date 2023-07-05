@@ -257,7 +257,9 @@ class EdgeProcessor(spark: SparkSession,
           s"only int vidType can use policy, but your vidType is FIXED_STRING.your row data is $row")
         false
       } else true
-    idFlag && policyFlag
+
+    val udfFlag = isVidStringType || (edgeConfig.sourcePrefix == null && edgeConfig.targetPrefix == null)
+    idFlag && policyFlag && udfFlag
   }
 
   /**
@@ -309,6 +311,12 @@ class EdgeProcessor(spark: SparkSession,
       val index = row.schema.fieldIndex(field)
       val value = row.get(index).toString.trim
       if (value.equals(DEFAULT_EMPTY_VALUE)) "" else value
+    }
+    if ("source_field".equals(fieldType) && edgeConfig.sourcePrefix != null) {
+      fieldValue = edgeConfig.sourcePrefix + "_" + fieldValue
+    }
+    if ("target_field".equals(fieldType) && edgeConfig.targetPrefix != null) {
+      fieldValue = edgeConfig.targetPrefix + "_" + fieldValue
     }
     // process string type vid
     if (policy.isEmpty && isVidStringType) {

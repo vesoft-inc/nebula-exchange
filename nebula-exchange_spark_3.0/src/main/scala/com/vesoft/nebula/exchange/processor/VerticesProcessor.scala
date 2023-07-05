@@ -242,6 +242,9 @@ class VerticesProcessor(spark: SparkSession,
     if (vertexId.equals(DEFAULT_EMPTY_VALUE)) {
       vertexId = ""
     }
+    if (tagConfig.vertexPrefix != null) {
+      vertexId = tagConfig.vertexPrefix + "_" + vertexId
+    }
 
     if (tagConfig.vertexPolicy.isEmpty && isVidStringType) {
       vertexId = NebulaUtils.escapeUtil(vertexId).mkString("\"", "", "\"")
