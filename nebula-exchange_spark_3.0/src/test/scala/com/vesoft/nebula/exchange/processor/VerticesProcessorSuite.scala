@@ -76,7 +76,7 @@ class VerticesProcessorSuite {
     val stringIdRow        = new GenericRowWithSchema(stringIdValue.toArray, schema)
     val intIdRow           = new GenericRowWithSchema(intIdValue.toArray, schema)
     val tagConfigEntry =
-      TagConfigEntry("person", null, null, List(), List(), "id", None, 10, 10, None)
+      TagConfigEntry("person", null, null, List(), List(), "id", None, null, 10, 10, None)
 
     // test for string id value without policy
     assert(processClazz.isVertexValid(stringIdRow, tagConfigEntry, false, true))
@@ -93,7 +93,17 @@ class VerticesProcessorSuite {
 
     // test for string id value with policy
     val tagConfigEntryWithPolicy =
-      TagConfigEntry("person", null, null, List(), List(), "id", Some(KeyPolicy.HASH), 10, 10, None)
+      TagConfigEntry("person",
+                     null,
+                     null,
+                     List(),
+                     List(),
+                     "id",
+                     Some(KeyPolicy.HASH),
+                     null,
+                     10,
+                     10,
+                     None)
     assert(!processClazz.isVertexValid(stringIdRow, tagConfigEntryWithPolicy, true, true))
     assertThrows[AssertionError](
       processClazz.isVertexValid(stringIdRow, tagConfigEntryWithPolicy, false, true))

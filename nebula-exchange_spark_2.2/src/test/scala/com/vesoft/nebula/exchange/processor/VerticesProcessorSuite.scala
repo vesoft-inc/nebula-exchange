@@ -79,7 +79,7 @@ class VerticesProcessorSuite {
     val stringIdRow        = new GenericRowWithSchema(stringIdValue.toArray, schema)
     val intIdRow           = new GenericRowWithSchema(intIdValue.toArray, schema)
     val tagConfigEntry =
-      TagConfigEntry("person", null, null, List(), List(), "id", None, 10, 10, None)
+      TagConfigEntry("person", null, null, List(), List(), "id", None, null, 10, 10, None)
 
     // test for string id value without policy
     assert(processClazz.isVertexValid(stringIdRow, tagConfigEntry, false, true))
@@ -96,7 +96,17 @@ class VerticesProcessorSuite {
 
     // test for string id value with policy
     val tagConfigEntryWithPolicy =
-      TagConfigEntry("person", null, null, List(), List(), "id", Some(KeyPolicy.HASH), 10, 10, None)
+      TagConfigEntry("person",
+                     null,
+                     null,
+                     List(),
+                     List(),
+                     "id",
+                     Some(KeyPolicy.HASH),
+                     null,
+                     10,
+                     10,
+                     None)
     assert(!processClazz.isVertexValid(stringIdRow, tagConfigEntryWithPolicy, true, true))
     assertThrows[AssertionError](
       processClazz.isVertexValid(stringIdRow, tagConfigEntryWithPolicy, false, true))
@@ -107,6 +117,23 @@ class VerticesProcessorSuite {
     assert(processClazz.isVertexValid(stringIdRow, tagConfigEntryWithPolicy, false, false))
     assertThrows[AssertionError](
       processClazz.isVertexValid(stringIdRow, tagConfigEntryWithPolicy, false, true))
+
+    // test for prefix for id value
+    val tagConfigEntryWithPrefix =
+      TagConfigEntry("person",
+                     null,
+                     null,
+                     List(),
+                     List(),
+                     "id",
+                     Some(KeyPolicy.HASH),
+                     "prefix",
+                     10,
+                     10,
+                     None)
+    assert(processClazz.isVertexValid(stringIdRow, tagConfigEntryWithPrefix, false, false))
+    assertThrows[AssertionError](
+      processClazz.isVertexValid(stringIdRow, tagConfigEntryWithPrefix, false, true))
   }
 
   @Test
@@ -117,6 +144,12 @@ class VerticesProcessorSuite {
     assert(vertex.vertexID.equals("\"1\""))
     assert(vertex.toString.equals(
       "Vertex ID: \"1\", Values: \"\", \"fixedBob\", 12, 200, 1000, 100000, date(\"2021-01-01\"), datetime(\"2021-01-01T12:00:00.100\"), time(\"12:00:00.100\"), 345436232, true, 12.01, 22.12, ST_GeogFromText(\"POINT(3 8)\")"))
+
+    val tagConfigEntryWithPrefix =
+      TagConfigEntry("person", null, null, List(), List(), "id", None, "prefix", 10, 10, None)
+    val vertexWithPrefix =
+      processClazz.convertToVertex(row, tagConfigEntryWithPrefix, true, fieldKeys, map)
+    assert(vertexWithPrefix.vertexID.equals("\"prefix_1\""))
   }
 
   @Test

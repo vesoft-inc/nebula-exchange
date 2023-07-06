@@ -84,9 +84,11 @@ class EdgeProcessorSuite {
                                           nebulaKeys,
                                           "src",
                                           None,
+                                          null,
                                           None,
                                           "dst",
                                           None,
+                                          null,
                                           false,
                                           None,
                                           None,
@@ -115,9 +117,11 @@ class EdgeProcessorSuite {
                                                     nebulaKeys,
                                                     "src",
                                                     Some(KeyPolicy.HASH),
+                                                    null,
                                                     None,
                                                     "dst",
                                                     Some(KeyPolicy.HASH),
+                                                    null,
                                                     false,
                                                     None,
                                                     None,
@@ -145,6 +149,28 @@ class EdgeProcessorSuite {
     assert(edge.destination.equals("\"2\""))
     assert(edge.toString.equals(
       "Edge: \"1\"->\"2\"@0 values: \"\", \"fixedBob\", 12, 200, 1000, 100000, date(\"2021-01-01\"), datetime(\"2021-01-01T12:00:00.100\"), time(\"12:00:00.100\"), 345436232, true, 12.01, 22.12, ST_GeogFromText(\"POINT(3 8)\")"))
+
+    val edgeConfigEntryWithPrefix = EdgeConfigEntry("friend",
+      null,
+      null,
+      fieldKeys,
+      nebulaKeys,
+      "src",
+      None,
+      "src",
+      None,
+      "dst",
+      None,
+      "dst",
+      false,
+      None,
+      None,
+      10,
+      10,
+      None)
+    val edgeWithPrefix = processClazz.convertToEdge(row, edgeConfigEntryWithPrefix, true, fieldKeys, map)
+    assert(edgeWithPrefix.source.equals("\"src_1\""))
+    assert(edgeWithPrefix.destination.equals("\"dst_2\""))
   }
 
   @Test
