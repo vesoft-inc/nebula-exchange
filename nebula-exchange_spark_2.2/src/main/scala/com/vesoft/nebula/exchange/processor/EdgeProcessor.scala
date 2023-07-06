@@ -240,7 +240,7 @@ class EdgeProcessor(spark: SparkSession,
         false
       } else true
 
-    val udfFlag = isVidStringType || (edgeConfig.sourcePrefix == null && edgeConfig.targetPrefix == null)
+    val udfFlag = isVidStringType || policy.isEmpty || (edgeConfig.sourcePrefix == null && edgeConfig.targetPrefix == null)
     idFlag && policyFlag && udfFlag
   }
 
@@ -256,13 +256,15 @@ class EdgeProcessor(spark: SparkSession,
                                    "source_field",
                                    row,
                                    edgeConfig.sourcePolicy,
-                                   isVidStringType)
+                                   isVidStringType,
+                                   edgeConfig.sourcePrefix)
 
     val targetField = processField(edgeConfig.targetField,
                                    "target_field",
                                    row,
                                    edgeConfig.targetPolicy,
-                                   isVidStringType)
+                                   isVidStringType,
+                                   edgeConfig.targetPrefix)
 
     val values = for {
       property <- fieldKeys if property.trim.length != 0
@@ -284,7 +286,8 @@ class EdgeProcessor(spark: SparkSession,
                    fieldType: String,
                    row: Row,
                    policy: Option[KeyPolicy.Value],
-                   isVidStringType: Boolean): String = {
+                   isVidStringType: Boolean,
+                   prefix: String): String = {
     var fieldValue = if (edgeConfig.isGeo && "source_field".equals(fieldType)) {
       val lat = row.getDouble(row.schema.fieldIndex(edgeConfig.latitude.get))
       val lng = row.getDouble(row.schema.fieldIndex(edgeConfig.longitude.get))
@@ -294,11 +297,8 @@ class EdgeProcessor(spark: SparkSession,
       val value = row.get(index).toString.trim
       if (value.equals(DEFAULT_EMPTY_VALUE)) "" else value
     }
-    if ("source_field".equals(fieldType) && edgeConfig.sourcePrefix != null) {
-      fieldValue = edgeConfig.sourcePrefix + "_" + fieldValue
-    }
-    if ("target_field".equals(fieldType) && edgeConfig.targetPrefix != null) {
-      fieldValue = edgeConfig.targetPrefix + "_" + fieldValue
+    if (prefix != null) {
+      fieldValue = prefix + "_" + fieldValue
     }
     // process string type vid
     if (policy.isEmpty && isVidStringType) {
