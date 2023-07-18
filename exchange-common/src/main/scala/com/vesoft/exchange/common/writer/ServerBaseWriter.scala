@@ -6,17 +6,10 @@
 package com.vesoft.exchange.common.writer
 
 import java.util.concurrent.TimeUnit
-
 import com.google.common.util.concurrent.RateLimiter
 import com.vesoft.exchange.common.GraphProvider
 import com.vesoft.exchange.common.{Edges, KeyPolicy, Vertices}
-import com.vesoft.exchange.common.config.{
-  DataBaseConfigEntry,
-  RateConfigEntry,
-  SchemaConfigEntry,
-  Type,
-  UserConfigEntry
-}
+import com.vesoft.exchange.common.config.{DataBaseConfigEntry, RateConfigEntry, SchemaConfigEntry, TagConfigEntry, Type, UserConfigEntry, WriteMode}
 import com.vesoft.nebula.ErrorCode
 import org.apache.log4j.Logger
 
@@ -29,6 +22,10 @@ abstract class ServerBaseWriter extends Writer {
   private[this] val ENDPOINT_TEMPLATE                   = "%s(\"%s\")"
   private[this] val EDGE_VALUE_WITHOUT_RANKING_TEMPLATE = "%s->%s: (%s)"
   private[this] val EDGE_VALUE_TEMPLATE                 = "%s->%s@%d: (%s)"
+
+  private[this] val BATCH_DELETE_TEMPLATE = "DELETE %s %s"
+  private[this] val BATCH_DELETE_WITH_EDGE_TEMPLATE = "DELETE %s %s WITH EDGE"
+  private[this] val DELETE_VALUE_TEMPLATE               = "%s"
 
   def toExecuteSentence(name: String, vertices: Vertices, ignoreIndex: Boolean): String = {
     { if (ignoreIndex) BATCH_INSERT_IGNORE_INDEX_TEMPLATE else BATCH_INSERT_TEMPLATE }
@@ -48,6 +45,32 @@ abstract class ServerBaseWriter extends Writer {
                 case KeyPolicy.UUID =>
                   INSERT_VALUE_TEMPLATE_WITH_POLICY
                     .format(KeyPolicy.UUID.toString, vertex.vertexID, vertex.propertyValues)
+                case _ =>
+                  throw new IllegalArgumentException(
+                    s"invalidate vertex policy ${vertices.policy.get}")
+              }
+            }
+          }
+          .mkString(", ")
+      )
+  }
+
+  def toDeleteExecuteSentence(vertices: Vertices, deleteEdge: Boolean): String = {
+    { if (deleteEdge) BATCH_DELETE_WITH_EDGE_TEMPLATE else BATCH_DELETE_TEMPLATE }
+      .format(
+        Type.VERTEX.toString,
+        vertices.values
+          .map { vertex =>
+            if (vertices.policy.isEmpty) {
+              DELETE_VALUE_TEMPLATE.format(vertex.vertexID)
+            } else {
+              vertices.policy.get match {
+                case KeyPolicy.HASH =>
+                  ENDPOINT_TEMPLATE
+                    .format(KeyPolicy.HASH.toString, vertex.vertexID)
+                case KeyPolicy.UUID =>
+                  ENDPOINT_TEMPLATE
+                    .format(KeyPolicy.UUID.toString, vertex.vertexID)
                 case _ =>
                   throw new IllegalArgumentException(
                     s"invalidate vertex policy ${vertices.policy.get}")
@@ -137,8 +160,23 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
     LOG.info(s"Connection to ${dataBaseConfigEntry.graphAddress}")
   }
 
+  def execute(vertices: Vertices, writeMode: WriteMode.Mode): String = {
+    val sentence = writeMode match {
+      case WriteMode.INSERT =>
+        toExecuteSentence(config.name, vertices, config.asInstanceOf[TagConfigEntry].ignoreIndex)
+      case WriteMode.UPDATE =>
+        toExecuteSentence(config.name, vertices, config.asInstanceOf[TagConfigEntry].ignoreIndex)
+      case WriteMode.DELETE =>
+        toDeleteExecuteSentence(vertices, config.asInstanceOf[TagConfigEntry].deleteEdge)
+      case _ =>
+        throw new IllegalArgumentException(s"write mode ${writeMode} not supported.")
+    }
+    sentence
+  }
+
   override def writeVertices(vertices: Vertices, ignoreIndex: Boolean = false): String = {
     val sentence = toExecuteSentence(config.name, vertices, ignoreIndex)
+    val statement = execute(vertices, config.asInstanceOf[TagConfigEntry].writeMode)
     if (rateLimiter.tryAcquire(rateConfig.timeout, TimeUnit.MILLISECONDS)) {
       val result = graphProvider.submit(session, sentence)
       if (result.isSucceeded) {

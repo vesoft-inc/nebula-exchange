@@ -34,6 +34,13 @@ object SslType extends Enumeration {
   val SELF = Value("self")
 }
 
+object WriteMode extends Enumeration {
+  type Mode = Value
+  val INSERT = Value("insert")
+  val UPDATE = Value("update")
+  val DELETE = Value("delete")
+}
+
 /**
   * DataBaseConfigEntry describe the nebula cluster's address and which space will be used.
   *
@@ -426,6 +433,8 @@ object Configs {
         val sinkConfig   = dataSinkConfig(sinkCategory, nebulaConfig)
         LOG.info(s"Sink Config ${sourceConfig}")
 
+        val writeMode = toWriteModeCategory(tagConfig.getString("writeMode"))
+
         val batch = getOrElse(tagConfig, "batch", DEFAULT_BATCH)
         val checkPointPath =
           if (tagConfig.hasPath("check_point_path")) Some(tagConfig.getString("check_point_path"))
@@ -437,6 +446,7 @@ object Configs {
         val partition             = getOrElse(tagConfig, "partition", DEFAULT_PARTITION)
         val repartitionWithNebula = getOrElse(tagConfig, "repartitionWithNebula", true)
         val ignoreIndex           = getOrElse(tagConfig, "ignoreIndex", false)
+        val deleteEdge            = getOrElse(tagConfig, "deleteEdge", false)
 
         val vertexUdf = if (tagConfig.hasPath("vertex.udf")) {
           val sep                = tagConfig.getString("vertex.udf.separator")
@@ -452,6 +462,7 @@ object Configs {
           sinkConfig,
           fields,
           nebulaFields,
+          writeMode,
           vertexField,
           policyOpt,
           batch,
@@ -460,6 +471,7 @@ object Configs {
           repartitionWithNebula,
           enableTagless,
           ignoreIndex,
+          deleteEdge,
           vertexUdf
         )
         LOG.info(s"Tag Config: ${entry}")
@@ -659,6 +671,21 @@ object Configs {
     category.trim.toUpperCase match {
       case "CLIENT" => SinkCategory.CLIENT
       case "SST"    => SinkCategory.SST
+      case _        => throw new IllegalArgumentException(s"${category} not support")
+    }
+  }
+
+  /**
+   * Use to get write mode according to category of writeMode.
+   *
+   * @param category
+   * @return
+   */
+  private[this] def toWriteModeCategory(category: String): WriteMode.Mode = {
+    category.trim.toUpperCase match {
+      case "INSERT" => WriteMode.INSERT
+      case "UPDATE" => WriteMode.UPDATE
+      case "DELETE" => WriteMode.DELETE
       case _        => throw new IllegalArgumentException(s"${category} not support")
     }
   }

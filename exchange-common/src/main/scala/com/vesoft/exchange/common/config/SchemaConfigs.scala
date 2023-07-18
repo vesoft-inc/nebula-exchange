@@ -55,6 +55,7 @@ case class TagConfigEntry(override val name: String,
                           override val dataSinkConfigEntry: DataSinkConfigEntry,
                           override val fields: List[String],
                           override val nebulaFields: List[String],
+                          writeMode: WriteMode.Mode,
                           vertexField: String,
                           vertexPolicy: Option[KeyPolicy.Value],
                           override val batch: Int,
@@ -63,6 +64,7 @@ case class TagConfigEntry(override val name: String,
                           repartitionWithNebula: Boolean = true,
                           enableTagless: Boolean = false,
                           ignoreIndex: Boolean = false,
+                          deleteEdge: Boolean = false,
                           vertexUdf: Option[UdfConfigEntry] = None)
     extends SchemaConfigEntry {
   require(
