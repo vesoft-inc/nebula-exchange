@@ -7,11 +7,12 @@ package com.vesoft.exchange.common.config
 
 import java.io.{File, InputStreamReader}
 import java.nio.file.Files
-
 import com.google.common.net.HostAndPort
 import com.typesafe.config.{Config, ConfigFactory}
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.KeyPolicy
+import com.vesoft.exchange.common.utils.NebulaUtils
+import com.vesoft.nebula.client.graph.data.HostAddress
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.log4j.Logger
@@ -67,18 +68,18 @@ case class DataBaseConfigEntry(graphAddress: List[String],
 
   override def toString: String = super.toString
 
-  def getGraphAddress: List[HostAndPort] = {
-    val hostAndPorts = new ListBuffer[HostAndPort]
+  def getGraphAddress: List[HostAddress] = {
+    val hostAndPorts = new ListBuffer[HostAddress]
     for (address <- graphAddress) {
-      hostAndPorts.append(HostAndPort.fromString(address))
+      hostAndPorts.append(NebulaUtils.getAddressFromString(address))
     }
     hostAndPorts.toList
   }
 
-  def getMetaAddress: List[HostAndPort] = {
-    val hostAndPorts = new ListBuffer[HostAndPort]
+  def getMetaAddress: List[HostAddress] = {
+    val hostAndPorts = new ListBuffer[HostAddress]
     for (address <- metaAddresses) {
-      hostAndPorts.append(HostAndPort.fromString(address))
+      hostAndPorts.append(NebulaUtils.getAddressFromString(address))
     }
     hostAndPorts.toList
   }
@@ -410,7 +411,9 @@ object Configs {
 
         // You can specified the vertex field name via the com.vesoft.exchange.common.config item `vertex`
         // If you want to qualified the key policy, you can wrap them into a block.
+        var prefix: String = null
         val vertexField = if (tagConfig.hasPath("vertex.field")) {
+          prefix = getOrElse(tagConfig, "vertex.prefix", null)
           tagConfig.getString("vertex.field")
         } else {
           tagConfig.getString("vertex")
@@ -465,6 +468,7 @@ object Configs {
           writeMode,
           vertexField,
           policyOpt,
+          prefix,
           batch,
           partition,
           checkPointPath,
@@ -515,8 +519,10 @@ object Configs {
         val sinkConfig   = dataSinkConfig(sinkCategory, nebulaConfig)
         LOG.info(s"Sink Config ${sourceConfig}")
 
+        var sourcePrefix: String = null
         val sourceField = if (!isGeo) {
           if (edgeConfig.hasPath("source.field")) {
+            sourcePrefix = getOrElse(edgeConfig, "source.prefix", null)
             edgeConfig.getString("source.field")
           } else {
             edgeConfig.getString("source")
@@ -535,8 +541,9 @@ object Configs {
         } else {
           None
         }
-
+        var targetPrefix: String = null
         val targetField: String = if (edgeConfig.hasPath("target.field")) {
+          targetPrefix = getOrElse(edgeConfig, "target.prefix", null)
           edgeConfig.getString("target.field")
         } else {
           edgeConfig.getString("target")
@@ -602,9 +609,11 @@ object Configs {
           nebulaFields,
           sourceField,
           sourcePolicy,
+          sourcePrefix,
           ranking,
           targetField,
           targetPolicy,
+          targetPrefix,
           isGeo,
           latitude,
           longitude,

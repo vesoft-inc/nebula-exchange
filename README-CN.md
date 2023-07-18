@@ -1,13 +1,16 @@
-# 欢迎使用 Nebula Exchange
+# 欢迎使用 NebulaGraph Exchange
 [English](https://github.com/vesoft-inc/nebula-exchange/blob/master/README.md)
 
-Nebula Exchange（简称为 Exchange）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到 Nebula Graph 中，能支持多种不同格式的批式数据和流式数据的迁移。
+NebulaGraph Exchange（以下简称 Exchange）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到 NebulaGraph 中，它能支持多种不同格式的批式数据和流式数据的迁移，它还支持直接与 SST File 方式的 NebulaGraph 写入。
 
-Exchange 仅支持 Nebula Graph 2.x 和 3.x。
 
-如果您正在使用 Nebula Graph v1.x，请使用 [Nebula Exchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange) ，或参考 Exchange 1.0 的使用文档[Nebula Exchange 用户手册](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
+Exchange 支持的 Spark 版本包括 2.2、2.4 和 3.0，对应的工具包名分别为 `nebula-exchange_spark_2.2`、`nebula-exchange_spark_2.4` 和 `nebula-exchange_spark_3.0`。
 
-Exchange 目前支持 Spark 2.2， Spark 2.4， Spark 3.0， 对应的工具包名分别是 nebula-exchange_spark_2.2，nebula-exchange_spark_2.4，nebula-exchange_spark_3.0。
+> 注意：
+> - 3.4.0 版本不支持 kafka 和 pulsar， 若需将 kafka 或 pulsar 数据导入 NebulaGraph，请使用 3.0.0 或 3.3.0 或 3.5.0 版本。
+> - 本仓库仅支持 NebulaGraph 2.x 和 3.x，如果您在使用 NebulaGraph v1.x，请使用 [NebulaExchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange) ，或参考 Exchange 1.0 的使用文档[NebulaExchange 用户手册](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
+
+> 注意：3.4.0版本不支持 kafka 和 pulsar， 若需将 kafka 或 pulsar 数据导入 NebulaGraph，请使用 3.0.0 或 3.3.0 或 3.5.0 版本。
 
 ## 如何获取
 
@@ -21,27 +24,29 @@ Exchange 目前支持 Spark 2.2， Spark 2.4， Spark 3.0， 对应的工具包�
     $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0 
     ```
 
-    编译打包完成后，可以在 nebula-exchange/nebula-exchange_spark_2.2/target/ 目录下看到 nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar 文件，
-    在 nebula-exchange/nebula-exchange_spark_2.4/target/ 目录下看到 nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar 文件，
-    在 nebula-exchange/nebula-exchange_spark_3.0/target/ 目录下看到 nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar 文件。
-2. 在官网或 github 下载
-    
-    正式版本:
-    
-    https://github.com/vesoft-inc/nebula-exchange/releases 
-    或
-    https://nebula-graph.com.cn/release/?exchange
-    
-    快照版本: （进入页面点击任意workflow后，snapshot版本的jar包在Artifacts中，根据需求自行下载）
-    
-    https://github.com/vesoft-inc/nebula-exchange/actions/workflows/deploy_snapshot.yml
+    编译打包完成后，可以：
+    - 在 nebula-exchange/nebula-exchange_spark_2.2/target/ 目录下找到 nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar 文件；
+    - 在 nebula-exchange/nebula-exchange_spark_2.4/target/ 目录下找到 nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar 文件；
+    - 以及在 nebula-exchange/nebula-exchange_spark_3.0/target/ 目录下找到 nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar 文件。
+
+3. 在官网或 GitHub 下载
+
+   **正式版本**
+
+   [GitHub Releases](https://github.com/vesoft-inc/nebula-exchange/releases)
+   或者 [Downloads](https://www.nebula-graph.com.cn/release?exchange=)
+
+   **快照版本**
+
+   进入[GitHub Actions Artifacts](https://github.com/vesoft-inc/nebula-exchange/actions/workflows/snapshot.yml)页面点击任意 workflow 后，从 Artifacts 中，根据需求下载下载。
+
     
 ## 版本匹配
 
-Nebula Exchange 和 Nebula 的版本对应关系如下:
+Exchange 和 NebulaGraph 的版本对应关系如下:
 
-| Nebula Exchange Version | Nebula Version | Spark Version |
-|:-----------------------:|:--------------:|:--------------:|
+| Exchange Version | NebulaGraph Version | Spark Version |
+|:----------------:|:-------------------:|:--------------:|
 |nebula-exchange-2.0.0.jar|  2.0.0, 2.0.1  |2.4.*|
 |nebula-exchange-2.0.1.jar|  2.0.0, 2.0.1  |2.4.*|
 |nebula-exchange-2.1.0.jar|  2.0.0, 2.0.1  |2.4.*|

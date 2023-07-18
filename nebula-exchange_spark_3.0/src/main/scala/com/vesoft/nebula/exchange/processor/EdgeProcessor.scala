@@ -257,7 +257,9 @@ class EdgeProcessor(spark: SparkSession,
           s"only int vidType can use policy, but your vidType is FIXED_STRING.your row data is $row")
         false
       } else true
-    idFlag && policyFlag
+
+    val udfFlag = isVidStringType || policy.isEmpty || (edgeConfig.sourcePrefix == null && edgeConfig.targetPrefix == null)
+    idFlag && policyFlag && udfFlag
   }
 
   /**
@@ -272,13 +274,15 @@ class EdgeProcessor(spark: SparkSession,
                                    "source_field",
                                    row,
                                    edgeConfig.sourcePolicy,
-                                   isVidStringType)
+                                   isVidStringType,
+                                   edgeConfig.sourcePrefix)
 
     val targetField = processField(edgeConfig.targetField,
                                    "target_field",
                                    row,
                                    edgeConfig.targetPolicy,
-                                   isVidStringType)
+                                   isVidStringType,
+                                   edgeConfig.targetPrefix)
 
     val values = for {
       property <- fieldKeys if property.trim.length != 0
@@ -300,7 +304,8 @@ class EdgeProcessor(spark: SparkSession,
                    fieldType: String,
                    row: Row,
                    policy: Option[KeyPolicy.Value],
-                   isVidStringType: Boolean): String = {
+                   isVidStringType: Boolean,
+                   prefix: String): String = {
     var fieldValue = if (edgeConfig.isGeo && "source_field".equals(fieldType)) {
       val lat = row.getDouble(row.schema.fieldIndex(edgeConfig.latitude.get))
       val lng = row.getDouble(row.schema.fieldIndex(edgeConfig.longitude.get))
@@ -309,6 +314,9 @@ class EdgeProcessor(spark: SparkSession,
       val index = row.schema.fieldIndex(field)
       val value = row.get(index).toString.trim
       if (value.equals(DEFAULT_EMPTY_VALUE)) "" else value
+    }
+    if (prefix != null) {
+      fieldValue = prefix + "_" + fieldValue
     }
     // process string type vid
     if (policy.isEmpty && isVidStringType) {

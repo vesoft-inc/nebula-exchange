@@ -210,6 +210,9 @@ class VerticesProcessor(spark: SparkSession,
       printChoice(streamFlag, s"vertexId must exist and cannot be null, your row data is $row")
       return false
     }
+    if (!isVidStringType && (tagConfig.vertexPolicy.isEmpty && tagConfig.vertexPrefix != null)) {
+      printChoice(streamFlag, s"space vidType is int, does not support prefix for vid")
+    }
 
     val vertexId = row.get(index).toString
     // process int type vid
@@ -241,6 +244,9 @@ class VerticesProcessor(spark: SparkSession,
     var vertexId = row.get(index).toString.trim
     if (vertexId.equals(DEFAULT_EMPTY_VALUE)) {
       vertexId = ""
+    }
+    if (tagConfig.vertexPrefix != null) {
+      vertexId = tagConfig.vertexPrefix + "_" + vertexId
     }
 
     if (tagConfig.vertexPolicy.isEmpty && isVidStringType) {

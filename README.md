@@ -1,17 +1,17 @@
-# Nebula Exchange
+# NebulaGraph Exchange
  [中文版](https://github.com/vesoft-inc/nebula-exchange/blob/master/README-CN.md)
- 
-Nebula Exchange (Exchange for short) is an Apache Spark application. It is used to migrate cluster data in bulk from Spark to Nebula Graph in a distributed environment. It supports migration of batch data and streaming data in various formats.
 
-Exchange only supports Nebula Graph 2.x and 3.x.
+NebulaGraph Exchange (referred to as Exchange) is an Apache Spark™ application used to migrate data in bulk from different sources to NebulaGraph in a distributed way(Spark). It supports a variety of batch or streaming data sources and allows direct writing to NebulaGraph through side-loading (SST Files).
 
-If you want to import data for Nebula Graph v1.x，please use [Nebula Exchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange).
+Exchange supports Spark versions 2.2, 2.4, and 3.0 along with their respective toolkits named: `nebula-exchange_spark_2.2`, `nebula-exchange_spark_2.4`, and `nebula-exchange_spark_3.0`.
 
-Exchange currently supports spark2.2, spark2.4 and spark3.0, and the corresponding toolkits are nebula-exchange_spark_2.2,  nebula-exchange_spark_2.4, nebula-exchange_spark_3.0.
+> Note:
+> - Exchange 3.4.0 does not support Apache Kafka and Apache Pulsar. Please use Exchange of version 3.0.0, 3.3.0, or 3.5.0 to load data from Apache Kafka or Apache Pulsar to NebulaGraph for now.
+> - This repo covers only NebulaGraph 2.x and 3.x, for NebulaGraph v1.x, please use [NebulaGraph Exchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange).
 
-## How to get
+## Build or Download Exchange
 
-1. Package latest Exchange
+1. Build the latest Exchange
 
     ```bash
     $ git clone https://github.com/vesoft-inc/nebula-exchange.git
@@ -21,32 +21,39 @@ Exchange currently supports spark2.2, spark2.4 and spark3.0, and the correspondi
     $ mvn clean package -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true -pl nebula-exchange_spark_3.0 -am -Pscala-2.12 -Pspark-3.0
     ```
 
-    After the packaging, you can see the newly generated nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar under the nebula-exchange/nebula-exchange_spark_2.2/target/ directory,
-    nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar under the nebula-exchange/nebula-exchange_spark_2.4/target/ directory, 
-    nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar under the nebula-exchange/nebula-exchange_spark_3.0/target/ directory.
-2. Download from github artifact
-   
-   **release version:**
-   
-   https://github.com/vesoft-inc/nebula-exchange/releases
-   or https://nebula-graph.com.cn/release/?exchange
-   
-   **snapshot version:**
-   
-   https://github.com/vesoft-inc/nebula-exchange/actions/workflows/deploy_snapshot.yml
-## How to use
+    After packaging, the newly generated JAR files can be found in the following path:
+    - nebula-exchange/nebula-exchange_spark_2.2/target/ contains nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar
+    - nebula-exchange/nebula-exchange_spark_2.4/target/ contains nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar
+    - nebula-exchange/nebula-exchange_spark_3.0/target/ contains nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar
 
-Import command:
-```
+3. Download from the GitHub artifact
+   
+   **Released Version:**
+
+   [GitHub Releases](https://github.com/vesoft-inc/nebula-exchange/releases)
+   or [Downloads](https://www.nebula-graph.io/release?exchange=)
+
+   **Snapshot Version:**
+
+   [GitHub Actions Artifacts](https://github.com/vesoft-inc/nebula-exchange/actions/workflows/snapshot.yml)
+
+## Get Started
+
+Here is an example command to run the Exchange:
+
+```bash
 $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar -c /path/to/application.conf
 ```
-If your source is HIVE, import command is:
-```
+
+And when the source is **Hive**, run:
+
+```bash
 $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange --master local nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar -c /path/to/application.conf -h
 ```
 
-Note：Submit Exchange with Yarn-Cluster mode, please use following command：
-```
+Run the Exchange in **Yarn-Cluster** mode:
+
+```bash
 $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --master yarn-cluster \
 --files application.conf \
@@ -56,7 +63,8 @@ nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
 -c application.conf
 ```
 
-Note: When use Exchange to generate SST files, please add spark.sql.shuffle.partition config for Spark's shuffle operation:
+Note: When using Exchange to generate SST files, please add `spark.sql.shuffle.partition` in `--conf` for Spark's shuffle operation:
+
 ```
 $SPARK_HOME/bin/spark-submit --class com.vesoft.nebula.exchange.Exchange \
 --master local \
@@ -65,14 +73,14 @@ nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
 -c application.conf
 ```
 
-For more details about Exchange, please refer to [Exchange 2.0](https://docs.nebula-graph.io/2.6.2/16.eco-tools/1.nebula-exchange/) .
+For more details, please refer to [NebulaGraph Exchange Docs](https://docs.nebula-graph.io/master/nebula-exchange/about-exchange/ex-ug-what-is-exchange/)
 
-## Version match
+## Version Compatibility Matrix
 
-There are the version correspondence between Nebula Exchange and Nebula:
+Here is the version correspondence between Exchange and NebulaGraph:
 
-| Nebula Exchange Version | Nebula Version | Spark Version |
-|:-----------------------:|:--------------:|:--------------:|
+| Exchange Version | Nebula Version | Spark Version |
+|:----------------:|:--------------:|:--------------:|
 |nebula-exchange-2.0.0.jar|  2.0.0, 2.0.1  |2.4.*|
 |nebula-exchange-2.0.1.jar|  2.0.0, 2.0.1  |2.4.*|
 |nebula-exchange-2.1.0.jar|  2.0.0, 2.0.1  |2.4.*|
@@ -93,13 +101,13 @@ There are the version correspondence between Nebula Exchange and Nebula:
 |nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar|     nightly    |2.4.*|
 |nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar|     nightly    |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
 
-## New Features
+## Feature History
 
-1. Supports importing vertex data with String and Integer type IDs.
-2. Supports importing data of the Null, Date, DateTime, and Time types(DateTime uses UTC, not local time).
-3. Supports importing data from other Hive sources besides Hive on Spark.
-4. Supports recording and retrying the INSERT statement after failures during data import.
-5. Supports SST import, but not support property's default value yet.
-6. Supports Spark 2.2, Spark 2.4 and Spark 3.0.
+1. *Since 2.0* Exchange allows for the import of vertex data with both String and Integer type IDs.
+2. *Since 2.0* Exchange also supports importing data of various types, including Null, Date, DateTime (using UTC instead of local time), and Time.
+3. *Since 2.0* In addition to Hive on Spark, Exchange can import data from other Hive sources as well.
+4. *Since 2.0* If there are failures during the data import process, Exchange supports recording and retrying the INSERT statement.
+5. *Since 2.5* While SST import is supported by Exchange, property default values are not yet supported.
+6. *Since 3.0* Exchange is compatible with Spark 2.2, Spark 2.4, and Spark 3.0.
 
 Refer to [application.conf](https://github.com/vesoft-inc/nebula-exchange/blob/master/exchange-common/src/test/resources/application.conf) as an example to edit the configuration file.

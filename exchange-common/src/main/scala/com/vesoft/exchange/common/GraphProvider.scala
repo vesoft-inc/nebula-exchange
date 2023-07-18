@@ -24,18 +24,14 @@ import scala.collection.mutable.ListBuffer
 /**
   * GraphProvider for Nebula Graph Service
   */
-class GraphProvider(addresses: List[HostAndPort], timeout: Int, sslConfigEntry: SslConfigEntry)
+class GraphProvider(addresses: List[HostAddress], timeout: Int, sslConfigEntry: SslConfigEntry)
     extends AutoCloseable
     with Serializable {
   private[this] lazy val LOG = Logger.getLogger(this.getClass)
 
   @transient val nebulaPoolConfig = new NebulaPoolConfig
   @transient val pool: NebulaPool = new NebulaPool
-  val address                     = new ListBuffer[HostAddress]()
-  for (addr <- addresses) {
-    address.append(new HostAddress(addr.getHostText, addr.getPort))
-  }
-  val randAddr = scala.util.Random.shuffle(address)
+  val randAddr = scala.util.Random.shuffle(addresses)
 
   nebulaPoolConfig.setTimeout(timeout)
 
