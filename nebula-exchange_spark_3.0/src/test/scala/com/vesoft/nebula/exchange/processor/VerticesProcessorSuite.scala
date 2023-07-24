@@ -6,25 +6,15 @@
 package com.vesoft.nebula.exchange.processor
 
 import java.io.File
-
 import com.vesoft.exchange.common.VidType
 import com.vesoft.nebula.PropertyType
 import com.vesoft.exchange.common.KeyPolicy
-import com.vesoft.exchange.common.config.{Configs, TagConfigEntry}
+import com.vesoft.exchange.common.config.{Configs, TagConfigEntry, WriteMode}
 import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.meta.{ColumnDef, ColumnTypeDef, Schema, SchemaProp, TagItem}
 import org.apache.commons.codec.binary.Hex
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types.{
-  BooleanType,
-  DoubleType,
-  IntegerType,
-  LongType,
-  ShortType,
-  StringType,
-  StructField,
-  StructType
-}
+import org.apache.spark.sql.types.{BooleanType, DoubleType, IntegerType, LongType, ShortType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.Test
 import org.scalatest.Assertions.assertThrows
@@ -75,8 +65,9 @@ class VerticesProcessorSuite {
     val schema: StructType = StructType(List(StructField("id", StringType, nullable = true)))
     val stringIdRow        = new GenericRowWithSchema(stringIdValue.toArray, schema)
     val intIdRow           = new GenericRowWithSchema(intIdValue.toArray, schema)
+    val writerMode         = WriteMode.INSERT
     val tagConfigEntry =
-      TagConfigEntry("person", null, null, List(), List(), "id", None, null, 10, 10, None)
+      TagConfigEntry("person", null, null, List(), List(), writeMode, "id", None, null, 10, 10, None)
 
     // test for string id value without policy
     assert(processClazz.isVertexValid(stringIdRow, tagConfigEntry, false, true))
@@ -98,6 +89,7 @@ class VerticesProcessorSuite {
                      null,
                      List(),
                      List(),
+                     writeMode,
                      "id",
                      Some(KeyPolicy.HASH),
                      null,

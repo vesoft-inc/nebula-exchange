@@ -35,6 +35,9 @@ sealed trait SchemaConfigEntry {
 
   /** check point path */
   def checkPointPath: Option[String]
+
+  /** write mode */
+  def writeMode: WriteMode.Mode
 }
 
 /**
@@ -55,7 +58,7 @@ case class TagConfigEntry(override val name: String,
                           override val dataSinkConfigEntry: DataSinkConfigEntry,
                           override val fields: List[String],
                           override val nebulaFields: List[String],
-                          writeMode: WriteMode.Mode,
+                          override val writeMode: WriteMode.Mode,
                           vertexField: String,
                           vertexPolicy: Option[KeyPolicy.Value],
                           vertexPrefix: String,
@@ -76,6 +79,7 @@ case class TagConfigEntry(override val name: String,
     s"Tag name: $name, " +
       s"source: $dataSourceConfigEntry, " +
       s"sink: $dataSinkConfigEntry, " +
+      s"writeMode: $writeMode, " +
       s"vertex field: $vertexField, " +
       s"vertex policy: $vertexPolicy, " +
       s"batch: $batch, " +
@@ -111,6 +115,7 @@ case class EdgeConfigEntry(override val name: String,
                            override val dataSinkConfigEntry: DataSinkConfigEntry,
                            override val fields: List[String],
                            override val nebulaFields: List[String],
+                           override val writeMode: WriteMode.Mode,
                            sourceField: String,
                            sourcePolicy: Option[KeyPolicy.Value],
                            sourcePrefix: String,
@@ -138,6 +143,7 @@ case class EdgeConfigEntry(override val name: String,
       s"Edge name: $name, " +
         s"source: $dataSourceConfigEntry, " +
         s"sink: $dataSinkConfigEntry, " +
+        s"writeMode: $writeMode, " +
         s"latitude: $latitude, " +
         s"longitude: $longitude, " +
         s"source field: $sourceField, " +
@@ -154,6 +160,7 @@ case class EdgeConfigEntry(override val name: String,
       s"Edge name: $name, " +
         s"source: $dataSourceConfigEntry, " +
         s"sink: $dataSinkConfigEntry, " +
+        s"writeMode: $writeMode, " +
         s"source field: $sourceField, " +
         s"source policy: $sourcePolicy, " +
         s"ranking: $rankingField, " +

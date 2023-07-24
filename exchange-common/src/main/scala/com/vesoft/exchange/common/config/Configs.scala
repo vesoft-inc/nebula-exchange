@@ -268,6 +268,7 @@ object Configs {
   private[this] val DEFAULT_STREAM_INTERVAL       = 30
   private[this] val DEFAULT_KAFKA_STARTINGOFFSETS = "latest"
   private[this] val DEFAULT_PARALLEL              = 1
+  private[this] val DEFAULT_WRITE_MODE            = "INSERT"
 
   /**
     *
@@ -436,9 +437,10 @@ object Configs {
         val sinkConfig   = dataSinkConfig(sinkCategory, nebulaConfig)
         LOG.info(s"Sink Config ${sourceConfig}")
 
-        val writeMode = toWriteModeCategory(tagConfig.getString("writeMode"))
-
-        val batch = getOrElse(tagConfig, "batch", DEFAULT_BATCH)
+        // val writeMode = toWriteModeCategory(tagConfig.getString("writeMode"))
+        val writeModeStr = getOrElse(tagConfig, "writeMode", DEFAULT_WRITE_MODE)
+        val writeMode    = toWriteModeCategory(writeModeStr)
+        val batch        = getOrElse(tagConfig, "batch", DEFAULT_BATCH)
         val checkPointPath =
           if (tagConfig.hasPath("check_point_path")) Some(tagConfig.getString("check_point_path"))
           else DEFAULT_CHECK_POINT_PATH
@@ -574,7 +576,9 @@ object Configs {
           None
         }
 
-        val batch = getOrElse(edgeConfig, "batch", DEFAULT_BATCH)
+        val writeModeStr = getOrElse(edgeConfig, "writeMode", DEFAULT_WRITE_MODE)
+        val writeMode    = toWriteModeCategory(writeModeStr)
+        val batch     = getOrElse(edgeConfig, "batch", DEFAULT_BATCH)
         val checkPointPath =
           if (edgeConfig.hasPath("check_point_path")) Some(edgeConfig.getString("check_point_path"))
           else DEFAULT_CHECK_POINT_PATH
@@ -607,6 +611,7 @@ object Configs {
           sinkConfig,
           fields,
           nebulaFields,
+          writeMode,
           sourceField,
           sourcePolicy,
           sourcePrefix,
