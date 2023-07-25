@@ -65,7 +65,7 @@ class VerticesProcessorSuite {
     val schema: StructType = StructType(List(StructField("id", StringType, nullable = true)))
     val stringIdRow        = new GenericRowWithSchema(stringIdValue.toArray, schema)
     val intIdRow           = new GenericRowWithSchema(intIdValue.toArray, schema)
-    val writerMode         = WriteMode.INSERT
+    val writeMode         = WriteMode.INSERT
     val tagConfigEntry =
       TagConfigEntry("person", null, null, List(), List(), writeMode, "id", None, null, 10, 10, None)
 
