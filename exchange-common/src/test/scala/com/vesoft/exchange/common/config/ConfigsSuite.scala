@@ -6,26 +6,9 @@
 package scala.com.vesoft.nebula.exchange.config
 
 import java.io.File
-
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.KeyPolicy
-import com.vesoft.exchange.common.config.{
-  CaSignParam,
-  Configs,
-  DataBaseConfigEntry,
-  FileBaseSourceConfigEntry,
-  FileDataSourceConfigEntry,
-  HBaseSourceConfigEntry,
-  HiveSourceConfigEntry,
-  MySQLSourceConfigEntry,
-  Neo4JSourceConfigEntry,
-  PostgreSQLSourceConfigEntry,
-  SelfSignParam,
-  SinkCategory,
-  SourceCategory,
-  SslConfigEntry,
-  SslType
-}
+import com.vesoft.exchange.common.config.{CaSignParam, Configs, DataBaseConfigEntry, FileBaseSourceConfigEntry, FileDataSourceConfigEntry, HBaseSourceConfigEntry, HiveSourceConfigEntry, MySQLSourceConfigEntry, Neo4JSourceConfigEntry, PostgreSQLSourceConfigEntry, SelfSignParam, SinkCategory, SourceCategory, SslConfigEntry, SslType, WriteMode}
 import com.vesoft.nebula.client.graph.data.CASignedSSLParam
 import org.apache.log4j.Logger
 import org.junit.Test
@@ -94,6 +77,10 @@ class ConfigsSuite {
       val source = tagConfig.dataSourceConfigEntry
       val sink   = tagConfig.dataSinkConfigEntry
       assert(sink.category == SinkCategory.CLIENT || sink.category == SinkCategory.SST)
+
+      val writeMode = tagConfig.writeMode
+      assert(writeMode == WriteMode.INSERT || writeMode == WriteMode.UPDATE
+              || writeMode == WriteMode.DELETE)
 
       val label     = tagConfig.name
       val batch     = tagConfig.batch
@@ -184,6 +171,9 @@ class ConfigsSuite {
       val label     = edgeConfig.name
       val batch     = edgeConfig.batch
       val partition = edgeConfig.partition
+      val writeMode = edgeConfig.writeMode
+      assert(writeMode == WriteMode.INSERT || writeMode == WriteMode.UPDATE
+              || writeMode == WriteMode.DELETE)
 
       val sourceField  = edgeConfig.sourceField
       val targetField  = edgeConfig.targetField

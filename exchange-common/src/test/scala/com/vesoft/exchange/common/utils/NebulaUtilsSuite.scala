@@ -12,12 +12,7 @@ import com.vesoft.nebula.client.graph.NebulaPoolConfig
 import com.vesoft.nebula.client.graph.data.HostAddress
 import com.vesoft.nebula.client.graph.net.NebulaPool
 import com.vesoft.exchange.common.KeyPolicy
-import com.vesoft.exchange.common.config.{
-  NebulaSinkConfigEntry,
-  SinkCategory,
-  SslConfigEntry,
-  TagConfigEntry
-}
+import com.vesoft.exchange.common.config.{NebulaSinkConfigEntry, SinkCategory, SslConfigEntry, TagConfigEntry, WriteMode}
 import com.vesoft.exchange.common.utils.NebulaUtils
 import org.apache.log4j.Logger
 import org.junit.{After, Before, Test}
@@ -80,11 +75,13 @@ class NebulaUtilsSuite {
                             "col14")
     val label               = "person"
     val dataSinkConfigEntry = NebulaSinkConfigEntry(SinkCategory.SST, List("127.0.0.1:9669"))
+    val writeMode = WriteMode.INSERT
     val sourceConfig = TagConfigEntry(label,
                                       null,
                                       dataSinkConfigEntry,
                                       sourceFields,
                                       nebulaFields,
+                                      writeMode,
                                       "id",
                                       Some(KeyPolicy.UUID),
                                       null,
@@ -135,6 +132,7 @@ class NebulaUtilsSuite {
                                            dataSinkConfigEntry,
                                            sourceFields,
                                            wrongNebulaFields,
+                                           writeMode,
                                            "id",
                                            Some(KeyPolicy.UUID),
                                            null,

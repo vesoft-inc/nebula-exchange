@@ -35,6 +35,13 @@ object SslType extends Enumeration {
   val SELF = Value("self")
 }
 
+object WriteMode extends Enumeration {
+  type Mode = Value
+  val INSERT = Value("insert")
+  val UPDATE = Value("update")
+  val DELETE = Value("delete")
+}
+
 /**
   * DataBaseConfigEntry describe the nebula cluster's address and which space will be used.
   *
@@ -261,6 +268,7 @@ object Configs {
   private[this] val DEFAULT_STREAM_INTERVAL       = 30
   private[this] val DEFAULT_KAFKA_STARTINGOFFSETS = "latest"
   private[this] val DEFAULT_PARALLEL              = 1
+  private[this] val DEFAULT_WRITE_MODE            = "INSERT"
 
   /**
     *
@@ -429,7 +437,10 @@ object Configs {
         val sinkConfig   = dataSinkConfig(sinkCategory, nebulaConfig)
         LOG.info(s"Sink Config ${sourceConfig}")
 
-        val batch = getOrElse(tagConfig, "batch", DEFAULT_BATCH)
+        // val writeMode = toWriteModeCategory(tagConfig.getString("writeMode"))
+        val writeModeStr = getOrElse(tagConfig, "writeMode", DEFAULT_WRITE_MODE)
+        val writeMode    = toWriteModeCategory(writeModeStr)
+        val batch        = getOrElse(tagConfig, "batch", DEFAULT_BATCH)
         val checkPointPath =
           if (tagConfig.hasPath("check_point_path")) Some(tagConfig.getString("check_point_path"))
           else DEFAULT_CHECK_POINT_PATH
@@ -440,6 +451,7 @@ object Configs {
         val partition             = getOrElse(tagConfig, "partition", DEFAULT_PARTITION)
         val repartitionWithNebula = getOrElse(tagConfig, "repartitionWithNebula", true)
         val ignoreIndex           = getOrElse(tagConfig, "ignoreIndex", false)
+        val deleteEdge            = getOrElse(tagConfig, "deleteEdge", false)
 
         val vertexUdf = if (tagConfig.hasPath("vertex.udf")) {
           val sep                = tagConfig.getString("vertex.udf.separator")
@@ -455,6 +467,7 @@ object Configs {
           sinkConfig,
           fields,
           nebulaFields,
+          writeMode,
           vertexField,
           policyOpt,
           prefix,
@@ -464,6 +477,7 @@ object Configs {
           repartitionWithNebula,
           enableTagless,
           ignoreIndex,
+          deleteEdge,
           vertexUdf
         )
         LOG.info(s"Tag Config: ${entry}")
@@ -562,7 +576,9 @@ object Configs {
           None
         }
 
-        val batch = getOrElse(edgeConfig, "batch", DEFAULT_BATCH)
+        val writeModeStr = getOrElse(edgeConfig, "writeMode", DEFAULT_WRITE_MODE)
+        val writeMode    = toWriteModeCategory(writeModeStr)
+        val batch     = getOrElse(edgeConfig, "batch", DEFAULT_BATCH)
         val checkPointPath =
           if (edgeConfig.hasPath("check_point_path")) Some(edgeConfig.getString("check_point_path"))
           else DEFAULT_CHECK_POINT_PATH
@@ -595,6 +611,7 @@ object Configs {
           sinkConfig,
           fields,
           nebulaFields,
+          writeMode,
           sourceField,
           sourcePolicy,
           sourcePrefix,
@@ -668,6 +685,21 @@ object Configs {
     category.trim.toUpperCase match {
       case "CLIENT" => SinkCategory.CLIENT
       case "SST"    => SinkCategory.SST
+      case _        => throw new IllegalArgumentException(s"${category} not support")
+    }
+  }
+
+  /**
+   * Use to get write mode according to category of writeMode.
+   *
+   * @param category
+   * @return
+   */
+  private[this] def toWriteModeCategory(category: String): WriteMode.Mode = {
+    category.trim.toUpperCase match {
+      case "INSERT" => WriteMode.INSERT
+      case "UPDATE" => WriteMode.UPDATE
+      case "DELETE" => WriteMode.DELETE
       case _        => throw new IllegalArgumentException(s"${category} not support")
     }
   }
