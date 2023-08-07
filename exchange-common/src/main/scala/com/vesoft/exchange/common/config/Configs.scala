@@ -578,7 +578,7 @@ object Configs {
 
         val writeModeStr = getOrElse(edgeConfig, "writeMode", DEFAULT_WRITE_MODE)
         val writeMode    = toWriteModeCategory(writeModeStr)
-        val batch     = getOrElse(edgeConfig, "batch", DEFAULT_BATCH)
+        val batch        = getOrElse(edgeConfig, "batch", DEFAULT_BATCH)
         val checkPointPath =
           if (edgeConfig.hasPath("check_point_path")) Some(edgeConfig.getString("check_point_path"))
           else DEFAULT_CHECK_POINT_PATH
@@ -690,11 +690,11 @@ object Configs {
   }
 
   /**
-   * Use to get write mode according to category of writeMode.
-   *
-   * @param category
-   * @return
-   */
+    * Use to get write mode according to category of writeMode.
+    *
+    * @param category
+    * @return
+    */
   private[this] def toWriteModeCategory(category: String): WriteMode.Mode = {
     category.trim.toUpperCase match {
       case "INSERT" => WriteMode.INSERT
@@ -782,7 +782,7 @@ object Configs {
           config.getString("host"),
           config.getInt("port"),
           config.getString("database"),
-          config.getString("table"),
+          getOrElse(config, "table", null),
           config.getString("user"),
           config.getString("password"),
           getOrElse(config, "sentence", null)
@@ -793,7 +793,7 @@ object Configs {
           config.getString("host"),
           config.getInt("port"),
           config.getString("database"),
-          config.getString("table"),
+          getOrElse(config, "table", null),
           config.getString("user"),
           config.getString("password"),
           getOrElse(config, "sentence", null)
@@ -805,7 +805,7 @@ object Configs {
           config.getString("driver"),
           config.getString("user"),
           config.getString("password"),
-          config.getString("table"),
+          getOrElse(config, "table", null),
           getOrElse(config, "sentence", null)
         )
       case SourceCategory.JDBC =>
@@ -840,7 +840,7 @@ object Configs {
           config.getString("driver"),
           config.getString("user"),
           config.getString("password"),
-          config.getString("table"),
+          getOrElse(config, "table", null),
           partitionColumn,
           lowerBound,
           upperBound,
@@ -896,28 +896,16 @@ object Configs {
                                config.getString("columnFamily"),
                                fields.toSet.toList)
       case SourceCategory.MAXCOMPUTE => {
-        val partitionSpec = if (config.hasPath("partitionSpec")) {
-          config.getString("partitionSpec")
-        } else {
-          null
-        }
-        val numPartitions = if (config.hasPath("numPartitions")) {
-          config.getString("numPartitions")
-        } else {
-          "1"
-        }
-
-        val sentence = if (config.hasPath("sentence")) {
-          config.getString("sentence")
-        } else {
-          null
-        }
+        val table         = getOrElse(config, "table", null)
+        val partitionSpec = getOrElse(config, "partitionSpec", null)
+        val numPartitions = getOrElse(config, "numPartitions", "1")
+        val sentence      = getOrElse(config, "sentence", null)
 
         MaxComputeConfigEntry(
           SourceCategory.MAXCOMPUTE,
           config.getString("odpsUrl"),
           config.getString("tunnelUrl"),
-          config.getString("table"),
+          table,
           config.getString("project"),
           config.getString("accessKeyId"),
           config.getString("accessKeySecret"),
@@ -927,19 +915,15 @@ object Configs {
         )
       }
       case SourceCategory.CLICKHOUSE => {
-        val partition: String = if (config.hasPath("numPartition")) {
-          config.getString("numPartition")
-        } else {
-          "1"
-        }
+        val partition: String = getOrElse (config, "numPartition", "1")
         ClickHouseConfigEntry(
           SourceCategory.CLICKHOUSE,
           config.getString("url"),
           config.getString("user"),
           config.getString("password"),
           partition,
-          config.getString("table"),
-          config.getString("sentence")
+          getOrElse(config, "table", null),
+          getOrElse(config, "sentence", null)
         )
       }
       case _ =>

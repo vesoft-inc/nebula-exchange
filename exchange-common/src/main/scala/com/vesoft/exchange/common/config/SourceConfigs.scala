@@ -6,6 +6,7 @@
 package com.vesoft.exchange.common.config
 
 import com.vesoft.exchange.common.utils.NebulaUtils
+import org.apache.spark.sql.SparkSession
 
 /**
   * Category use to explain the data source which the Spark application could reading.
@@ -152,7 +153,11 @@ case class MySQLSourceConfigEntry(override val category: SourceCategory.Value,
                                   override val sentence: String)
     extends ServerDataSourceConfigEntry {
   require(
-    host.trim.length != 0 && port > 0 && database.trim.length > 0 && table.trim.length > 0 && user.trim.length > 0)
+    host != null && database != null & user != null && password != null &&
+      host.trim.nonEmpty && port > 0 && database.trim.nonEmpty && user.trim.nonEmpty)
+  require(table == null || sentence == null,
+          "table and sentence cannot be config at the same time for MYSQL.")
+  require(table != null || sentence != null, "Either table or sentence must be config for MYSQL.")
 
   override def toString: String = {
     s"MySql source host: ${host}, port: ${port}, database: ${database}, table: ${table}, " +
@@ -182,7 +187,12 @@ case class PostgreSQLSourceConfigEntry(override val category: SourceCategory.Val
                                        override val sentence: String)
     extends ServerDataSourceConfigEntry {
   require(
-    host.trim.length != 0 && port > 0 && database.trim.length > 0 && table.trim.length > 0 && user.trim.length > 0)
+    host != null && database != null & user != null && password != null &&
+      host.trim.nonEmpty && port > 0 && database.trim.nonEmpty && user.trim.nonEmpty)
+  require(table == null || sentence == null,
+          "table and sentence cannot be config at the same time for PostgreSQL.")
+  require(table != null || sentence != null,
+          "Either table or sentence must be config for PostgreSQL.")
 
   override def toString: String = {
     s"PostgreSql source host: ${host}, port: ${port}, database: ${database}, table: ${table}, " +
@@ -246,8 +256,8 @@ case class HBaseSourceConfigEntry(override val category: SourceCategory.Value,
                                   fields: List[String])
     extends ServerDataSourceConfigEntry() {
 
-  require(host.trim.length != 0 && port.trim.length != 0 && NebulaUtils
-    .isNumic(port.trim) && table.trim.length > 0 && table.trim.length > 0 && columnFamily.trim.length > 0)
+  require(host.trim.nonEmpty && port.trim.nonEmpty && NebulaUtils
+    .isNumic(port.trim) && table.trim.nonEmpty && table.trim.nonEmpty && columnFamily.trim.nonEmpty)
 
   override val sentence: String = null
 
@@ -271,8 +281,10 @@ case class MaxComputeConfigEntry(override val category: SourceCategory.Value,
                                  override val sentence: String)
     extends ServerDataSourceConfigEntry {
   require(
-    !odpsUrl.trim.isEmpty && !tunnelUrl.trim.isEmpty && !table.trim.isEmpty && !project.trim.isEmpty
-      && !accessKeyId.trim.isEmpty && !accessKeySecret.trim.isEmpty)
+    odpsUrl != null & tunnelUrl != null && project != null && accessKeyId != null
+      && accessKeySecret != null && odpsUrl.trim.nonEmpty && tunnelUrl.trim.nonEmpty
+      && table.trim.nonEmpty && project.trim.nonEmpty
+      && accessKeyId.trim.nonEmpty && accessKeySecret.trim.nonEmpty)
 
   override def toString: String = {
     s"MaxCompute source {odpsUrl: $odpsUrl, tunnelUrl: $tunnelUrl, table: $table, project: $project, " +
@@ -293,6 +305,8 @@ case class ClickHouseConfigEntry(override val category: SourceCategory.Value,
                                  table: String,
                                  override val sentence: String)
     extends ServerDataSourceConfigEntry {
+  require(url != null && user != null && passwd != null)
+  require(sentence != null, "sentence for ClickHouse cannot be null for ClickHouse.")
   override def toString: String = {
     s"ClickHouse source {url:$url, user:$user, passwd:$passwd, numPartition:$numPartition, table:$table, sentence:$sentence}"
   }
@@ -309,6 +323,11 @@ case class OracleConfigEntry(override val category: SourceCategory.Value,
                              table: String,
                              override val sentence: String)
     extends ServerDataSourceConfigEntry {
+  require(url != null && driver != null && user != null && passwd != null)
+  require(table == null || sentence == null,
+          "table and sentence cannot be config at the same time for Oracle.")
+  require(table != null || sentence != null, "Either table or sentence must be config for Oracle.")
+
   override def toString: String = {
     s"Oracle source {url:$url, driver:$driver, user:$user, passwd:$passwd, table:$table, sentence:$sentence}"
   }
@@ -340,6 +359,8 @@ case class JdbcConfigEntry(override val category: SourceCategory.Value,
                            fetchSize: Option[Long] = None,
                            override val sentence: String)
     extends ServerDataSourceConfigEntry {
+  require(url != null && driver != null && user != null && passwd != null)
+  require(table != null || sentence != null, "Either table or sentence must be config for JDBC.")
   override def toString: String = {
     s"Jdbc source {url:$url, driver:$driver, user:$user, passwd:$passwd, table:$table, sentence:$sentence}"
   }
