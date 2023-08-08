@@ -324,7 +324,6 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
   }
 
   override def writeVertices(vertices: Vertices, ignoreIndex: Boolean = false): String = {
-    // val sentence = toExecuteSentence(config.name, vertices, ignoreIndex)
     val statement = execute(vertices, config.asInstanceOf[TagConfigEntry].writeMode)
     if (rateLimiter.tryAcquire(rateConfig.timeout, TimeUnit.MILLISECONDS)) {
       val result = graphProvider.submit(session, statement)
@@ -345,7 +344,6 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
   }
 
   override def writeEdges(edges: Edges, ignoreIndex: Boolean = false): String = {
-    // val sentence = toExecuteSentence(config.name, edges, ignoreIndex)
     val statement = execute(edges, config.asInstanceOf[EdgeConfigEntry].writeMode)
     if (rateLimiter.tryAcquire(rateConfig.timeout, TimeUnit.MILLISECONDS)) {
       val result = graphProvider.submit(session, statement)
