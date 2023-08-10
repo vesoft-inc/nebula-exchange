@@ -146,6 +146,9 @@ object Exchange {
 
         val fields = tagConfig.vertexField :: tagConfig.fields
         val data   = createDataSource(spark, tagConfig.dataSourceConfigEntry, fields)
+        if (data.isDefined && c.dry && !data.get.isStreaming) {
+          data.get.show(truncate = false)
+        }
         if (data.isDefined && !c.dry) {
           val df = if (tagConfig.vertexUdf.isDefined) {
             dataUdf(data.get, tagConfig.vertexUdf.get)
@@ -200,6 +203,9 @@ object Exchange {
           edgeConfig.sourceField :: edgeConfig.targetField :: edgeConfig.fields
         }
         val data = createDataSource(spark, edgeConfig.dataSourceConfigEntry, fields)
+        if (data.isDefined && c.dry && !data.get.isStreaming) {
+          data.get.show(truncate = false)
+        }
         if (data.isDefined && !c.dry) {
           var df = data.get
           if (edgeConfig.srcVertexUdf.isDefined) {

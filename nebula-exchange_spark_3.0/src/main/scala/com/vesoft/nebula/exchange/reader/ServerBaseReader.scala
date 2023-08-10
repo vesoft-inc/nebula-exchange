@@ -69,19 +69,18 @@ class MySQLReader(override val session: SparkSession, mysqlConfig: MySQLSourceCo
   override def read(): DataFrame = {
     val url =
       s"jdbc:mysql://${mysqlConfig.host}:${mysqlConfig.port}/${mysqlConfig.database}?useUnicode=true&characterEncoding=utf-8"
-    val df = session.read
+    val dfReader = session.read
       .format("jdbc")
       .option("url", url)
-      .option("dbtable", mysqlConfig.table)
       .option("user", mysqlConfig.user)
       .option("password", mysqlConfig.password)
-      .load()
-    if (sentence != null) {
-      df.createOrReplaceTempView(mysqlConfig.table)
-      session.sql(sentence)
-    } else {
-      df
+    if (mysqlConfig.table != null) {
+      dfReader.option("dbtable", mysqlConfig.table)
     }
+    if (sentence != null) {
+      dfReader.option("query", mysqlConfig.sentence)
+    }
+    dfReader.load()
   }
 }
 
@@ -97,20 +96,20 @@ class PostgreSQLReader(override val session: SparkSession,
   override def read(): DataFrame = {
     val url =
       s"jdbc:postgresql://${postgreConfig.host}:${postgreConfig.port}/${postgreConfig.database}"
-    val df = session.read
+    val dfReader = session.read
       .format("jdbc")
       .option("driver", "org.postgresql.Driver")
       .option("url", url)
-      .option("dbtable", postgreConfig.table)
       .option("user", postgreConfig.user)
       .option("password", postgreConfig.password)
-      .load()
-    if (sentence != null) {
-      df.createOrReplaceTempView(postgreConfig.table)
-      session.sql(sentence)
-    } else {
-      df
+
+    if (postgreConfig.table != null) {
+      dfReader.option("dbtable", postgreConfig.table)
     }
+    if (postgreConfig.sentence != null) {
+      dfReader.option("query", postgreConfig.sentence)
+    }
+    dfReader.load()
   }
 }
 
@@ -225,17 +224,23 @@ class ClickhouseReader(override val session: SparkSession,
                        clickHouseConfigEntry: ClickHouseConfigEntry)
     extends ServerBaseReader(session, clickHouseConfigEntry.sentence) {
   Class.forName("ru.yandex.clickhouse.ClickHouseDriver")
+
   override def read(): DataFrame = {
-    val df = session.read
+    val dfReader = session.read
       .format("jdbc")
       .option("driver", "ru.yandex.clickhouse.ClickHouseDriver")
       .option("url", clickHouseConfigEntry.url)
       .option("user", clickHouseConfigEntry.user)
       .option("password", clickHouseConfigEntry.passwd)
       .option("numPartitions", clickHouseConfigEntry.numPartition)
-      .option("query", clickHouseConfigEntry.sentence)
-      .load()
-    df
+
+    if (clickHouseConfigEntry.table != null) {
+      dfReader.option("dbtable", clickHouseConfigEntry.table)
+    }
+    if (clickHouseConfigEntry.sentence != null) {
+      dfReader.option("query", clickHouseConfigEntry.sentence)
+    }
+    dfReader.load()
   }
 }
 
@@ -245,24 +250,21 @@ class ClickhouseReader(override val session: SparkSession,
 class OracleReader(override val session: SparkSession, oracleConfig: OracleConfigEntry)
     extends ServerBaseReader(session, oracleConfig.sentence) {
   Class.forName(oracleConfig.driver)
+
   override def read(): DataFrame = {
-    var df = session.read
+    val dfReader = session.read
       .format("jdbc")
       .option("url", oracleConfig.url)
-      .option("dbtable", oracleConfig.table)
       .option("user", oracleConfig.user)
       .option("password", oracleConfig.passwd)
       .option("driver", oracleConfig.driver)
-      .load()
-
-    if (oracleConfig.sentence != null) {
-      val tableName = if (oracleConfig.table.contains(".")) {
-        oracleConfig.table.split("\\.")(1)
-      } else oracleConfig.table
-      df.createOrReplaceTempView(tableName)
-      df = session.sql(sentence)
+    if (oracleConfig.table != null) {
+      dfReader.option("table", oracleConfig.table)
     }
-    df
+    if (oracleConfig.sentence != null) {
+      dfReader.option("query", oracleConfig.sentence)
+    }
+    dfReader.load()
   }
 }
 
@@ -272,25 +274,32 @@ class OracleReader(override val session: SparkSession, oracleConfig: OracleConfi
 class JdbcReader(override val session: SparkSession, jdbcConfig: JdbcConfigEntry)
     extends ServerBaseReader(session, jdbcConfig.sentence) {
   Class.forName(jdbcConfig.driver)
+
   override def read(): DataFrame = {
+    require(jdbcConfig.table == null || jdbcConfig.sentence == null,
+            "table and sentence cannot config at the same time for JDBC.")
+
     import org.apache.spark.sql.jdbc.{JdbcDialects, JdbcDialect}
     val GoogleDialect = new JdbcDialect {
       override def canHandle(url: String): Boolean =
         url.startsWith("jdbc:bigquery") || url.contains("bigquery")
+
       override def quoteIdentifier(colName: String): String = {
         s"`$colName`"
       }
     }
     JdbcDialects.registerDialect(GoogleDialect)
 
-    var dfReader = session.read
+    val dfReader = session.read
       .format("jdbc")
       .option("url", jdbcConfig.url)
-      .option("dbtable", jdbcConfig.table)
       .option("user", jdbcConfig.user)
       .option("password", jdbcConfig.passwd)
       .option("driver", jdbcConfig.driver)
 
+    if (jdbcConfig.table != null) {
+      dfReader.option("dbtable", jdbcConfig.table)
+    }
     if (jdbcConfig.partitionColumn.isDefined) {
       dfReader.option("partitionColumn", jdbcConfig.partitionColumn.get)
     }
@@ -306,16 +315,9 @@ class JdbcReader(override val session: SparkSession, jdbcConfig: JdbcConfigEntry
     if (jdbcConfig.fetchSize.isDefined) {
       dfReader.option("fetchsize", jdbcConfig.fetchSize.get)
     }
-
-    var df = dfReader.load()
-
     if (jdbcConfig.sentence != null) {
-      val tableName = if (jdbcConfig.table.contains(".")) {
-        jdbcConfig.table.split("\\.")(1)
-      } else jdbcConfig.table
-      df.createOrReplaceTempView(tableName)
-      df = session.sql(sentence)
+      dfReader.option("query", jdbcConfig.sentence)
     }
-    df
+    dfReader.load()
   }
 }
