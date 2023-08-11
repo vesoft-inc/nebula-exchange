@@ -71,9 +71,11 @@ case class TagConfigEntry(override val name: String,
                           deleteEdge: Boolean = false,
                           vertexUdf: Option[UdfConfigEntry] = None)
     extends SchemaConfigEntry {
-  require(
-    name.trim.nonEmpty && vertexField.trim.nonEmpty
-      && batch > 0 && fields.size == nebulaFields.size)
+  require(name.trim.nonEmpty, "tag name cannot be empty")
+  require(vertexField.trim.nonEmpty, "tag vertex id cannot be empty")
+  require(batch > 0, "batch config must be larger than 0")
+  require(fields.size == nebulaFields.size,
+          "fields and nebula.fields must have the same element number")
 
   override def toString: String = {
     s"Tag name: $name, " +
@@ -134,9 +136,12 @@ case class EdgeConfigEntry(override val name: String,
                            srcVertexUdf: Option[UdfConfigEntry] = None,
                            dstVertexUdf: Option[UdfConfigEntry] = None)
     extends SchemaConfigEntry {
-  require(
-    name.trim.nonEmpty && sourceField.trim.nonEmpty && targetField.trim.nonEmpty
-      && batch > 0 && fields.size == nebulaFields.size)
+  require(name.trim.nonEmpty, "edge name cannot be empty")
+  require(sourceField.trim.nonEmpty, "edge source id cannot be empty")
+  require(targetField.trim.nonEmpty, "edge target id cannot be empty")
+  require(batch > 0, "batch config must be larger than 0")
+  require(fields.size == nebulaFields.size,
+    "fields and nebula.fields must have the same element number")
 
   override def toString: String = {
     if (isGeo) {
