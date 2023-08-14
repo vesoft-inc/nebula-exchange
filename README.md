@@ -79,27 +79,24 @@ For more details, please refer to [NebulaGraph Exchange Docs](https://docs.nebul
 
 Here is the version correspondence between Exchange and NebulaGraph:
 
-| Exchange Version | Nebula Version | Spark Version |
-|:----------------:|:--------------:|:--------------:|
-|nebula-exchange-2.0.0.jar|  2.0.0, 2.0.1  |2.4.*|
-|nebula-exchange-2.0.1.jar|  2.0.0, 2.0.1  |2.4.*|
-|nebula-exchange-2.1.0.jar|  2.0.0, 2.0.1  |2.4.*|
-|nebula-exchange-2.5.0.jar|  2.5.0, 2.5.1  |2.4.*|
-|nebula-exchange-2.5.1.jar|  2.5.0, 2.5.1  |2.4.*|
-|nebula-exchange-2.5.2.jar|  2.5.0, 2.5.1  |2.4.*|
-|nebula-exchange-2.6.0.jar|  2.6.0, 2.6.1  |2.4.*|
-|nebula-exchange-2.6.1.jar|  2.6.0, 2.6.1  |2.4.*|
-|nebula-exchange-2.6.2.jar|  2.6.0, 2.6.1  |2.4.*|
-|nebula-exchange-2.6.3.jar|  2.6.0, 2.6.1  |2.4.*|
-|nebula-exchange_spark_2.2-3.0.0.jar|  3.x.x  |2.2.*|
-|nebula-exchange_spark_2.4-3.0.0.jar|  3.x.x  |2.4.*|
-|nebula-exchange_spark_3.0-3.0.0.jar|  3.x.x  |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
-|nebula-exchange_spark_2.2-3.3.0.jar|  3.x.x  |2.2.*|
-|nebula-exchange_spark_2.4-3.3.0.jar|  3.x.x  |2.4.*|
-|nebula-exchange_spark_3.0-3.3.0.jar|  3.x.x  |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
-|nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar|     nightly    |2.2.*|
-|nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar|     nightly    |2.4.*|
-|nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar|     nightly    |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
+|              Exchange Version              | Nebula Version | Spark Version |
+|:------------------------------------------:|:--------------:|:--------------:|
+|         nebula-exchange-2.0.0.jar          |  2.0.0, 2.0.1  |2.4.*|
+|         nebula-exchange-2.0.1.jar          |  2.0.0, 2.0.1  |2.4.*|
+|         nebula-exchange-2.1.0.jar          |  2.0.0, 2.0.1  |2.4.*|
+|         nebula-exchange-2.5.0.jar          |  2.5.0, 2.5.1  |2.4.*|
+|         nebula-exchange-2.5.1.jar          |  2.5.0, 2.5.1  |2.4.*|
+|         nebula-exchange-2.5.2.jar          |  2.5.0, 2.5.1  |2.4.*|
+|         nebula-exchange-2.6.0.jar          |  2.6.0, 2.6.1  |2.4.*|
+|         nebula-exchange-2.6.1.jar          |  2.6.0, 2.6.1  |2.4.*|
+|         nebula-exchange-2.6.2.jar          |  2.6.0, 2.6.1  |2.4.*|
+|         nebula-exchange-2.6.3.jar          |  2.6.0, 2.6.1  |2.4.*|
+|    nebula-exchange_spark_2.2-3.x.x.jar     |  3.x.x  |2.2.*|
+|    nebula-exchange_spark_2.4-3.x.x.jar     |  3.x.x  |2.4.*|
+|    nebula-exchange_spark_3.0-3.x.x.jar     |  3.x.x  |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
+| nebula-exchange_spark_2.2-3.0-SNAPSHOT.jar |     nightly    |2.2.*|
+| nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar |     nightly    |2.4.*|
+| nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar |     nightly    |`3.0.*`,`3.1.*`,`3.2.*`,`3.3.*`|
 
 ## Feature History
 
