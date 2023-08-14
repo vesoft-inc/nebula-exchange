@@ -1,16 +1,22 @@
 # 欢迎使用 NebulaGraph Exchange
 [English](https://github.com/vesoft-inc/nebula-exchange/blob/master/README.md)
 
-NebulaGraph Exchange（以下简称 Exchange）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到 NebulaGraph 中，它能支持多种不同格式的批式数据和流式数据的迁移，它还支持直接与 SST File 方式的 NebulaGraph 写入。
+NebulaGraph Exchange（以下简称 Exchange）是一款 Apache Spark&trade; 应用，用于在分布式环境中将集群中的数据批量迁移到
+NebulaGraph 中，它能支持多种不同格式的批式数据和流式数据的迁移，它还支持直接与 SST File 方式的
+NebulaGraph 写入。
 
-
-Exchange 支持的 Spark 版本包括 2.2、2.4 和 3.0，对应的工具包名分别为 `nebula-exchange_spark_2.2`、`nebula-exchange_spark_2.4` 和 `nebula-exchange_spark_3.0`。
+Exchange 支持的 Spark 版本包括 2.2、2.4 和
+3.0，对应的工具包名分别为 `nebula-exchange_spark_2.2`、`nebula-exchange_spark_2.4`
+和 `nebula-exchange_spark_3.0`。
 
 > 注意：
-> - 3.4.0 版本不支持 kafka 和 pulsar， 若需将 kafka 或 pulsar 数据导入 NebulaGraph，请使用 3.0.0 或 3.3.0 或 3.5.0 版本。
-> - 本仓库仅支持 NebulaGraph 2.x 和 3.x，如果您在使用 NebulaGraph v1.x，请使用 [NebulaExchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange) ，或参考 Exchange 1.0 的使用文档[NebulaExchange 用户手册](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
+> - 3.4.0 版本不支持 kafka 和 pulsar， 若需将 kafka 或 pulsar 数据导入 NebulaGraph，请使用 3.0.0 或
+    3.3.0 或 3.5.0 版本。
+> - 本仓库仅支持 NebulaGraph 2.x 和 3.x，如果您在使用 NebulaGraph
+    v1.x，请使用 [NebulaExchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange)
+    ，或参考 Exchange 1.0
+    的使用文档[NebulaExchange 用户手册](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
 
-> 注意：3.4.0版本不支持 kafka 和 pulsar， 若需将 kafka 或 pulsar 数据导入 NebulaGraph，请使用 3.0.0 或 3.3.0 或 3.5.0 版本。
 
 ## 如何获取
 
