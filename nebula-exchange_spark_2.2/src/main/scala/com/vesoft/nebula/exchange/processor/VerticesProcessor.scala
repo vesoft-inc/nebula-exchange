@@ -49,7 +49,9 @@ class VerticesProcessor(spark: SparkSession,
                         nebulaKeys: List[String],
                         config: Configs,
                         batchSuccess: LongAccumulator,
-                        batchFailure: LongAccumulator)
+                        batchFailure: LongAccumulator,
+                        recordSuccess: LongAccumulator,
+                        recordFailure: LongAccumulator)
     extends Processor {
 
   @transient
@@ -77,9 +79,11 @@ class VerticesProcessor(spark: SparkSession,
       val failStatement = writer.writeVertices(vertices, tagConfig.ignoreIndex)
       if (failStatement == null) {
         batchSuccess.add(1)
+        recordSuccess.add(vertex.toList.size)
       } else {
         errorBuffer.append(failStatement)
         batchFailure.add(1)
+        recordFailure.add(vertex.toList.size)
         if (batchFailure.value >= config.errorConfig.errorMaxSize) {
           throw TooManyErrorsException(
             s"There are too many failed batches, batch amount: ${batchFailure.value}, " +
@@ -94,7 +98,7 @@ class VerticesProcessor(spark: SparkSession,
         s"${config.errorConfig.errorPath}/${appId}/${tagConfig.name}.${TaskContext.getPartitionId()}")
       errorBuffer.clear()
     }
-    LOG.info(s"tag ${tagConfig.name} import in spark partition ${TaskContext
+    LOG.info(s">>>>>> tag ${tagConfig.name} import in spark partition ${TaskContext
       .getPartitionId()} cost ${System.currentTimeMillis() - startTime} ms")
     writer.close()
     graphProvider.close()
@@ -314,7 +318,7 @@ class VerticesProcessor(spark: SparkSession,
     val vertexKey = codec.vertexKey(spaceVidLen, partitionId, vidBytes, tagItem.getTag_id)
 
     val values = for {
-      property <- fieldKeys if property.trim.length != 0
+      property <- fieldKeys if property.trim.nonEmpty
     } yield
       extraValueForSST(row, property, fieldTypeMap)
         .asInstanceOf[AnyRef]

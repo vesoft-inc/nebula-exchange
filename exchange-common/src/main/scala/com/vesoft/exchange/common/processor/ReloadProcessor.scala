@@ -61,7 +61,7 @@ class ReloadProcessor(data: DataFrame,
           .getPartitionId()}")
       errorBuffer.clear()
     }
-    LOG.info(s"data reload in partition ${TaskContext
+    LOG.info(s">>>>> data reload in partition ${TaskContext
       .getPartitionId()} cost ${System.currentTimeMillis() - startTime}ms")
     writer.close()
     graphProvider.close()

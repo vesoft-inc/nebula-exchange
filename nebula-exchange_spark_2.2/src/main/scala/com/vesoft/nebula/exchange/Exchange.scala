@@ -72,12 +72,12 @@ object Exchange {
     val c: Argument = options match {
       case Some(config) => config
       case _ =>
-        LOG.error("Argument parse failed")
+        LOG.error(">>>>>> Argument parse failed")
         sys.exit(-1)
     }
 
     val configs = Configs.parse(c.config, c.variable, c.param)
-    LOG.info(s"Config ${configs}")
+    LOG.info(s">>>>>> Config ${configs}")
 
     val session = SparkSession
       .builder()
@@ -95,7 +95,7 @@ object Exchange {
     if (c.hive) {
       if (configs.hiveConfigEntry.isEmpty) {
         LOG.info(
-          "you don't com.vesoft.exchange.common.config hive source, so using hive tied with spark.")
+          ">>>>>> you don't com.vesoft.exchange.common.config hive source, so using hive tied with spark.")
       } else {
         val hiveConfig = configs.hiveConfigEntry.get
         sparkConf.set("spark.sql.warehouse.dir", hiveConfig.warehouse)
@@ -116,17 +116,29 @@ object Exchange {
     val spark = session.getOrCreate()
     // check the spark version
     SparkValidate.validate(spark.version, "2.2.*")
+    val startTime                      = System.currentTimeMillis()
+    var totalClientBatchSuccess: Long  = 0L
+    var totalClientBatchFailure: Long  = 0L
+    var totalClientRecordSuccess: Long = 0L
+    var totalClientRecordFailure: Long = 0L
+    var totalSstRecordSuccess: Long    = 0l
+    var totalSstRecordFailure: Long    = 0L
 
     // reload for failed import tasks
-    if (!c.reload.isEmpty) {
+    if (c.reload.nonEmpty) {
       val batchSuccess = spark.sparkContext.longAccumulator(s"batchSuccess.reload")
       val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure.reload")
 
+      val start     = System.currentTimeMillis()
       val data      = spark.read.text(c.reload)
       val processor = new ReloadProcessor(data, configs, batchSuccess, batchFailure)
       processor.process()
-      LOG.info(s"batchSuccess.reload: ${batchSuccess.value}")
-      LOG.info(s"batchFailure.reload: ${batchFailure.value}")
+      LOG.info(s">>>>> batchSuccess.reload: ${batchSuccess.value}")
+      LOG.info(s">>>>> batchFailure.reload: ${batchFailure.value}")
+      LOG.info(
+        s">>>>> exchange reload job finished, cost:${((System.currentTimeMillis() - start) / 1000.0)
+          .formatted("%.2f")}s")
+
       sys.exit(0)
     }
 
@@ -136,13 +148,15 @@ object Exchange {
     // import tags
     if (configs.tagsConfig.nonEmpty) {
       for (tagConfig <- configs.tagsConfig) {
-        LOG.info(s"Processing Tag ${tagConfig.name}")
+        LOG.info(s">>>>>> Processing Tag ${tagConfig.name}")
         spark.sparkContext.setJobGroup(tagConfig.name, s"Tag: ${tagConfig.name}")
 
+        val start = System.currentTimeMillis()
+
         val fieldKeys = tagConfig.fields
-        LOG.info(s"field keys: ${fieldKeys.mkString(", ")}")
+        LOG.info(s">>>>>> field keys: ${fieldKeys.mkString(", ")}")
         val nebulaKeys = tagConfig.nebulaFields
-        LOG.info(s"nebula keys: ${nebulaKeys.mkString(", ")}")
+        LOG.info(s">>>>>> nebula keys: ${nebulaKeys.mkString(", ")}")
 
         val fields = tagConfig.vertexField :: tagConfig.fields
         val data   = createDataSource(spark, tagConfig.dataSourceConfigEntry, fields)
@@ -155,11 +169,12 @@ object Exchange {
           } else {
             data.get
           }
-          val startTime = System.currentTimeMillis()
           val batchSuccess =
             spark.sparkContext.longAccumulator(s"batchSuccess.${tagConfig.name}")
           val batchFailure =
             spark.sparkContext.longAccumulator(s"batchFailure.${tagConfig.name}")
+          val recordSuccess = spark.sparkContext.longAccumulator(s"recordSuccess.${tagConfig.name}")
+          val recordFailure = spark.sparkContext.longAccumulator(s"recordFailure.${tagConfig.name}")
 
           val processor = new VerticesProcessor(
             spark,
@@ -169,34 +184,49 @@ object Exchange {
             nebulaKeys,
             configs,
             batchSuccess,
-            batchFailure
+            batchFailure,
+            recordSuccess,
+            recordFailure
           )
           processor.process()
-          val costTime = ((System.currentTimeMillis() - startTime) / 1000.0).formatted("%.2f")
-          LOG.info(s"import for tag ${tagConfig.name}, total time: ${costTime}s")
+          val costTime = ((System.currentTimeMillis() - start) / 1000.0).formatted("%.2f")
+          LOG.info(s">>>>>> import for tag ${tagConfig.name}, total time: ${costTime}s")
           if (tagConfig.dataSinkConfigEntry.category == SinkCategory.CLIENT) {
-            LOG.info(s"Client-Import: batchSuccess.${tagConfig.name}: ${batchSuccess.value}")
-            LOG.info(s"Client-Import: batchFailure.${tagConfig.name}: ${batchFailure.value}")
+            LOG.info(s">>>>> Client-Import: batchSuccess.${tagConfig.name}: ${batchSuccess.value}")
+            LOG.info(
+              s">>>>> Client-Import: recordSuccess.${tagConfig.name}: ${recordSuccess.value}")
+            LOG.info(s">>>>> Client-Import: batchFailure.${tagConfig.name}: ${batchFailure.value}")
+            LOG.info(
+              s">>>>> Client-Import: recordFailure.${tagConfig.name}: ${recordFailure.value}")
             failures += batchFailure.value
+            totalClientRecordSuccess += recordSuccess.value
+            totalClientRecordFailure += recordFailure.value
+            totalClientBatchSuccess += batchSuccess.value
+            totalClientBatchFailure += batchFailure.value
           } else {
-            LOG.info(s"SST-Import: failure.${tagConfig.name}: ${batchFailure.value}")
+            LOG.info(s">>>>> SST-Import: success.${tagConfig.name}: ${recordSuccess.value}")
+            LOG.info(s">>>>> SST-Import: failure.${tagConfig.name}: ${recordFailure.value}")
+            totalSstRecordSuccess += recordSuccess.value
+            totalSstRecordFailure += recordFailure.value
           }
         }
       }
     } else {
-      LOG.warn("Tag is not defined")
+      LOG.warn(">>>>>> Tag is not defined")
     }
 
     // import edges
     if (configs.edgesConfig.nonEmpty) {
       for (edgeConfig <- configs.edgesConfig) {
-        LOG.info(s"Processing Edge ${edgeConfig.name}")
+        LOG.info(s">>>>>> Processing Edge ${edgeConfig.name}")
         spark.sparkContext.setJobGroup(edgeConfig.name, s"Edge: ${edgeConfig.name}")
 
+        val start = System.currentTimeMillis()
+
         val fieldKeys = edgeConfig.fields
-        LOG.info(s"field keys: ${fieldKeys.mkString(", ")}")
+        LOG.info(s">>>>>> field keys: ${fieldKeys.mkString(", ")}")
         val nebulaKeys = edgeConfig.nebulaFields
-        LOG.info(s"nebula keys: ${nebulaKeys.mkString(", ")}")
+        LOG.info(s">>>>>> nebula keys: ${nebulaKeys.mkString(", ")}")
         val fields = if (edgeConfig.rankingField.isDefined) {
           edgeConfig.rankingField.get :: edgeConfig.sourceField :: edgeConfig.targetField :: edgeConfig.fields
         } else {
@@ -215,9 +245,12 @@ object Exchange {
             df = dataUdf(df, edgeConfig.dstVertexUdf.get)
           }
 
-          val startTime    = System.currentTimeMillis()
           val batchSuccess = spark.sparkContext.longAccumulator(s"batchSuccess.${edgeConfig.name}")
           val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure.${edgeConfig.name}")
+          val recordSuccess =
+            spark.sparkContext.longAccumulator(s"recordSuccess.${edgeConfig.name}")
+          val recordFailure =
+            spark.sparkContext.longAccumulator(s"recordFailure.${edgeConfig.name}")
 
           val processor = new EdgeProcessor(
             spark,
@@ -227,22 +260,34 @@ object Exchange {
             nebulaKeys,
             configs,
             batchSuccess,
-            batchFailure
+            batchFailure,
+            recordSuccess,
+            recordFailure
           )
           processor.process()
-          val costTime = ((System.currentTimeMillis() - startTime) / 1000.0).formatted("%.2f")
-          LOG.info(s"import for edge ${edgeConfig.name}, total time: ${costTime}s")
+          val costTime = ((System.currentTimeMillis() - start) / 1000.0).formatted("%.2f")
+          LOG.info(s">>>>>> import for edge ${edgeConfig.name}, total time: ${costTime}s")
           if (edgeConfig.dataSinkConfigEntry.category == SinkCategory.CLIENT) {
-            LOG.info(s"Client-Import: batchSuccess.${edgeConfig.name}: ${batchSuccess.value}")
-            LOG.info(s"Client-Import: batchFailure.${edgeConfig.name}: ${batchFailure.value}")
+            LOG.info(s">>>>> Client-Import: batchSuccess.${edgeConfig.name}: ${batchSuccess.value}")
+            LOG.info(
+              s">>>>> Client-Import: recordSuccess.${edgeConfig.name}: ${recordSuccess.value}")
+            LOG.info(s">>>>> Client-Import: batchFailure.${edgeConfig.name}: ${batchFailure.value}")
+            LOG.info(
+              s">>>>> Client-Import: recordFailure.${edgeConfig.name}: ${recordFailure.value}")
             failures += batchFailure.value
+            totalClientRecordSuccess += recordSuccess.value
+            totalClientRecordFailure += recordFailure.value
+            totalClientBatchSuccess += batchSuccess.value
+            totalClientBatchFailure += batchFailure.value
           } else {
-            LOG.info(s"SST-Import: failure.${edgeConfig.name}: ${batchFailure.value}")
+            LOG.info(s">>>>> SST-Import: failure.${edgeConfig.name}: ${recordFailure.value}")
+            totalSstRecordSuccess += recordSuccess.value
+            totalSstRecordFailure += recordFailure.value
           }
         }
       }
     } else {
-      LOG.warn("Edge is not defined")
+      LOG.warn(">>>>>> Edge is not defined")
     }
 
     // reimport for failed tags and edges
@@ -253,15 +298,26 @@ object Exchange {
       val batchSuccess = spark.sparkContext.longAccumulator(s"batchSuccess.reimport")
       val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure.reimport")
       val data         = spark.read.text(errorPath)
-      val startTime    = System.currentTimeMillis()
+      val start        = System.currentTimeMillis()
       val processor    = new ReloadProcessor(data, configs, batchSuccess, batchFailure)
       processor.process()
-      val costTime = ((System.currentTimeMillis() - startTime) / 1000.0).formatted("%.2f")
-      LOG.info(s"reimport ngql cost time: ${costTime}")
-      LOG.info(s"batchSuccess.reimport: ${batchSuccess.value}")
-      LOG.info(s"batchFailure.reimport: ${batchFailure.value}")
+      val costTime = ((System.currentTimeMillis() - start) / 1000.0).formatted("%.2f")
+      LOG.info(s">>>>> reimport ngql cost time: ${costTime}")
+      LOG.info(s">>>>> batchSuccess.reimport: ${batchSuccess.value}")
+      LOG.info(s">>>>> batchFailure.reimport: ${batchFailure.value}")
+      totalClientBatchSuccess += batchSuccess.value
+      totalClientBatchFailure -= batchSuccess.value
     }
     spark.close()
+    LOG.info(
+      s"\n>>>>>> exchange job finished, cost ${((System.currentTimeMillis() - startTime) / 1000.0)
+        .formatted("%.2f")}s \n" +
+        s">>>>>> total client batchSuccess:${totalClientBatchSuccess} \n" +
+        s">>>>>> total client recordsSuccess:${totalClientRecordSuccess} \n" +
+        s">>>>>> total client batchFailure:${totalClientBatchFailure} \n" +
+        s">>>>>> total client recordsFailure:${totalClientRecordFailure} \n" +
+        s">>>>>> total SST failure:${totalSstRecordFailure} \n" +
+        s">>>>>> total SST Success:${totalSstRecordSuccess}")
   }
 
   /**
@@ -279,54 +335,56 @@ object Exchange {
     config.category match {
       case SourceCategory.PARQUET =>
         val parquetConfig = config.asInstanceOf[FileBaseSourceConfigEntry]
-        LOG.info(s"""Loading Parquet files from ${parquetConfig.path}""")
+        LOG.info(s""">>>>>> Loading Parquet files from ${parquetConfig.path}""")
         val reader = new ParquetReader(session, parquetConfig)
         Some(reader.read())
       case SourceCategory.ORC =>
         val orcConfig = config.asInstanceOf[FileBaseSourceConfigEntry]
-        LOG.info(s"""Loading ORC files from ${orcConfig.path}""")
+        LOG.info(s""">>>>>> Loading ORC files from ${orcConfig.path}""")
         val reader = new ORCReader(session, orcConfig)
         Some(reader.read())
       case SourceCategory.JSON =>
         val jsonConfig = config.asInstanceOf[FileBaseSourceConfigEntry]
-        LOG.info(s"""Loading JSON files from ${jsonConfig.path}""")
+        LOG.info(s""">>>>>> Loading JSON files from ${jsonConfig.path}""")
         val reader = new JSONReader(session, jsonConfig)
         Some(reader.read())
       case SourceCategory.CSV =>
         val csvConfig = config.asInstanceOf[FileBaseSourceConfigEntry]
-        LOG.info(s"""Loading CSV files from ${csvConfig.path}""")
+        LOG.info(s""">>>>>> Loading CSV files from ${csvConfig.path}""")
         val reader =
           new CSVReader(session, csvConfig)
         Some(reader.read())
       case SourceCategory.HIVE =>
         val hiveConfig = config.asInstanceOf[HiveSourceConfigEntry]
-        LOG.info(s"""Loading from Hive and exec ${hiveConfig.sentence}""")
+        LOG.info(s""">>>>>> Loading from Hive and exec ${hiveConfig.sentence}""")
         val reader = new HiveReader(session, hiveConfig)
         Some(reader.read())
       case SourceCategory.KAFKA => {
         val kafkaConfig = config.asInstanceOf[KafkaSourceConfigEntry]
-        LOG.info(s"""Loading from Kafka ${kafkaConfig.server} and subscribe ${kafkaConfig.topic}""")
+        LOG.info(
+          s""">>>>>> Loading from Kafka ${kafkaConfig.server} and subscribe ${kafkaConfig.topic}""")
         val reader = new KafkaReader(session, kafkaConfig, fields)
         Some(reader.read())
       }
       case SourceCategory.NEO4J =>
         val neo4jConfig = config.asInstanceOf[Neo4JSourceConfigEntry]
-        LOG.info(s"Loading from neo4j com.vesoft.exchange.common.config: ${neo4jConfig}")
+        LOG.info(s">>>>>> Loading from neo4j com.vesoft.exchange.common.config: ${neo4jConfig}")
         val reader = new Neo4JReader(session, neo4jConfig)
         Some(reader.read())
       case SourceCategory.MYSQL =>
         val mysqlConfig = config.asInstanceOf[MySQLSourceConfigEntry]
-        LOG.info(s"Loading from mysql com.vesoft.exchange.common.config: ${mysqlConfig}")
+        LOG.info(s">>>>>> Loading from mysql com.vesoft.exchange.common.config: ${mysqlConfig}")
         val reader = new MySQLReader(session, mysqlConfig)
         Some(reader.read())
       case SourceCategory.POSTGRESQL =>
         val postgreConfig = config.asInstanceOf[PostgreSQLSourceConfigEntry]
-        LOG.info(s"Loading from postgresql com.vesoft.exchange.common.config: ${postgreConfig}")
+        LOG.info(
+          s">>>>>> Loading from postgresql com.vesoft.exchange.common.config: ${postgreConfig}")
         val reader = new PostgreSQLReader(session, postgreConfig)
         Some(reader.read())
       case SourceCategory.PULSAR =>
         val pulsarConfig = config.asInstanceOf[PulsarSourceConfigEntry]
-        LOG.info(s"Loading from pulsar com.vesoft.exchange.common.config: ${pulsarConfig}")
+        LOG.info(s">>>>>> Loading from pulsar com.vesoft.exchange.common.config: ${pulsarConfig}")
         val reader = new PulsarReader(session, pulsarConfig)
         Some(reader.read())
       case SourceCategory.JANUS_GRAPH =>
@@ -357,7 +415,7 @@ object Exchange {
         Some(reader.read())
       }
       case _ => {
-        LOG.error(s"Data source ${config.category} not supported")
+        LOG.error(s">>>>>> Data source ${config.category} not supported")
         None
       }
     }

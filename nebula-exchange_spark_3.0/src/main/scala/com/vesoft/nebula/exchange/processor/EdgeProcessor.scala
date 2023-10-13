@@ -42,7 +42,9 @@ class EdgeProcessor(spark: SparkSession,
                     nebulaKeys: List[String],
                     config: Configs,
                     batchSuccess: LongAccumulator,
-                    batchFailure: LongAccumulator)
+                    batchFailure: LongAccumulator,
+                    recordSuccess:LongAccumulator,
+                    recordFailure:LongAccumulator)
     extends Processor {
 
   @transient
@@ -71,9 +73,12 @@ class EdgeProcessor(spark: SparkSession,
       val failStatement = writer.writeEdges(edges, edgeConfig.ignoreIndex)
       if (failStatement == null) {
         batchSuccess.add(1)
+        recordSuccess.add(edge.toList.size)
       } else {
         errorBuffer.append(failStatement)
         batchFailure.add(1)
+        recordFailure.add(edge.toList.size)
+
         if (batchFailure.value >= config.errorConfig.errorMaxSize) {
           throw TooManyErrorsException(
             s"There are too many failed batches, batch amount: ${batchFailure.value}, " +
@@ -88,7 +93,7 @@ class EdgeProcessor(spark: SparkSession,
         s"${config.errorConfig.errorPath}/${appId}/${edgeConfig.name}.${TaskContext.getPartitionId}")
       errorBuffer.clear()
     }
-    LOG.info(s"edge ${edgeConfig.name} import in spark partition ${TaskContext
+    LOG.info(s">>>>> edge ${edgeConfig.name} import in spark partition ${TaskContext
       .getPartitionId()} cost ${System.currentTimeMillis() - startTime}ms")
     writer.close()
     graphProvider.close()
@@ -168,7 +173,7 @@ class EdgeProcessor(spark: SparkSession,
 
         wStream
           .foreachBatch((edges: Dataset[Edge], batchId: Long) => {
-            LOG.info(s"${edgeConfig.name} edge start batch ${batchId}.")
+            LOG.info(s">>>>> ${edgeConfig.name} edge start batch ${batchId}.")
             edges.foreachPartition(processEachPartition _)
           })
           .trigger(Trigger.ProcessingTime(s"${streamingDataSourceConfig.intervalSeconds} seconds"))
@@ -418,7 +423,7 @@ class EdgeProcessor(spark: SparkSession,
                                                    srcBytes)
 
     val values = for {
-      property <- fieldKeys if property.trim.length != 0
+      property <- fieldKeys if property.trim.nonEmpty
     } yield
       extraValueForSST(row, property, fieldTypeMap)
         .asInstanceOf[AnyRef]

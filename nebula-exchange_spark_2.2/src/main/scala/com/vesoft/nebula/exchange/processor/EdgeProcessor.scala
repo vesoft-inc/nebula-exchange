@@ -41,7 +41,9 @@ class EdgeProcessor(spark: SparkSession,
                     nebulaKeys: List[String],
                     config: Configs,
                     batchSuccess: LongAccumulator,
-                    batchFailure: LongAccumulator)
+                    batchFailure: LongAccumulator,
+                    recordSuccess: LongAccumulator,
+                    recordFailure: LongAccumulator)
     extends Processor {
 
   @transient
@@ -70,9 +72,11 @@ class EdgeProcessor(spark: SparkSession,
       val failStatement = writer.writeEdges(edges, edgeConfig.ignoreIndex)
       if (failStatement == null) {
         batchSuccess.add(1)
+        recordSuccess.add(edge.toList.size)
       } else {
         errorBuffer.append(failStatement)
         batchFailure.add(1)
+        recordFailure.add(edge.toList.size)
         if (batchFailure.value >= config.errorConfig.errorMaxSize) {
           throw TooManyErrorsException(
             s"There are too many failed batches, batch amount: ${batchFailure.value}, " +
@@ -396,7 +400,7 @@ class EdgeProcessor(spark: SparkSession,
                                                    srcBytes)
 
     val values = for {
-      property <- fieldKeys if property.trim.length != 0
+      property <- fieldKeys if property.trim.nonEmpty
     } yield
       extraValueForSST(row, property, fieldTypeMap)
         .asInstanceOf[AnyRef]
