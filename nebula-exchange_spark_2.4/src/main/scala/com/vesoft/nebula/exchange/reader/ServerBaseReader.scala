@@ -157,9 +157,9 @@ class Neo4JReader(override val session: SparkSession, neo4jConfig: Neo4JSourceCo
 
     val offsets =
       getOffsets(totalCount, neo4jConfig.parallel, neo4jConfig.checkPointPath, neo4jConfig.name)
-    LOG.info(s"${neo4jConfig.name} offsets: ${offsets.mkString(",")}")
+    LOG.info(s">>>>> ${neo4jConfig.name} offsets: ${offsets.mkString(",")}")
     if (offsets.forall(_.size == 0L)) {
-      LOG.warn(s"${neo4jConfig.name} already write done from check point.")
+      LOG.warn(s">>>>> ${neo4jConfig.name} already write done from check point.")
       return session.createDataFrame(session.sparkContext.emptyRDD[Row], new StructType())
     }
 

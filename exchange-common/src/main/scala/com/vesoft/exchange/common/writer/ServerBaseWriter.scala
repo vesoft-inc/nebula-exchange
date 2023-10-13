@@ -292,7 +292,7 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
       throw new RuntimeException("Switch Failed for " + switchResult.getErrorMessage)
     }
 
-    LOG.info(s"Connection to ${dataBaseConfigEntry.graphAddress}")
+    LOG.info(s">>>>>> Connection to ${dataBaseConfigEntry.graphAddress}")
   }
 
   def execute(vertices: Vertices, writeMode: WriteMode.Mode): String = {
@@ -329,16 +329,16 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
       val result = graphProvider.submit(session, statement)
       if (result.isSucceeded) {
         LOG.info(
-          s" write ${config.name}, batch size(${vertices.values.size}), latency(${result.getLatency})")
+          s">>>>> write ${config.name}, batch size(${vertices.values.size}), latency(${result.getLatency})")
         return null
       }
-      LOG.error(s"write vertex failed for ${result.getErrorMessage}")
+      LOG.error(s">>>>> write vertex failed for ${result.getErrorMessage} statement: \n $statement")
       if (result.getErrorCode == ErrorCode.E_BAD_PERMISSION.getValue) {
         throw new RuntimeException(
           s"write ${config.name} failed for E_BAD_PERMISSION: ${result.getErrorMessage}")
       }
     } else {
-      LOG.error(s"write vertex failed because write speed is too fast")
+      LOG.error(s">>>>>> write vertex failed because write speed is too fast")
     }
     statement
   }
@@ -349,16 +349,16 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
       val result = graphProvider.submit(session, statement)
       if (result.isSucceeded) {
         LOG.info(
-          s" write ${config.name}, batch size(${edges.values.size}), latency(${result.getLatency}us)")
+          s">>>>>> write ${config.name}, batch size(${edges.values.size}), latency(${result.getLatency}us)")
         return null
       }
-      LOG.error(s"write edge failed for ${result.getErrorMessage}")
+      LOG.error(s">>>>>> write edge failed for ${result.getErrorMessage}")
       if (result.getErrorCode == ErrorCode.E_BAD_PERMISSION.getValue) {
         throw new RuntimeException(
           s"write ${config.name} failed for E_BAD_PERMISSION: ${result.getErrorMessage}")
       }
     } else {
-      LOG.error(s"write vertex failed because write speed is too fast")
+      LOG.error(s">>>>>> write vertex failed because write speed is too fast")
     }
     statement
   }
@@ -369,9 +369,9 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
       if (result.isSucceeded) {
         return null
       }
-      LOG.error(s"reimport ngql failed for ${result.getErrorMessage}")
+      LOG.error(s">>>>>> reimport ngql failed for ${result.getErrorMessage}")
     } else {
-      LOG.error(s"reimport ngql failed because write speed is too fast")
+      LOG.error(s">>>>>> reimport ngql failed because write speed is too fast")
     }
     ngql
   }

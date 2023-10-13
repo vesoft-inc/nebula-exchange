@@ -15,7 +15,16 @@ import com.vesoft.nebula.meta.{ColumnDef, ColumnTypeDef, Schema, SchemaProp, Tag
 import org.apache.commons.codec.binary.Hex
 import org.apache.log4j.Logger
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types.{BooleanType, DoubleType, IntegerType, LongType, ShortType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{
+  BooleanType,
+  DoubleType,
+  IntegerType,
+  LongType,
+  ShortType,
+  StringType,
+  StructField,
+  StructType
+}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.Test
 import org.scalatest.Assertions.assertThrows
@@ -60,7 +69,16 @@ class VerticesProcessorSuite {
                         "col14")
 
   val processClazz =
-    new VerticesProcessor(null, data, tagConfig, fieldKeys, nebulaKeys, config, null, null)
+    new VerticesProcessor(null,
+                          data,
+                          tagConfig,
+                          fieldKeys,
+                          nebulaKeys,
+                          config,
+                          null,
+                          null,
+                          null,
+                          null)
   @Test
   def isVertexValidSuite(): Unit = {
     val stringIdValue      = List("Bob")
@@ -70,7 +88,18 @@ class VerticesProcessorSuite {
     val intIdRow           = new GenericRowWithSchema(intIdValue.toArray, schema)
     val writeMode          = WriteMode.INSERT
     val tagConfigEntry =
-      TagConfigEntry("person", null, null, List(), List(), writeMode, "id", None, null, 10, 10, None)
+      TagConfigEntry("person",
+                     null,
+                     null,
+                     List(),
+                     List(),
+                     writeMode,
+                     "id",
+                     None,
+                     null,
+                     10,
+                     10,
+                     None)
 
     // test for string id value without policy
     assert(processClazz.isVertexValid(stringIdRow, tagConfigEntry, false, true))
@@ -139,7 +168,18 @@ class VerticesProcessorSuite {
       "Vertex ID: \"1\", Values: \"\", \"fixedBob\", 12, 200, 1000, 100000, date(\"2021-01-01\"), datetime(\"2021-01-01T12:00:00.100\"), time(\"12:00:00.100\"), 345436232, true, 12.01, 22.12, ST_GeogFromText(\"POINT(3 8)\")"))
     val writeMode = WriteMode.INSERT
     val tagConfigEntryWithPrefix =
-      TagConfigEntry("person", null, null, List(), List(), writeMode, "id", None, "prefix", 10, 10, None)
+      TagConfigEntry("person",
+                     null,
+                     null,
+                     List(),
+                     List(),
+                     writeMode,
+                     "id",
+                     None,
+                     "prefix",
+                     10,
+                     10,
+                     None)
     val vertexWithPrefix =
       processClazz.convertToVertex(row, tagConfigEntryWithPrefix, true, fieldKeys, map)
     assert(vertexWithPrefix.vertexID.equals("\"prefix_1\""))
