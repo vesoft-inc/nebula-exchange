@@ -63,7 +63,7 @@ case class DataBaseConfigEntry(graphAddress: List[String],
   for (address <- metaAddresses) {
     require(
       !address.contains(",") && !address.contains("，"),
-      "nebula.address.meta has wrong format,,please make sure the format is [\"ip1:port1\",\"ip2:port2\"]")
+      "nebula.address.meta has wrong format, please make sure the format is [\"ip1:port1\",\"ip2:port2\"]")
   }
 
   override def toString: String = super.toString
@@ -414,7 +414,7 @@ object Configs {
         // If you want to qualified the key policy, you can wrap them into a block.
         var prefix: String = null
         val vertexField = if (tagConfig.hasPath("vertex.field")) {
-          prefix = getOrElse(tagConfig, "vertex.prefix", null)
+          prefix = getStringOrNull(tagConfig, "vertex.prefix")
           tagConfig.getString("vertex.field")
         } else {
           tagConfig.getString("vertex")
@@ -524,7 +524,7 @@ object Configs {
         var sourcePrefix: String = null
         val sourceField = if (!isGeo) {
           if (edgeConfig.hasPath("source.field")) {
-            sourcePrefix = getOrElse(edgeConfig, "source.prefix", null)
+            sourcePrefix = getStringOrNull(edgeConfig, "source.prefix")
             edgeConfig.getString("source.field")
           } else {
             edgeConfig.getString("source")
@@ -545,7 +545,7 @@ object Configs {
         }
         var targetPrefix: String = null
         val targetField: String = if (edgeConfig.hasPath("target.field")) {
-          targetPrefix = getOrElse(edgeConfig, "target.prefix", null)
+          targetPrefix = getStringOrNull(edgeConfig, "target.prefix")
           edgeConfig.getString("target.field")
         } else {
           edgeConfig.getString("target")
@@ -782,10 +782,10 @@ object Configs {
           config.getString("host"),
           config.getInt("port"),
           config.getString("database"),
-          getOrElse(config, "table", null),
+          getStringOrNull(config, "table"),
           config.getString("user"),
           config.getString("password"),
-          getOrElse(config, "sentence", null)
+          getStringOrNull(config, "sentence")
         )
       case SourceCategory.POSTGRESQL =>
         PostgreSQLSourceConfigEntry(
@@ -793,10 +793,10 @@ object Configs {
           config.getString("host"),
           config.getInt("port"),
           config.getString("database"),
-          getOrElse(config, "table", null),
+          getStringOrNull(config, "table"),
           config.getString("user"),
           config.getString("password"),
-          getOrElse(config, "sentence", null)
+          getStringOrNull(config, "sentence")
         )
       case SourceCategory.ORACLE =>
         OracleConfigEntry(
@@ -805,8 +805,8 @@ object Configs {
           config.getString("driver"),
           config.getString("user"),
           config.getString("password"),
-          getOrElse(config, "table", null),
-          getOrElse(config, "sentence", null)
+          getStringOrNull(config, "table"),
+          getStringOrNull(config, "sentence")
         )
       case SourceCategory.JDBC =>
         val partitionColumn =
@@ -840,13 +840,13 @@ object Configs {
           config.getString("driver"),
           config.getString("user"),
           config.getString("password"),
-          getOrElse(config, "table", null),
+          getStringOrNull(config, "table"),
           partitionColumn,
           lowerBound,
           upperBound,
           numPartitions,
           fetchSize,
-          getOrElse(config, "sentence", null)
+          getStringOrNull(config, "sentence")
         )
       case SourceCategory.KAFKA =>
         val intervalSeconds =
@@ -896,10 +896,10 @@ object Configs {
                                config.getString("columnFamily"),
                                fields.toSet.toList)
       case SourceCategory.MAXCOMPUTE => {
-        val table         = getOrElse(config, "table", null)
-        val partitionSpec = getOrElse(config, "partitionSpec", null)
+        val table         = config.getString("table")
+        val partitionSpec = getStringOrNull(config, "partitionSpec")
         val numPartitions = getOrElse(config, "numPartitions", "1")
-        val sentence      = getOrElse(config, "sentence", null)
+        val sentence      = getStringOrNull(config, "sentence")
 
         MaxComputeConfigEntry(
           SourceCategory.MAXCOMPUTE,
@@ -915,15 +915,15 @@ object Configs {
         )
       }
       case SourceCategory.CLICKHOUSE => {
-        val partition: String = getOrElse (config, "numPartition", "1")
+        val partition: String = getOrElse(config, "numPartition", "1")
         ClickHouseConfigEntry(
           SourceCategory.CLICKHOUSE,
           config.getString("url"),
           config.getString("user"),
           config.getString("password"),
           partition,
-          getOrElse(config, "table", null),
-          getOrElse(config, "sentence", null)
+          getStringOrNull(config, "table"),
+          getStringOrNull(config, "sentence")
         )
       }
       case _ =>
@@ -1000,6 +1000,21 @@ object Configs {
       config.getAnyRef(path).asInstanceOf[T]
     } else {
       defaultValue
+    }
+  }
+
+  /**
+    * Get the String value from config
+    *
+    * @param config config item
+    * @path the path of config
+    * @return String
+    */
+  private[this] def getStringOrNull(config: Config, path: String): String = {
+    if (config.hasPath(path)) {
+      config.getString(path)
+    } else {
+      null
     }
   }
 
