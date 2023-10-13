@@ -14,7 +14,16 @@ import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.meta.{ColumnDef, ColumnTypeDef, Schema, SchemaProp, TagItem}
 import org.apache.commons.codec.binary.Hex
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types.{BooleanType, DoubleType, IntegerType, LongType, ShortType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{
+  BooleanType,
+  DoubleType,
+  IntegerType,
+  LongType,
+  ShortType,
+  StringType,
+  StructField,
+  StructType
+}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.Test
 import org.scalatest.Assertions.assertThrows
@@ -57,7 +66,16 @@ class VerticesProcessorSuite {
                         "col14")
 
   val processClazz =
-    new VerticesProcessor(null, data, tagConfig, fieldKeys, nebulaKeys, config, null, null)
+    new VerticesProcessor(null,
+                          data,
+                          tagConfig,
+                          fieldKeys,
+                          nebulaKeys,
+                          config,
+                          null,
+                          null,
+                          null,
+                          null)
   @Test
   def isVertexValidSuite(): Unit = {
     val stringIdValue      = List("Bob")
@@ -65,9 +83,20 @@ class VerticesProcessorSuite {
     val schema: StructType = StructType(List(StructField("id", StringType, nullable = true)))
     val stringIdRow        = new GenericRowWithSchema(stringIdValue.toArray, schema)
     val intIdRow           = new GenericRowWithSchema(intIdValue.toArray, schema)
-    val writeMode         = WriteMode.INSERT
+    val writeMode          = WriteMode.INSERT
     val tagConfigEntry =
-      TagConfigEntry("person", null, null, List(), List(), writeMode, "id", None, null, 10, 10, None)
+      TagConfigEntry("person",
+                     null,
+                     null,
+                     List(),
+                     List(),
+                     writeMode,
+                     "id",
+                     None,
+                     null,
+                     10,
+                     10,
+                     None)
 
     // test for string id value without policy
     assert(processClazz.isVertexValid(stringIdRow, tagConfigEntry, false, true))

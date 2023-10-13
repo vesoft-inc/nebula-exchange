@@ -14,7 +14,16 @@ import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.meta.{ColumnDef, ColumnTypeDef, EdgeItem, Schema, SchemaProp}
 import org.apache.commons.codec.binary.Hex
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types.{BooleanType, DoubleType, IntegerType, LongType, ShortType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{
+  BooleanType,
+  DoubleType,
+  IntegerType,
+  LongType,
+  ShortType,
+  StringType,
+  StructField,
+  StructType
+}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.Test
 import org.scalatest.Assertions.assertThrows
@@ -57,7 +66,7 @@ class EdgeProcessorSuite {
                         "col14")
 
   val processClazz =
-    new EdgeProcessor(null, data, edgeConfig, fieldKeys, nebulaKeys, config, null, null)
+    new EdgeProcessor(null, data, edgeConfig, fieldKeys, nebulaKeys, config, null, null, null, null)
   @Test
   def isEdgeValidSuite(): Unit = {
     val stringIdValue = List("Bob", "Tom")
