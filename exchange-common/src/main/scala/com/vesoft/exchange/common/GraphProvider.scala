@@ -65,7 +65,7 @@ class GraphProvider(addresses: List[HostAddress], timeout: Int, sslConfigEntry: 
 
   def switchSpace(session: Session, space: String): ResultSet = {
     val switchStatment = s"use $space"
-    LOG.info(s"switch space $space")
+    LOG.info(s">>>>>> switch space $space")
     val result = submit(session, switchStatment)
     result
   }

@@ -66,7 +66,9 @@ case class DataBaseConfigEntry(graphAddress: List[String],
       "nebula.address.meta has wrong format,,please make sure the format is [\"ip1:port1\",\"ip2:port2\"]")
   }
 
-  override def toString: String = super.toString
+  override def toString: String = {
+    s"DataBaseConfigEntry:{graphAddress:$graphAddress, space:$space, metaAddress:$metaAddresses}"
+  }
 
   def getGraphAddress: List[HostAddress] = {
     val hostAndPorts = new ListBuffer[HostAddress]
@@ -94,7 +96,8 @@ case class DataBaseConfigEntry(graphAddress: List[String],
 case class UserConfigEntry(user: String, password: String) {
   require(user.trim.nonEmpty && password.trim.nonEmpty)
 
-  override def toString: String = super.toString
+  override def toString: String =
+    s"UserConfigEntry{user:$user, password:xxxxx}"
 }
 
 /**
@@ -106,7 +109,7 @@ case class UserConfigEntry(user: String, password: String) {
 case class ConnectionConfigEntry(timeout: Int, retry: Int) {
   require(timeout > 0 && retry > 0)
 
-  override def toString: String = super.toString
+  override def toString: String = s"cConnectionConfigEntry:{timeout:$timeout, retry:$retry}"
 }
 
 /**
@@ -119,7 +122,7 @@ case class ConnectionConfigEntry(timeout: Int, retry: Int) {
 case class ExecutionConfigEntry(timeout: Int, retry: Int, interval: Int) {
   require(timeout > 0 && retry > 0 && interval > 0)
 
-  override def toString: String = super.toString
+  override def toString: String = s"ExecutionConfigEntry:{timeout:$timeout, retry:$retry}"
 }
 
 /**
@@ -131,7 +134,8 @@ case class ExecutionConfigEntry(timeout: Int, retry: Int, interval: Int) {
 case class ErrorConfigEntry(errorPath: String, errorMaxSize: Int) {
   require(errorPath.trim.nonEmpty && errorMaxSize > 0)
 
-  override def toString: String = super.toString
+  override def toString: String =
+    s"ErrorConfigEntry:{errorPath:$errorPath, errorMaxSize:$errorMaxSize}"
 }
 
 /**
@@ -143,7 +147,7 @@ case class ErrorConfigEntry(errorPath: String, errorMaxSize: Int) {
 case class RateConfigEntry(limit: Int, timeout: Int) {
   require(limit > 0 && timeout > 0)
 
-  override def toString: String = super.toString
+  override def toString: String = s"RateConfigEntry:{limit:$limit, timeout:$timeout}"
 }
 
 /**
@@ -168,7 +172,7 @@ case class SslConfigEntry(enableGraph: Boolean,
     }
   }
 
-  override def toString: String = super.toString
+  override def toString: String = s"SslConfigEntry:{enableGraph:$enableGraph, enableMeta:$enableMeta, signType:${signType.toString}}"
 }
 
 case class CaSignParam(caCrtFilePath: String, crtFilePath: String, keyFilePath: String)
@@ -915,7 +919,7 @@ object Configs {
         )
       }
       case SourceCategory.CLICKHOUSE => {
-        val partition: String = getOrElse (config, "numPartition", "1")
+        val partition: String = getOrElse(config, "numPartition", "1")
         ClickHouseConfigEntry(
           SourceCategory.CLICKHOUSE,
           config.getString("url"),
