@@ -6,14 +6,15 @@
 package com.vesoft.nebula.exchange
 
 import org.apache.spark.sql.{Column, DataFrame, SparkSession}
-import java.io.File
 
+import java.io.File
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.{CheckPointHandler, ErrorHandler}
 import com.vesoft.exchange.common.config.{
   ClickHouseConfigEntry,
   Configs,
   DataSourceConfigEntry,
+  EdgeConfigEntry,
   FileBaseSourceConfigEntry,
   HBaseSourceConfigEntry,
   HiveSourceConfigEntry,
@@ -26,8 +27,10 @@ import com.vesoft.exchange.common.config.{
   OracleConfigEntry,
   PostgreSQLSourceConfigEntry,
   PulsarSourceConfigEntry,
+  SchemaConfigEntry,
   SinkCategory,
   SourceCategory,
+  TagConfigEntry,
   UdfConfigEntry
 }
 import com.vesoft.nebula.exchange.reader.{
@@ -144,9 +147,12 @@ object Exchange {
     // record the failed batch number
     var failures: Long = 0L
 
-    // import tags
-    if (configs.tagsConfig.nonEmpty) {
-      for (tagConfig <- configs.tagsConfig) {
+    var schemaConfigs: ListBuffer[SchemaConfigEntry] = new ListBuffer[SchemaConfigEntry]
+    schemaConfigs.append(configs.tagsConfig: _*)
+    schemaConfigs.append(configs.edgesConfig: _*)
+
+    schemaConfigs.par.foreach {
+      case tagConfig: TagConfigEntry =>
         LOG.info(s">>>>> Processing Tag ${tagConfig.name}")
         spark.sparkContext.setJobGroup(tagConfig.name, s"Tag: ${tagConfig.name}")
 
@@ -210,14 +216,7 @@ object Exchange {
             totalSstRecordFailure += recordFailure.value
           }
         }
-      }
-    } else {
-      LOG.warn(">>>>>> Tag is not defined")
-    }
-
-    // import edges
-    if (configs.edgesConfig.nonEmpty) {
-      for (edgeConfig <- configs.edgesConfig) {
+      case edgeConfig: EdgeConfigEntry =>
         LOG.info(s">>>>> Processing Edge ${edgeConfig.name}")
         spark.sparkContext.setJobGroup(edgeConfig.name, s"Edge: ${edgeConfig.name}")
 
@@ -285,9 +284,6 @@ object Exchange {
             totalSstRecordFailure += recordFailure.value
           }
         }
-      }
-    } else {
-      LOG.warn(">>>>> Edge is not defined")
     }
 
     // reimport for failed tags and edges
