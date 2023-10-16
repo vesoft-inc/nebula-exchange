@@ -126,17 +126,17 @@ object Exchange {
 
     // reload for failed import tasks
     if (c.reload.nonEmpty) {
-      val batchSuccess = spark.sparkContext.longAccumulator(s"batchSuccess.reload")
-      val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure.reload")
+      val batchSuccess  = spark.sparkContext.longAccumulator(s"batchSuccess.reload")
+      val batchFailure  = spark.sparkContext.longAccumulator(s"batchFailure.reload")
+      val recordSuccess = spark.sparkContext.longAccumulator(s"recordSuccess.reimport")
 
       val start     = System.currentTimeMillis()
       val data      = spark.read.text(c.reload)
-      val processor = new ReloadProcessor(data, configs, batchSuccess, batchFailure)
+      val processor = new ReloadProcessor(data, configs, batchSuccess, batchFailure, recordSuccess)
       processor.process()
       LOG.info(s">>>>> batchSuccess.reload: ${batchSuccess.value}")
       LOG.info(s">>>>> batchFailure.reload: ${batchFailure.value}")
-      LOG.info(s">>>>> batchSuccess.reload: ${batchSuccess.value}")
-      LOG.info(s">>>>> batchFailure.reload: ${batchFailure.value}")
+      LOG.info(s">>>>> recordSuccess.reload: ${recordSuccess.value}")
       LOG.info(
         s">>>>> exchange reload job finished, cost:${((System.currentTimeMillis() - start) / 1000.0)
           .formatted("%.2f")}s")
@@ -295,18 +295,25 @@ object Exchange {
     val errorPath = s"${configs.errorConfig.errorPath}/${SparkEnv.get.blockManager.conf.getAppId}"
     if (failures > 0 && ErrorHandler.existError(errorPath)) {
       spark.sparkContext.setJobGroup("Reload", s"Reload: ${errorPath}")
-      val start        = System.currentTimeMillis()
-      val batchSuccess = spark.sparkContext.longAccumulator(s"batchSuccess.reimport")
-      val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure.reimport")
-      val data         = spark.read.text(errorPath)
-      val processor    = new ReloadProcessor(data, configs, batchSuccess, batchFailure)
+      val start         = System.currentTimeMillis()
+      val batchSuccess  = spark.sparkContext.longAccumulator(s"batchSuccess.reimport")
+      val batchFailure  = spark.sparkContext.longAccumulator(s"batchFailure.reimport")
+      val recordSuccess = spark.sparkContext.longAccumulator(s"recordSuccess.reimport")
+      val data          = spark.read.text(errorPath)
+      val processor     = new ReloadProcessor(data, configs, batchSuccess, batchFailure, recordSuccess)
       processor.process()
       val costTime = ((System.currentTimeMillis() - start) / 1000.0).formatted("%.2f")
       LOG.info(s">>>>> reimport ngql cost time: ${costTime}")
       LOG.info(s">>>>> batchSuccess.reimport: ${batchSuccess.value}")
       LOG.info(s">>>>> batchFailure.reimport: ${batchFailure.value}")
+      LOG.info(s">>>>> recordSuccess.reimport: ${recordSuccess.value}")
       totalClientBatchSuccess += batchSuccess.value
       totalClientBatchFailure -= batchSuccess.value
+      totalClientRecordSuccess += recordSuccess.value
+      totalClientRecordFailure -= recordSuccess.value
+      if (totalClientRecordFailure < 0) {
+        totalClientRecordFailure = 0
+      }
     }
     spark.close()
     LOG.info(
@@ -361,7 +368,8 @@ object Exchange {
         Some(reader.read())
       case SourceCategory.KAFKA => {
         val kafkaConfig = config.asInstanceOf[KafkaSourceConfigEntry]
-        LOG.info(s""">>>>> Loading from Kafka ${kafkaConfig.server} and subscribe ${kafkaConfig.topic}""")
+        LOG.info(
+          s""">>>>> Loading from Kafka ${kafkaConfig.server} and subscribe ${kafkaConfig.topic}""")
         val reader = new KafkaReader(session, kafkaConfig, fields)
         Some(reader.read())
       }

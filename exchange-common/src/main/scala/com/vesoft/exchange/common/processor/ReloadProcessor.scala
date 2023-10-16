@@ -14,12 +14,14 @@ import org.apache.spark.{SparkEnv, TaskContext}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.util.LongAccumulator
 
+import java.util.regex.Pattern
 import scala.collection.mutable.ArrayBuffer
 
 class ReloadProcessor(data: DataFrame,
                       config: Configs,
                       batchSuccess: LongAccumulator,
-                      batchFailure: LongAccumulator)
+                      batchFailure: LongAccumulator,
+                      recordSuccess: LongAccumulator)
     extends Processor {
   @transient
   private[this] lazy val LOG = Logger.getLogger(this.getClass)
@@ -46,9 +48,12 @@ class ReloadProcessor(data: DataFrame,
     // batch write
     val startTime = System.currentTimeMillis
     iterator.foreach { row =>
+      val ngql          = row.getString(0)
+      val recordSize    = computeRecordNumber(ngql)
       val failStatement = writer.writeNgql(row.getString(0))
       if (failStatement == null) {
         batchSuccess.add(1)
+        recordSuccess.add(recordSize)
       } else {
         errorBuffer.append(failStatement)
         batchFailure.add(1)
@@ -65,5 +70,23 @@ class ReloadProcessor(data: DataFrame,
       .getPartitionId()} cost ${System.currentTimeMillis() - startTime}ms")
     writer.close()
     graphProvider.close()
+  }
+
+  /**
+    * compute the record amount of ngql
+    * @param ngql nebula insert ngql
+    */
+  private def computeRecordNumber(ngql: String): Int = {
+    val substring = ": ("
+    var count     = 0
+    var index     = 0
+    while (index != -1) {
+      count += 1
+      index = ngql.indexOf(substring, index)
+      if (index != (-1)) {
+        index += substring.length
+      }
+    }
+    count
   }
 }
