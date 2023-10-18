@@ -18,8 +18,6 @@ Exchange 支持的 Spark 版本包括 2.2、2.4 和
     ，或参考 Exchange 1.0
     的使用文档[NebulaExchange 用户手册](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
 
-> 注意：3.4.0版本不支持 kafka 和 pulsar， 若需将 kafka 或 pulsar 数据导入 NebulaGraph，请使用 3.0.0 或
-> 3.3.0 或 3.5.0 版本。
 
 ## 如何获取
 
@@ -52,6 +50,14 @@ Exchange 支持的 Spark 版本包括 2.2、2.4 和
 
    进入[GitHub Actions Artifacts](https://github.com/vesoft-inc/nebula-exchange/actions/workflows/snapshot.yml)
    页面点击任意 workflow 后，从 Artifacts 中，根据需求下载下载。
+
+## 自动生成示例配置文件
+
+通过如下命令，指定要导入的数据源，即可获得该数据源所对应的配置文件示例。
+```agsl
+java -cp nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar com.vesoft.exchange.common.GenerateConfigTemplate -s {source} -p
+{target-path-to-save-config-file}
+```
 
 ## 版本匹配
 
