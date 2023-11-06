@@ -289,7 +289,6 @@ object Exchange {
         }
     }
 
-
     // reimport for failed tags and edges
     val errorPath = s"${configs.errorConfig.errorPath}/${SparkEnv.get.blockManager.conf.getAppId}"
     if (failures > 0 && ErrorHandler.existError(errorPath)) {
@@ -438,7 +437,9 @@ object Exchange {
   private[this] def repartition(frame: DataFrame,
                                 partition: Int,
                                 sourceCategory: SourceCategory.Value): DataFrame = {
-    if (partition > 0 && !CheckPointHandler.checkSupportResume(sourceCategory)) {
+    val currentPart = frame.rdd.partitions.length
+    if (partition > 0 && currentPart != partition
+        && !CheckPointHandler.checkSupportResume(sourceCategory)) {
       frame.repartition(partition).toDF
     } else {
       frame
