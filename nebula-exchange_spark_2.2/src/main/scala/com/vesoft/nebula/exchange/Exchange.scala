@@ -289,7 +289,6 @@ object Exchange {
         }
     }
 
-
     // reimport for failed tags and edges
     val errorPath = s"${configs.errorConfig.errorPath}/${SparkEnv.get.blockManager.conf.getAppId}"
     if (failures > 0 && ErrorHandler.existError(errorPath)) {
