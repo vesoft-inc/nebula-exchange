@@ -87,19 +87,14 @@ class VerticesProcessor(spark: SparkSession,
         batchFailure.add(1)
         recordFailure.add(vertex.toList.size)
         if (batchFailure.value >= config.errorConfig.errorMaxSize) {
+          writeErrorStatement(errorBuffer)
           throw TooManyErrorsException(
             s"There are too many failed batches, batch amount: ${batchFailure.value}, " +
               s"your config max error size: ${config.errorConfig.errorMaxSize}")
         }
       }
     }
-    if (errorBuffer.nonEmpty) {
-      val appId = SparkEnv.get.blockManager.conf.getAppId
-      ErrorHandler.save(
-        errorBuffer,
-        s"${config.errorConfig.errorPath}/${appId}/${tagConfig.name}.${TaskContext.getPartitionId()}")
-      errorBuffer.clear()
-    }
+    writeErrorStatement(errorBuffer)
     LOG.info(s">>>>> tag ${tagConfig.name} import in spark partition ${TaskContext
       .getPartitionId()} cost ${System.currentTimeMillis() - startTime} ms")
     writer.close()
@@ -339,5 +334,15 @@ class VerticesProcessor(spark: SparkSession,
     val vertexValue     = codec.encodeTag(tagItem, nebulaKeys.asJava, values.asJava)
     val orphanVertexKey = codec.orphanVertexKey(spaceVidLen, partitionId, vidBytes)
     (orphanVertexKey, vertexKey, vertexValue)
+  }
+
+  private def writeErrorStatement(errorBuffer: ArrayBuffer[String]): Unit = {
+    if (errorBuffer.nonEmpty) {
+      val appId = SparkEnv.get.blockManager.conf.getAppId
+      ErrorHandler.save(
+        errorBuffer,
+        s"${config.errorConfig.errorPath}/${appId}/${tagConfig.name}.${TaskContext.getPartitionId}")
+      errorBuffer.clear()
+    }
   }
 }
