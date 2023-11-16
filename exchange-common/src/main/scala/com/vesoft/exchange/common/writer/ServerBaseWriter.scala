@@ -9,7 +9,16 @@ import java.util.concurrent.TimeUnit
 import com.google.common.util.concurrent.RateLimiter
 import com.vesoft.exchange.common.GraphProvider
 import com.vesoft.exchange.common.{Edges, KeyPolicy, Vertices}
-import com.vesoft.exchange.common.config.{DataBaseConfigEntry, EdgeConfigEntry, RateConfigEntry, SchemaConfigEntry, TagConfigEntry, Type, UserConfigEntry, WriteMode}
+import com.vesoft.exchange.common.config.{
+  DataBaseConfigEntry,
+  EdgeConfigEntry,
+  RateConfigEntry,
+  SchemaConfigEntry,
+  TagConfigEntry,
+  Type,
+  UserConfigEntry,
+  WriteMode
+}
 import com.vesoft.nebula.ErrorCode
 import org.apache.log4j.Logger
 
@@ -36,8 +45,8 @@ abstract class ServerBaseWriter extends Writer {
   private[this] val UPDATE_VALUE_TEMPLATE  = "`%s`=%s"
 
   /**
-   * construct insert statement for vertex
-   */
+    * construct insert statement for vertex
+    */
   def toExecuteSentence(name: String, vertices: Vertices, ignoreIndex: Boolean): String = {
     { if (ignoreIndex) BATCH_INSERT_IGNORE_INDEX_TEMPLATE else BATCH_INSERT_TEMPLATE }
       .format(
@@ -67,8 +76,8 @@ abstract class ServerBaseWriter extends Writer {
   }
 
   /**
-   * construct delete statement for vertex
-   */
+    * construct delete statement for vertex
+    */
   def toDeleteExecuteSentence(vertices: Vertices, deleteEdge: Boolean): String = {
     { if (deleteEdge) BATCH_DELETE_VERTEX_WITH_EDGE_TEMPLATE else BATCH_DELETE_VERTEX_TEMPLATE }
       .format(
@@ -96,8 +105,8 @@ abstract class ServerBaseWriter extends Writer {
   }
 
   /**
-   * construct update statement for vertex
-   */
+    * construct update statement for vertex
+    */
   def toUpdateExecuteSentence(tagName: String, vertices: Vertices): String = {
     vertices.values
       .map { vertex =>
@@ -130,8 +139,8 @@ abstract class ServerBaseWriter extends Writer {
   }
 
   /**
-   * construct insert statement for edge
-   */
+    * construct insert statement for edge
+    */
   def toExecuteSentence(name: String, edges: Edges, ignoreIndex: Boolean): String = {
     val values = edges.values
       .map { edge =>
@@ -175,8 +184,8 @@ abstract class ServerBaseWriter extends Writer {
   }
 
   /**
-   * construct delete statement for edge
-   */
+    * construct delete statement for edge
+    */
   def toDeleteExecuteSentence(edgeName: String, edges: Edges): String = {
     BATCH_DELETE_EDGE_TEMPLATE.format(
       Type.EDGE.toString,
@@ -212,48 +221,48 @@ abstract class ServerBaseWriter extends Writer {
   }
 
   /**
-   * construct update statement for edge
-   */
+    * construct update statement for edge
+    */
   def toUpdateExecuteSentence(edgeName: String, edges: Edges): String = {
     edges.values
       .map { edge =>
-          var index = 0
-          val rank  = if (edge.ranking.isEmpty) { 0 } else { edge.ranking.get }
-          UPDATE_EDGE_TEMPLATE.format(
-            Type.EDGE.toString,
-            edgeName,
-            edges.sourcePolicy match {
-              case Some(KeyPolicy.HASH) =>
-                ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.source)
-              case Some(KeyPolicy.UUID) =>
-                ENDPOINT_TEMPLATE.format(KeyPolicy.UUID.toString, edge.source)
-              case None =>
-                edge.source
-              case _ =>
-                throw new IllegalArgumentException(
-                  s"source policy ${edges.sourcePolicy.get} is not supported")
-            },
-            edges.targetPolicy match {
-              case Some(KeyPolicy.HASH) =>
-                ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.destination)
-              case Some(KeyPolicy.UUID) =>
-                ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.destination)
-              case None =>
-                edge.destination
-              case _ =>
-                throw new IllegalArgumentException(
-                  s"target policy ${edges.targetPolicy.get} is not supported")
-            },
-            rank,
-            edge.values
-              .map { value =>
-                val updateValue =
-                  UPDATE_VALUE_TEMPLATE.format(edges.names.get(index), value)
-                index += 1
-                updateValue
-              }
-              .mkString(",")
-          )
+        var index = 0
+        val rank  = if (edge.ranking.isEmpty) { 0 } else { edge.ranking.get }
+        UPDATE_EDGE_TEMPLATE.format(
+          Type.EDGE.toString,
+          edgeName,
+          edges.sourcePolicy match {
+            case Some(KeyPolicy.HASH) =>
+              ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.source)
+            case Some(KeyPolicy.UUID) =>
+              ENDPOINT_TEMPLATE.format(KeyPolicy.UUID.toString, edge.source)
+            case None =>
+              edge.source
+            case _ =>
+              throw new IllegalArgumentException(
+                s"source policy ${edges.sourcePolicy.get} is not supported")
+          },
+          edges.targetPolicy match {
+            case Some(KeyPolicy.HASH) =>
+              ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.destination)
+            case Some(KeyPolicy.UUID) =>
+              ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.destination)
+            case None =>
+              edge.destination
+            case _ =>
+              throw new IllegalArgumentException(
+                s"target policy ${edges.targetPolicy.get} is not supported")
+          },
+          rank,
+          edge.values
+            .map { value =>
+              val updateValue =
+                UPDATE_VALUE_TEMPLATE.format(edges.names.get(index), value)
+              index += 1
+              updateValue
+            }
+            .mkString(",")
+        )
       }
       .mkString(";")
   }
@@ -287,9 +296,9 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
 
   def prepare(): Unit = {
     val switchResult = graphProvider.switchSpace(session, dataBaseConfigEntry.space)
-    if (!switchResult.isSucceeded) {
+    if (!switchResult._2.isSucceeded) {
       this.close()
-      throw new RuntimeException("Switch Failed for " + switchResult.getErrorMessage)
+      throw new RuntimeException("Switch Failed for " + switchResult._2.getErrorMessage)
     }
 
     LOG.info(s">>>>>> Connection to ${dataBaseConfigEntry.graphAddress}")
@@ -327,15 +336,16 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
     val statement = execute(vertices, config.asInstanceOf[TagConfigEntry].writeMode)
     if (rateLimiter.tryAcquire(rateConfig.timeout, TimeUnit.MILLISECONDS)) {
       val result = graphProvider.submit(session, statement)
-      if (result.isSucceeded) {
+      if (result._2.isSucceeded) {
         LOG.info(
-          s">>>>> write ${config.name}, batch size(${vertices.values.size}), latency(${result.getLatency})")
+          s">>>>> write ${config.name}, batch size(${vertices.values.size}), graph(${result._1.toString}), latency(${result._2.getLatency})")
         return null
       }
-      LOG.error(s">>>>> write vertex failed for ${result.getErrorMessage} statement: \n $statement")
-      if (result.getErrorCode == ErrorCode.E_BAD_PERMISSION.getValue) {
+      LOG.error(
+        s">>>>> write vertex failed for ${result._2.getErrorMessage} statement: \n $statement")
+      if (result._2.getErrorCode == ErrorCode.E_BAD_PERMISSION.getValue) {
         throw new RuntimeException(
-          s"write ${config.name} failed for E_BAD_PERMISSION: ${result.getErrorMessage}")
+          s"write ${config.name} failed for E_BAD_PERMISSION: ${result._2.getErrorMessage}")
       }
     } else {
       LOG.error(s">>>>>> write vertex failed because write speed is too fast")
@@ -347,15 +357,15 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
     val statement = execute(edges, config.asInstanceOf[EdgeConfigEntry].writeMode)
     if (rateLimiter.tryAcquire(rateConfig.timeout, TimeUnit.MILLISECONDS)) {
       val result = graphProvider.submit(session, statement)
-      if (result.isSucceeded) {
+      if (result._2.isSucceeded) {
         LOG.info(
-          s">>>>>> write ${config.name}, batch size(${edges.values.size}), latency(${result.getLatency}us)")
+          s">>>>>> write ${config.name}, batch size(${edges.values.size}), graph(${result._1.toString}), latency(${result._2.getLatency}us)")
         return null
       }
-      LOG.error(s">>>>>> write edge failed for ${result.getErrorMessage}")
-      if (result.getErrorCode == ErrorCode.E_BAD_PERMISSION.getValue) {
+      LOG.error(s">>>>>> write edge failed for ${result._2.getErrorMessage}")
+      if (result._2.getErrorCode == ErrorCode.E_BAD_PERMISSION.getValue) {
         throw new RuntimeException(
-          s"write ${config.name} failed for E_BAD_PERMISSION: ${result.getErrorMessage}")
+          s"write ${config.name} failed for E_BAD_PERMISSION: ${result._2.getErrorMessage}")
       }
     } else {
       LOG.error(s">>>>>> write vertex failed because write speed is too fast")
@@ -366,10 +376,10 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
   override def writeNgql(ngql: String): String = {
     if (rateLimiter.tryAcquire(rateConfig.timeout, TimeUnit.MILLISECONDS)) {
       val result = graphProvider.submit(session, ngql)
-      if (result.isSucceeded) {
+      if (result._2.isSucceeded) {
         return null
       }
-      LOG.error(s">>>>>> reimport ngql failed for ${result.getErrorMessage}")
+      LOG.error(s">>>>>> reimport ngql failed for ${result._2.getErrorMessage}")
     } else {
       LOG.error(s">>>>>> reimport ngql failed because write speed is too fast")
     }
