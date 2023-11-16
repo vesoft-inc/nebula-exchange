@@ -31,7 +31,7 @@ class GraphProvider(addresses: List[HostAddress], timeout: Int, sslConfigEntry: 
 
   @transient val nebulaPoolConfig = new NebulaPoolConfig
   @transient val pool: NebulaPool = new NebulaPool
-  val randAddr = scala.util.Random.shuffle(addresses)
+  val randAddr                    = scala.util.Random.shuffle(addresses)
 
   nebulaPoolConfig.setTimeout(timeout)
 
@@ -63,14 +63,15 @@ class GraphProvider(addresses: List[HostAddress], timeout: Int, sslConfigEntry: 
     pool.close()
   }
 
-  def switchSpace(session: Session, space: String): ResultSet = {
+  def switchSpace(session: Session, space: String): (HostAddress, ResultSet) = {
     val switchStatment = s"use $space"
     LOG.info(s">>>>>> switch space $space")
     val result = submit(session, switchStatment)
     result
   }
 
-  def submit(session: Session, statement: String): ResultSet = {
-    session.execute(statement)
+  def submit(session: Session, statement: String): (HostAddress, ResultSet) = {
+    val result = session.execute(statement)
+    (session.getGraphHost,result)
   }
 }

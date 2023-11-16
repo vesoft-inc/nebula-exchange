@@ -38,15 +38,15 @@ class GraphProviderSuite {
   @Test
   def switchSpaceSuite(): Unit = {
     session = graphProvider.getGraphClient(userConfig)
-    assert(graphProvider.switchSpace(session, "test_string").isSucceeded)
-    assert(graphProvider.switchSpace(session, "test_int").isSucceeded)
+    assert(graphProvider.switchSpace(session, "test_string")._2.isSucceeded)
+    assert(graphProvider.switchSpace(session, "test_int")._2.isSucceeded)
     graphProvider.releaseGraphClient(session)
   }
 
   @Test
   def submitSuite(): Unit = {
     session = graphProvider.getGraphClient(userConfig)
-    assert(graphProvider.submit(session, "show hosts").isSucceeded)
+    assert(graphProvider.submit(session, "show hosts")._2.isSucceeded)
     graphProvider.releaseGraphClient(session)
   }
 
