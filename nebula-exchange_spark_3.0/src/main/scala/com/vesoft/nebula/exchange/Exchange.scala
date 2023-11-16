@@ -312,15 +312,17 @@ object Exchange {
       }
     }
     spark.close()
+    val duration = ((System.currentTimeMillis() - startTime) / 1000.0).formatted("%.2f").toDouble
     LOG.info(
-      s"\n>>>>>> exchange job finished, cost ${((System.currentTimeMillis() - startTime) / 1000.0)
-        .formatted("%.2f")}s \n" +
+      s"\n>>>>>> exchange job finished, cost ${duration}s \n" +
         s">>>>>> total client batchSuccess:${totalClientBatchSuccess} \n" +
         s">>>>>> total client recordsSuccess:${totalClientRecordSuccess} \n" +
         s">>>>>> total client batchFailure:${totalClientBatchFailure} \n" +
         s">>>>>> total client recordsFailure:${totalClientRecordFailure} \n" +
         s">>>>>> total SST failure:${totalSstRecordFailure} \n" +
         s">>>>>> total SST Success:${totalSstRecordSuccess}")
+    LOG.info(
+      s">>>>>> exchange import qps: ${(totalClientRecordSuccess / duration).formatted("%.2f")}/s")
   }
 
   /**
