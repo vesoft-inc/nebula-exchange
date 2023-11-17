@@ -26,10 +26,10 @@ class NebulaSSTWriter(path: String) extends Writer {
 
   try {
     RocksDB.loadLibrary()
-    LOG.info("Loading RocksDB successfully")
+    LOG.info(">>>>> Loading RocksDB successfully")
   } catch {
     case _: Exception =>
-      LOG.error("Can't load RocksDB library!")
+      LOG.error(">>>>> Can't load RocksDB library!")
   }
 
   // TODO More Config ...
@@ -108,7 +108,7 @@ class GenerateSstFile extends Serializable {
       }
     } catch {
       case e: Throwable => {
-        LOG.error("sst file write error,", e)
+        LOG.error(">>>>> sst file write error,", e)
         batchFailure.add(1)
       }
     } finally {

@@ -42,7 +42,9 @@ class EdgeProcessor(spark: SparkSession,
                     nebulaKeys: List[String],
                     config: Configs,
                     batchSuccess: LongAccumulator,
-                    batchFailure: LongAccumulator)
+                    batchFailure: LongAccumulator,
+                    recordSuccess:LongAccumulator,
+                    recordFailure:LongAccumulator)
     extends Processor {
 
   @transient
@@ -71,24 +73,22 @@ class EdgeProcessor(spark: SparkSession,
       val failStatement = writer.writeEdges(edges, edgeConfig.ignoreIndex)
       if (failStatement == null) {
         batchSuccess.add(1)
+        recordSuccess.add(edge.toList.size)
       } else {
         errorBuffer.append(failStatement)
         batchFailure.add(1)
+        recordFailure.add(edge.toList.size)
+
         if (batchFailure.value >= config.errorConfig.errorMaxSize) {
+          writeErrorStatement(errorBuffer)
           throw TooManyErrorsException(
             s"There are too many failed batches, batch amount: ${batchFailure.value}, " +
               s"your config max error size: ${config.errorConfig.errorMaxSize}")
         }
       }
     }
-    if (errorBuffer.nonEmpty) {
-      val appId = SparkEnv.get.blockManager.conf.getAppId
-      ErrorHandler.save(
-        errorBuffer,
-        s"${config.errorConfig.errorPath}/${appId}/${edgeConfig.name}.${TaskContext.getPartitionId}")
-      errorBuffer.clear()
-    }
-    LOG.info(s"edge ${edgeConfig.name} import in spark partition ${TaskContext
+    writeErrorStatement(errorBuffer)
+    LOG.info(s">>>>> edge ${edgeConfig.name} import in spark partition ${TaskContext
       .getPartitionId()} cost ${System.currentTimeMillis() - startTime}ms")
     writer.close()
     graphProvider.close()
@@ -168,7 +168,7 @@ class EdgeProcessor(spark: SparkSession,
 
         wStream
           .foreachBatch((edges: Dataset[Edge], batchId: Long) => {
-            LOG.info(s"${edgeConfig.name} edge start batch ${batchId}.")
+            LOG.info(s">>>>> ${edgeConfig.name} edge start batch ${batchId}.")
             edges.foreachPartition(processEachPartition _)
           })
           .trigger(Trigger.ProcessingTime(s"${streamingDataSourceConfig.intervalSeconds} seconds"))
@@ -418,12 +418,22 @@ class EdgeProcessor(spark: SparkSession,
                                                    srcBytes)
 
     val values = for {
-      property <- fieldKeys if property.trim.length != 0
+      property <- fieldKeys if property.trim.nonEmpty
     } yield
       extraValueForSST(row, property, fieldTypeMap)
         .asInstanceOf[AnyRef]
 
     val edgeValue = codec.encodeEdge(edgeItem, nebulaKeys.asJava, values.asJava)
     (positiveEdgeKey, reverseEdgeKey, edgeValue)
+  }
+
+  private def writeErrorStatement(errorBuffer: ArrayBuffer[String]): Unit = {
+    if (errorBuffer.nonEmpty) {
+      val appId = SparkEnv.get.blockManager.conf.getAppId
+      ErrorHandler.save(
+        errorBuffer,
+        s"${config.errorConfig.errorPath}/${appId}/${edgeConfig.name}.${TaskContext.getPartitionId}")
+      errorBuffer.clear()
+    }
   }
 }

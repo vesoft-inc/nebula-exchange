@@ -14,7 +14,16 @@ import com.vesoft.exchange.common.utils.NebulaUtils.DEFAULT_EMPTY_VALUE
 import com.vesoft.nebula.meta.{ColumnDef, ColumnTypeDef, EdgeItem, Schema, SchemaProp}
 import org.apache.commons.codec.binary.Hex
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types.{BooleanType, DoubleType, IntegerType, LongType, ShortType, StringType, StructField, StructType}
+import org.apache.spark.sql.types.{
+  BooleanType,
+  DoubleType,
+  IntegerType,
+  LongType,
+  ShortType,
+  StringType,
+  StructField,
+  StructType
+}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.junit.Test
 import org.scalatest.Assertions.assertThrows
@@ -57,7 +66,7 @@ class EdgeProcessorSuite {
                         "col14")
 
   val processClazz =
-    new EdgeProcessor(null, data, edgeConfig, fieldKeys, nebulaKeys, config, null, null)
+    new EdgeProcessor(null, data, edgeConfig, fieldKeys, nebulaKeys, config, null, null, null, null)
   @Test
   def isEdgeValidSuite(): Unit = {
     val stringIdValue = List("Bob", "Tom")
@@ -143,27 +152,28 @@ class EdgeProcessorSuite {
     assert(edge.toString.equals(
       "Edge: \"1\"->\"2\"@0 values: \"\", \"fixedBob\", 12, 200, 1000, 100000, date(\"2021-01-01\"), datetime(\"2021-01-01T12:00:00.100\"), time(\"12:00:00.100\"), 345436232, true, 12.01, 22.12, ST_GeogFromText(\"POINT(3 8)\")"))
 
-    val writeMode   = WriteMode.INSERT
+    val writeMode = WriteMode.INSERT
     val edgeConfigEntryWithPrefix = EdgeConfigEntry("friend",
-      null,
-      null,
-      fieldKeys,
-      nebulaKeys,
-      writeMode,
-      "src",
-      None,
-      "src",
-      None,
-      "dst",
-      None,
-      "dst",
-      false,
-      None,
-      None,
-      10,
-      10,
-      None)
-    val edgeWithPrefix = processClazz.convertToEdge(row, edgeConfigEntryWithPrefix, true, fieldKeys, map)
+                                                    null,
+                                                    null,
+                                                    fieldKeys,
+                                                    nebulaKeys,
+                                                    writeMode,
+                                                    "src",
+                                                    None,
+                                                    "src",
+                                                    None,
+                                                    "dst",
+                                                    None,
+                                                    "dst",
+                                                    false,
+                                                    None,
+                                                    None,
+                                                    10,
+                                                    10,
+                                                    None)
+    val edgeWithPrefix =
+      processClazz.convertToEdge(row, edgeConfigEntryWithPrefix, true, fieldKeys, map)
     assert(edgeWithPrefix.source.equals("\"src_1\""))
     assert(edgeWithPrefix.destination.equals("\"dst_2\""))
   }

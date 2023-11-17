@@ -51,7 +51,9 @@ class VerticesProcessor(spark: SparkSession,
                         nebulaKeys: List[String],
                         config: Configs,
                         batchSuccess: LongAccumulator,
-                        batchFailure: LongAccumulator)
+                        batchFailure: LongAccumulator,
+                        recordSuccess: LongAccumulator,
+                        recordFailure: LongAccumulator)
     extends Processor {
 
   @transient
@@ -79,24 +81,21 @@ class VerticesProcessor(spark: SparkSession,
       val failStatement = writer.writeVertices(vertices, tagConfig.ignoreIndex)
       if (failStatement == null) {
         batchSuccess.add(1)
+        recordSuccess.add(vertex.toList.size)
       } else {
         errorBuffer.append(failStatement)
         batchFailure.add(1)
+        recordFailure.add(vertex.toList.size)
         if (batchFailure.value >= config.errorConfig.errorMaxSize) {
+          writeErrorStatement(errorBuffer)
           throw TooManyErrorsException(
             s"There are too many failed batches, batch amount: ${batchFailure.value}, " +
               s"your config max error size: ${config.errorConfig.errorMaxSize}")
         }
       }
     }
-    if (errorBuffer.nonEmpty) {
-      val appId = SparkEnv.get.blockManager.conf.getAppId
-      ErrorHandler.save(
-        errorBuffer,
-        s"${config.errorConfig.errorPath}/${appId}/${tagConfig.name}.${TaskContext.getPartitionId()}")
-      errorBuffer.clear()
-    }
-    LOG.info(s"tag ${tagConfig.name} import in spark partition ${TaskContext
+    writeErrorStatement(errorBuffer)
+    LOG.info(s">>>>> tag ${tagConfig.name} import in spark partition ${TaskContext
       .getPartitionId()} cost ${System.currentTimeMillis() - startTime} ms")
     writer.close()
     graphProvider.close()
@@ -186,7 +185,7 @@ class VerticesProcessor(spark: SparkSession,
 
         wStream
           .foreachBatch((vertexSet: Dataset[Vertex], batchId: Long) => {
-            LOG.info(s"${tagConfig.name} tag start batch ${batchId}.")
+            LOG.info(s">>>>> ${tagConfig.name} tag start batch ${batchId}.")
             vertexSet.foreachPartition(processEachPartition _)
           })
           .trigger(Trigger.ProcessingTime(s"${streamingDataSourceConfig.intervalSeconds} seconds"))
@@ -333,12 +332,22 @@ class VerticesProcessor(spark: SparkSession,
     val vertexKey = codec.vertexKey(spaceVidLen, partitionId, vidBytes, tagItem.getTag_id)
 
     val values = for {
-      property <- fieldKeys if property.trim.length != 0
+      property <- fieldKeys if property.trim.nonEmpty
     } yield
       extraValueForSST(row, property, fieldTypeMap)
         .asInstanceOf[AnyRef]
     val vertexValue     = codec.encodeTag(tagItem, nebulaKeys.asJava, values.asJava)
     val orphanVertexKey = codec.orphanVertexKey(spaceVidLen, partitionId, vidBytes)
     (orphanVertexKey, vertexKey, vertexValue)
+  }
+
+  private def writeErrorStatement(errorBuffer: ArrayBuffer[String]): Unit = {
+    if (errorBuffer.nonEmpty) {
+      val appId = SparkEnv.get.blockManager.conf.getAppId
+      ErrorHandler.save(
+        errorBuffer,
+        s"${config.errorConfig.errorPath}/${appId}/${tagConfig.name}.${TaskContext.getPartitionId}")
+      errorBuffer.clear()
+    }
   }
 }
