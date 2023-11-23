@@ -322,7 +322,8 @@ object Exchange {
         s">>>>>> total client recordsFailure:${totalClientRecordFailure} \n" +
         s">>>>>> total SST failure:${totalSstRecordFailure} \n" +
         s">>>>>> total SST Success:${totalSstRecordSuccess}")
-    LOG.info(s">>>>>> exchange import qps: ${(totalClientRecordSuccess/duration).formatted("%.2f")}/s")
+    LOG.info(
+      s">>>>>> exchange import qps: ${(totalClientRecordSuccess / duration).formatted("%.2f")}/s")
   }
 
   /**
@@ -436,12 +437,15 @@ object Exchange {
   private[this] def repartition(frame: DataFrame,
                                 partition: Int,
                                 sourceCategory: SourceCategory.Value): DataFrame = {
-    val currentPart = frame.rdd.partitions.length
-    if (partition > 0 && currentPart != partition
-        && !CheckPointHandler.checkSupportResume(sourceCategory)) {
-      frame.repartition(partition).toDF
-    } else {
+    if (frame.isStreaming || partition <= 0 || CheckPointHandler.checkSupportResume(sourceCategory)) {
       frame
+    } else {
+      val currentPart = frame.rdd.partitions.length
+      if (currentPart == partition) {
+        frame
+      } else {
+        frame.repartition(partition).toDF
+      }
     }
   }
 
