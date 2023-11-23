@@ -902,7 +902,7 @@ object Configs {
       case SourceCategory.MAXCOMPUTE => {
         val table         = config.getString("table")
         val partitionSpec = getStringOrNull(config, "partitionSpec")
-        val numPartitions = getOrElse(config, "numPartitions", "1")
+        val numPartitions = getOrElse(config, "numPartitions", 1).toString
         val sentence      = getStringOrNull(config, "sentence")
 
         MaxComputeConfigEntry(
