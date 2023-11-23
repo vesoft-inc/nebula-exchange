@@ -74,22 +74,22 @@ object NebulaUtils {
       s = s.replaceAll("\\\\", "\\\\\\\\")
     }
     if (s.contains("\t")) {
-      s = s.replaceAll("\t", "\\\t")
+      s = s.replaceAll("\t", "\\\\t")
     }
     if (s.contains("\n")) {
-      s = s.replaceAll("\n", "\\\n")
+      s = s.replaceAll("\n", "\\\\n")
     }
     if (s.contains("\"")) {
-      s = s.replaceAll("\"", "\\\"")
+      s = s.replaceAll("\"", "\\\\\"")
     }
     if (s.contains("\'")) {
-      s = s.replaceAll("\'", "\\\'")
+      s = s.replaceAll("\'", "\\\\'")
     }
     if (s.contains("\r")) {
-      s = s.replaceAll("\r", "\\\r")
+      s = s.replaceAll("\r", "\\\\r")
     }
     if (s.contains("\b")) {
-      s = s.replaceAll("\b", "\\\b")
+      s = s.replaceAll("\b", "\\\\b")
     }
     s
   }
