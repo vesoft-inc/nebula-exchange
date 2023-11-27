@@ -172,7 +172,8 @@ case class SslConfigEntry(enableGraph: Boolean,
     }
   }
 
-  override def toString: String = s"SslConfigEntry:{enableGraph:$enableGraph, enableMeta:$enableMeta, signType:${signType.toString}}"
+  override def toString: String =
+    s"SslConfigEntry:{enableGraph:$enableGraph, enableMeta:$enableMeta, signType:${signType.toString}}"
 }
 
 case class CaSignParam(caCrtFilePath: String, crtFilePath: String, keyFilePath: String)
@@ -902,7 +903,7 @@ object Configs {
       case SourceCategory.MAXCOMPUTE => {
         val table         = config.getString("table")
         val partitionSpec = getStringOrNull(config, "partitionSpec")
-        val numPartitions = getOrElse(config, "numPartitions", 1).toString
+        val numPartitions = getStringOrElse(config, "numPartitions", "1")
         val sentence      = getStringOrNull(config, "sentence")
 
         MaxComputeConfigEntry(
@@ -919,7 +920,7 @@ object Configs {
         )
       }
       case SourceCategory.CLICKHOUSE => {
-        val partition: String = getOrElse(config, "numPartition", "1")
+        val partition: String = getStringOrElse(config, "numPartition", "1")
         ClickHouseConfigEntry(
           SourceCategory.CLICKHOUSE,
           config.getString("url"),
@@ -1002,6 +1003,22 @@ object Configs {
   private[this] def getOrElse[T](config: Config, path: String, defaultValue: T): T = {
     if (config.hasPath(path)) {
       config.getAnyRef(path).asInstanceOf[T]
+    } else {
+      defaultValue
+    }
+  }
+
+  /**
+    * Get the value from config by the path. If the path not exist, return the default value.
+    *
+    * @param config       The com.vesoft.exchange.common.config.
+    * @param path         The path of the com.vesoft.exchange.common.config.
+    * @param defaultValue The default value for the path.
+    * @return
+    */
+  private[this] def getStringOrElse(config: Config, path: String, defaultValue: String): String = {
+    if (config.hasPath(path)) {
+      config.getString(path)
     } else {
       defaultValue
     }
