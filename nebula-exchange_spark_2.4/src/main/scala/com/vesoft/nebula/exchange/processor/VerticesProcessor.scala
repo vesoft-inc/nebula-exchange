@@ -52,8 +52,8 @@ class VerticesProcessor(spark: SparkSession,
                         config: Configs,
                         batchSuccess: LongAccumulator,
                         batchFailure: LongAccumulator,
-                        recordSuccess:LongAccumulator,
-                        recordFailure:LongAccumulator)
+                        recordSuccess: LongAccumulator,
+                        recordFailure: LongAccumulator)
     extends Processor {
 
   @transient
@@ -76,16 +76,17 @@ class VerticesProcessor(spark: SparkSession,
     writer.prepare()
     // batch write tags
     val startTime = System.currentTimeMillis
-    iterator.grouped(tagConfig.batch).foreach { vertex =>
-      val vertices      = Vertices(nebulaKeys, vertex.toList, tagConfig.vertexPolicy)
-      val failStatement = writer.writeVertices(vertices, tagConfig.ignoreIndex)
-      if (failStatement == null) {
+    iterator.grouped(tagConfig.batch).foreach { vertexSet =>
+      val vertices       = Vertices(nebulaKeys, vertexSet.toList, tagConfig.vertexPolicy)
+      val failStatements = writer.writeVertices(vertices, tagConfig.ignoreIndex)
+      if (failStatements.isEmpty) {
         batchSuccess.add(1)
-        recordSuccess.add(vertex.toList.size)
+        recordSuccess.add(vertexSet.size)
       } else {
-        errorBuffer.append(failStatement)
+        errorBuffer.append(failStatements: _*)
         batchFailure.add(1)
-        recordFailure.add(vertex.toList.size)
+        recordSuccess.add(vertexSet.size - failStatements.size)
+        recordFailure.add(failStatements.size)
         if (batchFailure.value >= config.errorConfig.errorMaxSize) {
           writeErrorStatement(errorBuffer)
           throw TooManyErrorsException(

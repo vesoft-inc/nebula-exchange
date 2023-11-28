@@ -193,9 +193,9 @@ class ServerBaseWriterSuite extends ServerBaseWriter {
   }
 
 
-  override def writeVertices(vertices: Vertices, ignoreIndex: Boolean): String = ???
+  override def writeVertices(vertices: Vertices, ignoreIndex: Boolean): List[String] = ???
 
-  override def writeEdges(edges: common.Edges, ignoreIndex: Boolean): String = ???
+  override def writeEdges(edges: common.Edges, ignoreIndex: Boolean): List[String] = ???
 
   override def writeNgql(ngql: String): String = ???
 

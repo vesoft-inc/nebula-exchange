@@ -43,8 +43,8 @@ class EdgeProcessor(spark: SparkSession,
                     config: Configs,
                     batchSuccess: LongAccumulator,
                     batchFailure: LongAccumulator,
-                    recordSuccess:LongAccumulator,
-                    recordFailure:LongAccumulator)
+                    recordSuccess: LongAccumulator,
+                    recordFailure: LongAccumulator)
     extends Processor {
 
   @transient
@@ -68,16 +68,18 @@ class EdgeProcessor(spark: SparkSession,
     writer.prepare()
     // batch write tags
     val startTime = System.currentTimeMillis
-    iterator.grouped(edgeConfig.batch).foreach { edge =>
-      val edges         = Edges(nebulaKeys, edge.toList, edgeConfig.sourcePolicy, edgeConfig.targetPolicy)
-      val failStatement = writer.writeEdges(edges, edgeConfig.ignoreIndex)
-      if (failStatement == null) {
+    iterator.grouped(edgeConfig.batch).foreach { edgeSet =>
+      val edges =
+        Edges(nebulaKeys, edgeSet.toList, edgeConfig.sourcePolicy, edgeConfig.targetPolicy)
+      val failStatements = writer.writeEdges(edges, edgeConfig.ignoreIndex)
+      if (failStatements.isEmpty) {
         batchSuccess.add(1)
-        recordSuccess.add(edge.toList.size)
+        recordSuccess.add(edgeSet.toList.size)
       } else {
-        errorBuffer.append(failStatement)
+        errorBuffer.append(failStatements: _*)
         batchFailure.add(1)
-        recordFailure.add(edge.toList.size)
+        recordSuccess.add(edgeSet.size - failStatements.size)
+        recordFailure.add(failStatements.size)
 
         if (batchFailure.value >= config.errorConfig.errorMaxSize) {
           writeErrorStatement(errorBuffer)

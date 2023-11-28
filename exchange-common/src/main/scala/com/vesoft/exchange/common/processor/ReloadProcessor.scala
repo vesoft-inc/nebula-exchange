@@ -49,11 +49,10 @@ class ReloadProcessor(data: DataFrame,
     val startTime = System.currentTimeMillis
     iterator.foreach { row =>
       val ngql          = row.getString(0)
-      val recordSize    = computeRecordNumber(ngql)
-      val failStatement = writer.writeNgql(row.getString(0))
+      val failStatement = writer.writeNgql(ngql)
       if (failStatement == null) {
         batchSuccess.add(1)
-        recordSuccess.add(recordSize)
+        recordSuccess.add(1)
       } else {
         errorBuffer.append(failStatement)
         batchFailure.add(1)
