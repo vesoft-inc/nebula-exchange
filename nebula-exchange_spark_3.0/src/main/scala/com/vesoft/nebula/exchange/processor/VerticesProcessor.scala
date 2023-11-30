@@ -69,7 +69,8 @@ class VerticesProcessor(spark: SparkSession,
                                              config.userConfig,
                                              config.rateConfig,
                                              tagConfig,
-                                             graphProvider)
+                                             graphProvider,
+                                             config.executionConfig)
 
     val errorBuffer = ArrayBuffer[String]()
 
@@ -77,7 +78,7 @@ class VerticesProcessor(spark: SparkSession,
     // batch write tags
     val startTime = System.currentTimeMillis
     iterator.grouped(tagConfig.batch).foreach { vertexSet =>
-      val vertices      = Vertices(nebulaKeys, vertexSet.toList, tagConfig.vertexPolicy)
+      val vertices       = Vertices(nebulaKeys, vertexSet.toList, tagConfig.vertexPolicy)
       val failStatements = writer.writeVertices(vertices, tagConfig.ignoreIndex)
       if (failStatements.isEmpty) {
         batchSuccess.add(1)

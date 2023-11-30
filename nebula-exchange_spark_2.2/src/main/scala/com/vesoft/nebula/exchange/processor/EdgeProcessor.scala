@@ -61,7 +61,8 @@ class EdgeProcessor(spark: SparkSession,
                                              config.userConfig,
                                              config.rateConfig,
                                              edgeConfig,
-                                             graphProvider)
+                                             graphProvider,
+                                             config.executionConfig)
     val errorBuffer = ArrayBuffer[String]()
 
     writer.prepare()
