@@ -52,7 +52,7 @@ class ConfigsSuite {
     assert(connectionConfig.timeout == 3000)
 
     assert(executionConfig.retry == 3)
-    assert(executionConfig.interval == 3000)
+    assert(executionConfig.interval == 0)
     assert(executionConfig.timeout == Integer.MAX_VALUE)
 
     assert(errorConfig.errorMaxSize == 32)
