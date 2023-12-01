@@ -69,7 +69,8 @@ class VerticesProcessor(spark: SparkSession,
                                              config.userConfig,
                                              config.rateConfig,
                                              tagConfig,
-                                             graphProvider)
+                                             graphProvider,
+                                             config.executionConfig)
 
     val errorBuffer = ArrayBuffer[String]()
 

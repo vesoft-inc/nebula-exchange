@@ -9,17 +9,9 @@ import java.util.concurrent.TimeUnit
 import com.google.common.util.concurrent.RateLimiter
 import com.vesoft.exchange.common.GraphProvider
 import com.vesoft.exchange.common.{Edges, KeyPolicy, Vertices}
-import com.vesoft.exchange.common.config.{
-  DataBaseConfigEntry,
-  EdgeConfigEntry,
-  RateConfigEntry,
-  SchemaConfigEntry,
-  TagConfigEntry,
-  Type,
-  UserConfigEntry,
-  WriteMode
-}
+import com.vesoft.exchange.common.config.{DataBaseConfigEntry, EdgeConfigEntry, ExecutionConfigEntry, RateConfigEntry, SchemaConfigEntry, TagConfigEntry, Type, UserConfigEntry, WriteMode}
 import com.vesoft.nebula.ErrorCode
+import com.vesoft.nebula.client.graph.data.{HostAddress, ResultSet}
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions.seqAsJavaList
@@ -282,7 +274,8 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
                               userConfigEntry: UserConfigEntry,
                               rateConfig: RateConfigEntry,
                               config: SchemaConfigEntry,
-                              graphProvider: GraphProvider)
+                              graphProvider: GraphProvider,
+                              executeConfig: ExecutionConfigEntry)
     extends ServerBaseWriter {
   private val LOG = Logger.getLogger(this.getClass)
 
@@ -347,7 +340,7 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
         throw new RuntimeException(
           s"write ${config.name} failed for E_BAD_PERMISSION: ${result._2.getErrorMessage}")
       }
-      LOG.error(
+      LOG.warn(
         s">>>>>> write ${config.name} failed for: ${result._2.getErrorMessage}, now retry writing one by one.")
       // re-execute the vertices one by one
       vertices.values.foreach(value => {
@@ -362,16 +355,34 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
   }
 
   private def writeVertex(vertices: Vertices): String = {
+
     val statement = execute(vertices, config.asInstanceOf[TagConfigEntry].writeMode)
     val result    = graphProvider.submit(session, statement)
     if (result._2.isSucceeded) {
       LOG.info(
         s">>>>> write ${config.name}, batch size(${vertices.values.size}), latency(${result._2.getLatency})")
-      null
-    } else {
-      LOG.error(s">>>>> write vertex failed for ${result._2.getErrorMessage} statement: \n $statement")
-      statement
+      return null
     }
+    // write failed for one record. retry for some storage error.
+    var finalResult: ResultSet = result._2
+    val retry                  = 0
+    while (retry < executeConfig.retry && (finalResult.getErrorMessage.contains(
+             "Storage Error: RPC failure, probably timeout")
+           || finalResult.getErrorMessage.contains("raft buffer is full. Please retry later")
+           || finalResult.getErrorMessage.contains("The leader has changed"))) {
+      Thread.sleep(executeConfig.interval)
+      val retryResult = graphProvider.submit(session, statement)
+      finalResult = retryResult._2
+      if (finalResult.isSucceeded) {
+        LOG.info(
+          s">>>>> write ${config.name}, batch size(${vertices.values.size}), latency(${finalResult.getLatency})")
+        return null
+      }
+    }
+    // the write still failed after retry.
+    LOG.error(
+      s">>>>> write vertex failed for ${finalResult.getErrorMessage} statement: \n $statement")
+    statement
   }
 
   override def writeEdges(edges: Edges, ignoreIndex: Boolean = false): List[String] = {
@@ -409,11 +420,27 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
     if (result._2.isSucceeded) {
       LOG.info(
         s">>>>> write ${config.name}, batch size(${edges.values.size}), latency(${result._2.getLatency})")
-      null
-    } else {
-      LOG.error(s">>>>> write edge failed for ${result._2.getErrorMessage} statement: \n $statement")
-      statement
+      return null
     }
+    // write failed for one record. retry for some storage error.
+    var finalResult: ResultSet = result._2
+    val retry                  = 0
+    while (retry < executeConfig.retry && (finalResult.getErrorMessage.contains(
+             "Storage Error: RPC failure, probably timeout")
+           || finalResult.getErrorMessage.contains("raft buffer is full. Please retry later")
+           || finalResult.getErrorMessage.contains("The leader has changed"))) {
+      Thread.sleep(executeConfig.interval)
+      val retryResult = graphProvider.submit(session, statement)
+      finalResult = retryResult._2
+      if (finalResult.isSucceeded) {
+        LOG.info(
+          s">>>>> write ${config.name}, batch size(${edges.values.size}), latency(${finalResult.getLatency})")
+        return null
+      }
+    }
+    LOG.error(s">>>>> write edge failed for ${result._2.getErrorMessage} statement: \n $statement")
+    statement
+
   }
 
   override def writeNgql(ngql: String): String = {

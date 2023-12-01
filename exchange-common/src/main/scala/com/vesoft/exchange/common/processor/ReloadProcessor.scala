@@ -40,7 +40,8 @@ class ReloadProcessor(data: DataFrame,
                                              config.userConfig,
                                              config.rateConfig,
                                              null,
-                                             graphProvider)
+                                             graphProvider,
+                                             config.executionConfig)
 
     val errorBuffer = ArrayBuffer[String]()
 

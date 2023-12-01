@@ -107,7 +107,7 @@ case class UserConfigEntry(user: String, password: String) {
   * @param retry
   */
 case class ConnectionConfigEntry(timeout: Int, retry: Int) {
-  require(timeout > 0 && retry > 0)
+  require(timeout > 0 && retry > 0, "connection timeout or retry must be larger than 0")
 
   override def toString: String = s"cConnectionConfigEntry:{timeout:$timeout, retry:$retry}"
 }
@@ -120,7 +120,7 @@ case class ConnectionConfigEntry(timeout: Int, retry: Int) {
   * @param interval
   */
 case class ExecutionConfigEntry(timeout: Int, retry: Int, interval: Int) {
-  require(timeout > 0 && retry > 0 && interval > 0)
+  require(timeout > 0, "execution timeout must be larger than 0")
 
   override def toString: String = s"ExecutionConfigEntry:{timeout:$timeout, retry:$retry}"
 }
@@ -172,7 +172,8 @@ case class SslConfigEntry(enableGraph: Boolean,
     }
   }
 
-  override def toString: String = s"SslConfigEntry:{enableGraph:$enableGraph, enableMeta:$enableMeta, signType:${signType.toString}}"
+  override def toString: String =
+    s"SslConfigEntry:{enableGraph:$enableGraph, enableMeta:$enableMeta, signType:${signType.toString}}"
 }
 
 case class CaSignParam(caCrtFilePath: String, crtFilePath: String, keyFilePath: String)
@@ -256,7 +257,7 @@ object Configs {
   private[this] val DEFAULT_CONNECTION_RETRY      = 3
   private[this] val DEFAULT_EXECUTION_RETRY       = 3
   private[this] val DEFAULT_EXECUTION_TIMEOUT     = Integer.MAX_VALUE
-  private[this] val DEFAULT_EXECUTION_INTERVAL    = 3000
+  private[this] val DEFAULT_EXECUTION_INTERVAL    = 0
   private[this] val DEFAULT_ERROR_OUTPUT_PATH     = "file:///tmp/nebula.writer.errors/"
   private[this] val DEFAULT_ERROR_MAX_BATCH_SIZE  = Int.MaxValue
   private[this] val DEFAULT_RATE_LIMIT            = 1024
