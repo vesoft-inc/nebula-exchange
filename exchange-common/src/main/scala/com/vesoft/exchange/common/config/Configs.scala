@@ -391,15 +391,10 @@ object Configs {
       hiveEntryOpt = Option(hiveEntry)
     }
 
-    var hasKafka = false
-
     val tags       = mutable.ListBuffer[TagConfigEntry]()
     val tagConfigs = getConfigsOrNone(config, "tags")
     if (tagConfigs.isDefined) {
       for (tagConfig <- tagConfigs.get.asScala) {
-        if (hasKafka) {
-          throw new IllegalArgumentException("Can not define any other configs when kafka exists")
-        }
         if (!tagConfig.hasPath("name") ||
             !tagConfig.hasPath("type.source") ||
             !tagConfig.hasPath("type.sink")) {
@@ -436,7 +431,6 @@ object Configs {
         val sourceConfig =
           dataSourceConfig(sourceCategory, tagConfig, nebulaConfig, variable, paths)
         LOG.info(s"Source Config ${sourceConfig}")
-        hasKafka = sourceCategory == SourceCategory.KAFKA
 
         val sinkCategory = toSinkCategory(tagConfig.getString("type.sink"))
         val sinkConfig   = dataSinkConfig(sinkCategory, nebulaConfig)
@@ -494,9 +488,6 @@ object Configs {
     val edgeConfigs = getConfigsOrNone(config, "edges")
     if (edgeConfigs.isDefined) {
       for (edgeConfig <- edgeConfigs.get.asScala) {
-        if (hasKafka) {
-          throw new IllegalArgumentException("Can not define any other configs when kafka exists")
-        }
         if (!edgeConfig.hasPath("name") ||
             !edgeConfig.hasPath("type.source") ||
             !edgeConfig.hasPath("type.sink")) {
@@ -520,7 +511,6 @@ object Configs {
         val sourceConfig =
           dataSourceConfig(sourceCategory, edgeConfig, nebulaConfig, variable, paths)
         LOG.info(s"Source Config ${sourceConfig}")
-        hasKafka = sourceCategory == SourceCategory.KAFKA
 
         val sinkCategory = toSinkCategory(edgeConfig.getString("type.sink"))
         val sinkConfig   = dataSinkConfig(sinkCategory, nebulaConfig)
@@ -863,12 +853,29 @@ object Configs {
         val maxOffsetsPerTrigger =
           if (config.hasPath("maxOffsetsPerTrigger")) Some(config.getLong("maxOffsetsPerTrigger"))
           else None
-        KafkaSourceConfigEntry(SourceCategory.KAFKA,
-                               intervalSeconds,
-                               config.getString("service"),
-                               config.getString("topic"),
-                               startingOffsets,
-                               maxOffsetsPerTrigger)
+
+        val securityProtocol =
+          if (config.hasPath("securityProtocol")) Some(config.getString("securityProtocol"))
+          else None
+        val mechanism =
+          if (config.hasPath("mechanism")) Some(config.getString("mechanism")) else None
+        val kerberos = if (config.hasPath("kerberos")) config.getBoolean("kerberos") else false
+        val kerberosServiceName =
+          if (config.hasPath("kerberosServiceName")) config.getString("kerberosServiceName")
+          else null
+
+        KafkaSourceConfigEntry(
+          SourceCategory.KAFKA,
+          intervalSeconds,
+          config.getString("service"),
+          config.getString("topic"),
+          startingOffsets,
+          maxOffsetsPerTrigger,
+          securityProtocol,
+          mechanism,
+          kerberos,
+          kerberosServiceName
+        )
       case SourceCategory.PULSAR =>
         val options =
           config.getObject("options").unwrapped.asScala.map(x => x._1 -> x._2.toString).toMap

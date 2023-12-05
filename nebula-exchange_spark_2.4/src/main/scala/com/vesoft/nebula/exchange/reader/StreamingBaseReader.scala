@@ -9,6 +9,8 @@ import com.vesoft.exchange.common.config.{KafkaSourceConfigEntry, PulsarSourceCo
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
+import scala.collection.mutable
+
 /**
   * Spark Streaming
   *
@@ -46,6 +48,13 @@ class KafkaReader(override val session: SparkSession,
         .option("subscribe", kafkaConfig.topic)
         .option("startingOffsets", kafkaConfig.startingOffsets)
 
+    if(kafkaConfig.securityProtocol.isDefined){
+      reader.option("kafka.security.protocol", kafkaConfig.securityProtocol.get)
+      reader.option("kafka.sasl.mechanism", kafkaConfig.mechanism.get)
+    }
+    if(kafkaConfig.kerberos){
+      reader.option("kafka.sasl.kerberos.service.name", kafkaConfig.kerberosServiceName)
+    }
     val maxOffsetsPerTrigger = kafkaConfig.maxOffsetsPerTrigger
     if (maxOffsetsPerTrigger.isDefined)
       reader.option("maxOffsetsPerTrigger", maxOffsetsPerTrigger.get)
