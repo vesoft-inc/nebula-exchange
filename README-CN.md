@@ -16,7 +16,7 @@ Exchange 支持的 Spark 版本包括 2.2、2.4 和
 > - 本仓库仅支持 NebulaGraph 2.x 和 3.x，如果您在使用 NebulaGraph
     v1.x，请使用 [NebulaExchange v1.0](https://github.com/vesoft-inc/nebula-java/tree/v1.0/tools/exchange)
     ，或参考 Exchange 1.0
-    的使用文档[NebulaExchange 用户手册](https://docs.nebula-graph.com.cn/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
+    的使用文档[NebulaExchange 用户手册](https://docs.nebula-graph.com.cn/3.6.0/import-export/nebula-exchange/about-exchange/ex-ug-what-is-exchange/ "点击前往 Nebula Graph 网站")。
 
 
 ## 如何获取

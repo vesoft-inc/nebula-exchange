@@ -85,7 +85,7 @@ nebula-exchange_spark_2.4-3.0-SNAPSHOT.jar \
 ```
 
 For more details, please refer
-to [NebulaGraph Exchange Docs](https://docs.nebula-graph.io/master/nebula-exchange/about-exchange/ex-ug-what-is-exchange/)
+to [NebulaGraph Exchange Docs](https://docs.nebula-graph.io/master/import-export/nebula-exchange/about-exchange/ex-ug-what-is-exchange/)
 
 ## How to get the config file
 
