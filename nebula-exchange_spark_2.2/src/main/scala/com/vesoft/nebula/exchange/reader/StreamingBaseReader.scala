@@ -46,6 +46,14 @@ class KafkaReader(override val session: SparkSession,
         .option("subscribe", kafkaConfig.topic)
         .option("startingOffsets", kafkaConfig.startingOffsets)
 
+    if (kafkaConfig.securityProtocol.isDefined) {
+      reader.option("kafka.security.protocol", kafkaConfig.securityProtocol.get)
+      reader.option("kafka.sasl.mechanism", kafkaConfig.mechanism.get)
+    }
+    if (kafkaConfig.kerberos) {
+      reader.option("kafka.sasl.kerberos.service.name", kafkaConfig.kerberosServiceName)
+    }
+
     val maxOffsetsPerTrigger = kafkaConfig.maxOffsetsPerTrigger
     if (maxOffsetsPerTrigger.isDefined)
       reader.option("maxOffsetsPerTrigger", maxOffsetsPerTrigger.get)

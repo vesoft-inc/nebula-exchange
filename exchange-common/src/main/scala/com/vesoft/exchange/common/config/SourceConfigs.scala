@@ -213,9 +213,17 @@ case class KafkaSourceConfigEntry(override val category: SourceCategory.Value,
                                   server: String,
                                   topic: String,
                                   startingOffsets: String,
-                                  maxOffsetsPerTrigger: Option[Long] = None)
+                                  maxOffsetsPerTrigger: Option[Long] = None,
+                                  securityProtocol: Option[String] = None,
+                                  mechanism: Option[String] = None,
+                                  kerberos: Boolean = false,
+                                  kerberosServiceName: String = null)
     extends StreamingDataSourceConfigEntry {
-  require(server.trim.nonEmpty && topic.trim.nonEmpty)
+  require(server.trim.nonEmpty && topic.trim.nonEmpty, "server or topic cannot be empty")
+  require(securityProtocol.isEmpty || mechanism.isDefined,
+          "security protocol is defined, mechanism must be config.")
+  require(!kerberos || kerberosServiceName.nonEmpty,
+          "kerberos is true, service name must be config")
 
   override def toString: String = {
     s"Kafka source server: ${server} topic:${topic} startingOffsets:${startingOffsets} maxOffsetsPerTrigger:${maxOffsetsPerTrigger}"
