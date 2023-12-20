@@ -94,7 +94,7 @@ case class DataBaseConfigEntry(graphAddress: List[String],
   * @param password
   */
 case class UserConfigEntry(user: String, password: String) {
-  require(user.trim.nonEmpty && password.trim.nonEmpty)
+  require(user.trim.nonEmpty && password.trim.nonEmpty, "user and password cannot be empty.")
 
   override def toString: String =
     s"UserConfigEntry{user:$user, password:xxxxx}"
@@ -132,7 +132,8 @@ case class ExecutionConfigEntry(timeout: Int, retry: Int, interval: Int) {
   * @param errorMaxSize
   */
 case class ErrorConfigEntry(errorPath: String, errorMaxSize: Int) {
-  require(errorPath.trim.nonEmpty && errorMaxSize > 0)
+  require(errorPath.trim.nonEmpty && errorMaxSize >= 0,
+          "errorPath cannot be empty, and error maxSize cannot be less than 0")
 
   override def toString: String =
     s"ErrorConfigEntry:{errorPath:$errorPath, errorMaxSize:$errorMaxSize}"
@@ -145,7 +146,7 @@ case class ErrorConfigEntry(errorPath: String, errorMaxSize: Int) {
   * @param timeout
   */
 case class RateConfigEntry(limit: Int, timeout: Int) {
-  require(limit > 0 && timeout > 0)
+  require(limit > 0, "rate limit must be larger than 0")
 
   override def toString: String = s"RateConfigEntry:{limit:$limit, timeout:$timeout}"
 }
