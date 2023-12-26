@@ -8,7 +8,24 @@ package scala.com.vesoft.nebula.exchange.config
 import java.io.File
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.KeyPolicy
-import com.vesoft.exchange.common.config.{CaSignParam, Configs, DataBaseConfigEntry, FileBaseSourceConfigEntry, FileDataSourceConfigEntry, HBaseSourceConfigEntry, HiveSourceConfigEntry, MySQLSourceConfigEntry, Neo4JSourceConfigEntry, PostgreSQLSourceConfigEntry, SelfSignParam, SinkCategory, SourceCategory, SslConfigEntry, SslType, WriteMode}
+import com.vesoft.exchange.common.config.{
+  CaSignParam,
+  Configs,
+  DataBaseConfigEntry,
+  FileBaseSourceConfigEntry,
+  FileDataSourceConfigEntry,
+  HBaseSourceConfigEntry,
+  HiveSourceConfigEntry,
+  MySQLSourceConfigEntry,
+  Neo4JSourceConfigEntry,
+  PostgreSQLSourceConfigEntry,
+  SelfSignParam,
+  SinkCategory,
+  SourceCategory,
+  SslConfigEntry,
+  SslType,
+  WriteMode
+}
 import com.vesoft.nebula.client.graph.data.CASignedSSLParam
 import org.apache.log4j.Logger
 import org.junit.Test
@@ -79,8 +96,9 @@ class ConfigsSuite {
       assert(sink.category == SinkCategory.CLIENT || sink.category == SinkCategory.SST)
 
       val writeMode = tagConfig.writeMode
-      assert(writeMode == WriteMode.INSERT || writeMode == WriteMode.UPDATE
-              || writeMode == WriteMode.DELETE)
+      assert(
+        writeMode == WriteMode.INSERT || writeMode == WriteMode.UPDATE
+          || writeMode == WriteMode.DELETE)
 
       val label     = tagConfig.name
       val batch     = tagConfig.batch
@@ -172,8 +190,9 @@ class ConfigsSuite {
       val batch     = edgeConfig.batch
       val partition = edgeConfig.partition
       val writeMode = edgeConfig.writeMode
-      assert(writeMode == WriteMode.INSERT || writeMode == WriteMode.UPDATE
-              || writeMode == WriteMode.DELETE)
+      assert(
+        writeMode == WriteMode.INSERT || writeMode == WriteMode.UPDATE
+          || writeMode == WriteMode.DELETE)
 
       val sourceField  = edgeConfig.sourceField
       val targetField  = edgeConfig.targetField
@@ -321,7 +340,7 @@ class ConfigsSuite {
     val graphAddress = List("127.0.0.1:9669", "127.0.0.1:9670")
     val metaAddress  = List("127.0.0.1:9559", "127.0.0.1:9560")
     val space        = "test"
-    DataBaseConfigEntry(graphAddress, space, metaAddress)
+    DataBaseConfigEntry(graphAddress, space, metaAddress, null)
   }
 
   /**
@@ -332,7 +351,7 @@ class ConfigsSuite {
     val graphAddress = List("127.0.0.1:9669", "127.0.0.1:9670")
     val metaAddress  = List("127.0.0.1:9559", "127.0.0.1:9560")
     assertThrows[IllegalArgumentException] {
-      DataBaseConfigEntry(graphAddress, "", metaAddress)
+      DataBaseConfigEntry(graphAddress, "", metaAddress, null)
     }
   }
 
@@ -346,7 +365,7 @@ class ConfigsSuite {
     val metaAddress       = List("127.0.0.1:9559", "127.0.0.1:9560")
 
     assertThrows[IllegalArgumentException] {
-      DataBaseConfigEntry(wrongGraphAddress, space, metaAddress)
+      DataBaseConfigEntry(wrongGraphAddress, space, metaAddress, null)
     }
   }
 
@@ -359,7 +378,7 @@ class ConfigsSuite {
     val space            = "test"
     val wrongMetaAddress = List("127.0.0.1:9559，127.0.0.1:9560")
     assertThrows[IllegalArgumentException] {
-      DataBaseConfigEntry(graphAddress, space, wrongMetaAddress)
+      DataBaseConfigEntry(graphAddress, space, wrongMetaAddress, null)
     }
   }
 
