@@ -28,7 +28,8 @@ import scala.collection.mutable.ListBuffer
 class MetaProvider(addresses: List[HostAddress],
                    timeout: Int,
                    retry: Int,
-                   sslConfigEntry: SslConfigEntry)
+                   sslConfigEntry: SslConfigEntry,
+                   version: String)
     extends AutoCloseable
     with Serializable {
   private[this] lazy val LOG = Logger.getLogger(this.getClass)
@@ -49,6 +50,7 @@ class MetaProvider(addresses: List[HostAddress],
     metaClient = new MetaClient(addresses.asJava, timeout, retry, retry)
   }
 
+  metaClient.setVersion(version)
   metaClient.connect()
 
   def getPartNumber(space: String): Int = {
