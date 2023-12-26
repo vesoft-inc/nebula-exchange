@@ -24,7 +24,10 @@ import scala.collection.mutable.ListBuffer
 /**
   * GraphProvider for Nebula Graph Service
   */
-class GraphProvider(addresses: List[HostAddress], timeout: Int, sslConfigEntry: SslConfigEntry)
+class GraphProvider(addresses: List[HostAddress],
+                    timeout: Int,
+                    sslConfigEntry: SslConfigEntry,
+                    version: String)
     extends AutoCloseable
     with Serializable {
   private[this] lazy val LOG = Logger.getLogger(this.getClass)
@@ -34,6 +37,7 @@ class GraphProvider(addresses: List[HostAddress], timeout: Int, sslConfigEntry: 
   val randAddr                    = scala.util.Random.shuffle(addresses)
 
   nebulaPoolConfig.setTimeout(timeout)
+  nebulaPoolConfig.setVersion(version)
 
   // com.vesoft.exchange.common.config graph ssl
   nebulaPoolConfig.setEnableSsl(sslConfigEntry.enableGraph)
@@ -72,6 +76,6 @@ class GraphProvider(addresses: List[HostAddress], timeout: Int, sslConfigEntry: 
 
   def submit(session: Session, statement: String): (HostAddress, ResultSet) = {
     val result = session.execute(statement)
-    (session.getGraphHost,result)
+    (session.getGraphHost, result)
   }
 }

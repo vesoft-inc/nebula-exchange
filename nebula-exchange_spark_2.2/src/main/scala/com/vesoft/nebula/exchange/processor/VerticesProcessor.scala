@@ -61,7 +61,8 @@ class VerticesProcessor(spark: SparkSession,
     val graphProvider =
       new GraphProvider(config.databaseConfig.getGraphAddress,
                         config.connectionConfig.timeout,
-                        config.sslConfig)
+                        config.sslConfig,
+                        config.databaseConfig.version)
 
     val writer = new NebulaGraphClientWriter(config.databaseConfig,
                                              config.userConfig,
@@ -106,9 +107,10 @@ class VerticesProcessor(spark: SparkSession,
     val address = config.databaseConfig.getMetaAddress
     val space   = config.databaseConfig.space
 
-    val timeout         = config.connectionConfig.timeout
-    val retry           = config.connectionConfig.retry
-    val metaProvider    = new MetaProvider(address, timeout, retry, config.sslConfig)
+    val timeout = config.connectionConfig.timeout
+    val retry   = config.connectionConfig.retry
+    val metaProvider =
+      new MetaProvider(address, timeout, retry, config.sslConfig, config.databaseConfig.version)
     val fieldTypeMap    = NebulaUtils.getDataSourceFieldType(tagConfig, space, metaProvider)
     val isVidStringType = metaProvider.getVidType(space) == VidType.STRING
     val partitionNum    = metaProvider.getPartNumber(space)

@@ -23,7 +23,7 @@ class MetaProviderSuite {
     mockData.close()
 
     val sslConfig = SslConfigEntry(false, false, SslType.CA, null, null)
-    metaProvider = new MetaProvider(List(new HostAddress("127.0.0.1", 9559)), 5000, 1, sslConfig)
+    metaProvider = new MetaProvider(List(new HostAddress("127.0.0.1", 9559)), 5000, 1, sslConfig, null)
   }
 
   @After
