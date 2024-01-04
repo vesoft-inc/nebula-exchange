@@ -10,7 +10,7 @@ import java.nio.file.Files
 import com.google.common.net.HostAndPort
 import com.typesafe.config.{Config, ConfigFactory}
 import com.vesoft.exchange.Argument
-import com.vesoft.exchange.common.KeyPolicy
+import com.vesoft.exchange.common.{KeyPolicy, PasswordEncryption}
 import com.vesoft.exchange.common.utils.NebulaUtils
 import com.vesoft.nebula.client.graph.data.HostAddress
 import org.apache.hadoop.conf.Configuration
@@ -320,7 +320,14 @@ object Configs {
 
     val user      = nebulaConfig.getString("user")
     val pswd      = nebulaConfig.getString("pswd")
-    val userEntry = UserConfigEntry(user, pswd)
+    val enableRSA = getOrElse(nebulaConfig, "enableRSA", false)
+    val privateKey = getStringOrNull(nebulaConfig, "privateKey")
+    require(!enableRSA || privateKey != null, "enableRSA is true, privateKey cannot be empty.")
+    var userEntry = UserConfigEntry(user, pswd)
+    if (enableRSA) {
+      userEntry = UserConfigEntry(user, PasswordEncryption.decryptPassword(pswd, privateKey))
+    }
+
     LOG.info(s"User Config ${userEntry}")
 
     val connectionConfig  = getConfigOrNone(nebulaConfig, "connection")
