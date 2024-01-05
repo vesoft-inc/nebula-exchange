@@ -51,7 +51,7 @@ object WriteMode extends Enumeration {
 case class DataBaseConfigEntry(graphAddress: List[String],
                                space: String,
                                metaAddresses: List[String],
-                               version: String) {
+                               handshakeKey: String) {
   require(graphAddress.nonEmpty, "nebula.address.graph cannot be empty")
   require(metaAddresses.nonEmpty, "nebula.address.meta cannot be empty")
   require(space.trim.nonEmpty, "nebula.space cannot be empty")
@@ -313,8 +313,8 @@ object Configs {
     val metaAddresses = nebulaConfig.getStringList("address.meta").asScala.toList
 
     val space         = nebulaConfig.getString("space")
-    val version       = getStringOrNull(nebulaConfig, "version")
-    val databaseEntry = DataBaseConfigEntry(addresses, space, metaAddresses, version)
+    val handshakeKey       = getStringOrNull(nebulaConfig, "handshakeKey")
+    val databaseEntry = DataBaseConfigEntry(addresses, space, metaAddresses, handshakeKey)
     val enableTagless = getOrElse(nebulaConfig, "enableTagless", false)
     LOG.info(s"DataBase Config ${databaseEntry}")
 
