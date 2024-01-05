@@ -29,7 +29,7 @@ class MetaProvider(addresses: List[HostAddress],
                    timeout: Int,
                    retry: Int,
                    sslConfigEntry: SslConfigEntry,
-                   version: String)
+                   handshakeKey: String)
     extends AutoCloseable
     with Serializable {
   private[this] lazy val LOG = Logger.getLogger(this.getClass)
@@ -50,7 +50,7 @@ class MetaProvider(addresses: List[HostAddress],
     metaClient = new MetaClient(addresses.asJava, timeout, retry, retry)
   }
 
-  metaClient.setVersion(version)
+  metaClient.setHandshakeKey(handshakeKey)
   metaClient.connect()
 
   def getPartNumber(space: String): Int = {
