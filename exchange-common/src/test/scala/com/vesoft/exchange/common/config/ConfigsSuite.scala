@@ -340,7 +340,7 @@ class ConfigsSuite {
     val graphAddress = List("127.0.0.1:9669", "127.0.0.1:9670")
     val metaAddress  = List("127.0.0.1:9559", "127.0.0.1:9560")
     val space        = "test"
-    DataBaseConfigEntry(graphAddress, space, metaAddress, null)
+    DataBaseConfigEntry(graphAddress, space, metaAddress)
   }
 
   /**
@@ -351,7 +351,7 @@ class ConfigsSuite {
     val graphAddress = List("127.0.0.1:9669", "127.0.0.1:9670")
     val metaAddress  = List("127.0.0.1:9559", "127.0.0.1:9560")
     assertThrows[IllegalArgumentException] {
-      DataBaseConfigEntry(graphAddress, "", metaAddress, null)
+      DataBaseConfigEntry(graphAddress, "", metaAddress)
     }
   }
 
@@ -365,7 +365,7 @@ class ConfigsSuite {
     val metaAddress       = List("127.0.0.1:9559", "127.0.0.1:9560")
 
     assertThrows[IllegalArgumentException] {
-      DataBaseConfigEntry(wrongGraphAddress, space, metaAddress, null)
+      DataBaseConfigEntry(wrongGraphAddress, space, metaAddress)
     }
   }
 
@@ -378,7 +378,7 @@ class ConfigsSuite {
     val space            = "test"
     val wrongMetaAddress = List("127.0.0.1:9559，127.0.0.1:9560")
     assertThrows[IllegalArgumentException] {
-      DataBaseConfigEntry(graphAddress, space, wrongMetaAddress, null)
+      DataBaseConfigEntry(graphAddress, space, wrongMetaAddress)
     }
   }
 

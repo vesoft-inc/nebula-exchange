@@ -34,8 +34,7 @@ class ReloadProcessor(data: DataFrame,
     val graphProvider =
       new GraphProvider(config.databaseConfig.getGraphAddress,
                         config.connectionConfig.timeout,
-                        config.sslConfig,
-                        config.databaseConfig.handshakeKey)
+                        config.sslConfig)
 
     val writer = new NebulaGraphClientWriter(config.databaseConfig,
                                              config.userConfig,

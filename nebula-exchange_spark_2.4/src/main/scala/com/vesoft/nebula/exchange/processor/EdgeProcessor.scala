@@ -57,8 +57,7 @@ class EdgeProcessor(spark: SparkSession,
     val graphProvider =
       new GraphProvider(config.databaseConfig.getGraphAddress,
                         config.connectionConfig.timeout,
-                        config.sslConfig,
-                        config.databaseConfig.handshakeKey)
+                        config.sslConfig)
     val writer = new NebulaGraphClientWriter(config.databaseConfig,
                                              config.userConfig,
                                              config.rateConfig,
@@ -105,7 +104,7 @@ class EdgeProcessor(spark: SparkSession,
     val timeout = config.connectionConfig.timeout
     val retry   = config.connectionConfig.retry
     val metaProvider =
-      new MetaProvider(address, timeout, retry, config.sslConfig, config.databaseConfig.handshakeKey)
+      new MetaProvider(address, timeout, retry, config.sslConfig)
     val fieldTypeMap    = NebulaUtils.getDataSourceFieldType(edgeConfig, space, metaProvider)
     val isVidStringType = metaProvider.getVidType(space) == VidType.STRING
     val partitionNum    = metaProvider.getPartNumber(space)

@@ -26,8 +26,7 @@ import scala.collection.mutable.ListBuffer
   */
 class GraphProvider(addresses: List[HostAddress],
                     timeout: Int,
-                    sslConfigEntry: SslConfigEntry,
-                    handshakeKey: String)
+                    sslConfigEntry: SslConfigEntry)
     extends AutoCloseable
     with Serializable {
   private[this] lazy val LOG = Logger.getLogger(this.getClass)
@@ -37,7 +36,6 @@ class GraphProvider(addresses: List[HostAddress],
   val randAddr                    = scala.util.Random.shuffle(addresses)
 
   nebulaPoolConfig.setTimeout(timeout)
-  nebulaPoolConfig.setHandshakeKey(handshakeKey)
 
   // com.vesoft.exchange.common.config graph ssl
   nebulaPoolConfig.setEnableSsl(sslConfigEntry.enableGraph)

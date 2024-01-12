@@ -93,7 +93,7 @@ class NebulaUtilsSuite {
     val address = new ListBuffer[HostAddress]()
     address.append(new HostAddress("127.0.0.1", 9559))
     val sslConfig    = SslConfigEntry(false, false, null, null, null)
-    val metaProvider = new MetaProvider(address.toList, 6000, 1, sslConfig, null)
+    val metaProvider = new MetaProvider(address.toList, 6000, 1, sslConfig)
 
     val map: Map[String, Int] =
       NebulaUtils.getDataSourceFieldType(sourceConfig, space, metaProvider)
