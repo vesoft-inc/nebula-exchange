@@ -27,7 +27,7 @@ class GraphProviderSuite {
 
     val sslConfig = SslConfigEntry(false, false, SslType.CA, null, null)
     graphProvider =
-      new GraphProvider(List(new HostAddress("127.0.0.1", 9669)), 5000, sslConfig, null)
+      new GraphProvider(List(new HostAddress("127.0.0.1", 9669)), 5000, sslConfig)
   }
 
   @After
