@@ -69,7 +69,8 @@ case class TagConfigEntry(override val name: String,
                           enableTagless: Boolean = false,
                           ignoreIndex: Boolean = false,
                           deleteEdge: Boolean = false,
-                          vertexUdf: Option[UdfConfigEntry] = None)
+                          vertexUdf: Option[UdfConfigEntry] = None,
+                          filterConfig: Option[FilterConfigEntry] = None)
     extends SchemaConfigEntry {
   require(name.trim.nonEmpty, "tag name cannot be empty")
   require(vertexField.trim.nonEmpty, "tag vertex id cannot be empty")
@@ -89,7 +90,8 @@ case class TagConfigEntry(override val name: String,
       s"repartitionWithNebula: $repartitionWithNebula, " +
       s"enableTagless: $enableTagless, " +
       s"ignoreIndex: $ignoreIndex, " +
-      s"vertexUdf: $vertexUdf."
+      s"vertexUdf: $vertexUdf, " +
+      s"filter: $filterConfig."
   }
 }
 
@@ -134,7 +136,8 @@ case class EdgeConfigEntry(override val name: String,
                            repartitionWithNebula: Boolean = false,
                            ignoreIndex: Boolean = false,
                            srcVertexUdf: Option[UdfConfigEntry] = None,
-                           dstVertexUdf: Option[UdfConfigEntry] = None)
+                           dstVertexUdf: Option[UdfConfigEntry] = None,
+                           filterConfig: Option[FilterConfigEntry] = None)
     extends SchemaConfigEntry {
   require(name.trim.nonEmpty, "edge name cannot be empty")
   require(sourceField.trim.nonEmpty, "edge source id cannot be empty")

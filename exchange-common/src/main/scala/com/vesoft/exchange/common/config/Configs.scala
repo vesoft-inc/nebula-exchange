@@ -187,6 +187,10 @@ case class UdfConfigEntry(sep: String, oldColNames: List[String], newColName: St
   }
 }
 
+case class FilterConfigEntry(filter: String){
+  override def toString(): String = s"filter:$filter"
+}
+
 /**
   *
   */
@@ -467,6 +471,10 @@ object Configs {
           Some(UdfConfigEntry(sep, cols, newCol))
         } else None
 
+        val filterConfig = if(tagConfig.hasPath("filter")) {
+          Some(FilterConfigEntry(tagConfig.getString("filter")))
+        } else None
+
         LOG.info(s"name ${tagName}  batch ${batch}")
         val entry = TagConfigEntry(
           tagName,
@@ -485,7 +493,8 @@ object Configs {
           enableTagless,
           ignoreIndex,
           deleteEdge,
-          vertexUdf
+          vertexUdf,
+          filterConfig
         )
         LOG.info(s"Tag Config: ${entry}")
         tags += entry
@@ -608,6 +617,11 @@ object Configs {
           Some(UdfConfigEntry(sep, cols, newCol))
         } else None
 
+
+        val filterConfig = if (edgeConfig.hasPath("filter")) {
+          Some(FilterConfigEntry(edgeConfig.getString("filter")))
+        } else None
+
         val entry = EdgeConfigEntry(
           edgeName,
           sourceConfig,
@@ -631,7 +645,8 @@ object Configs {
           repartitionWithNebula,
           ignoreIndex,
           srcUdf,
-          dstUdf
+          dstUdf,
+          filterConfig
         )
         LOG.info(s"Edge Config: ${entry}")
         edges += entry
