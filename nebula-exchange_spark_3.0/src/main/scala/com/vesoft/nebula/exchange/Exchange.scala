@@ -10,47 +10,8 @@ import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import java.io.File
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.{CheckPointHandler, ErrorHandler}
-import com.vesoft.exchange.common.config.{
-  ClickHouseConfigEntry,
-  Configs,
-  DataSourceConfigEntry,
-  EdgeConfigEntry,
-  FileBaseSourceConfigEntry,
-  HBaseSourceConfigEntry,
-  HiveSourceConfigEntry,
-  JanusGraphSourceConfigEntry,
-  JdbcConfigEntry,
-  KafkaSourceConfigEntry,
-  MaxComputeConfigEntry,
-  MySQLSourceConfigEntry,
-  Neo4JSourceConfigEntry,
-  OracleConfigEntry,
-  PostgreSQLSourceConfigEntry,
-  PulsarSourceConfigEntry,
-  SchemaConfigEntry,
-  SinkCategory,
-  SourceCategory,
-  TagConfigEntry,
-  UdfConfigEntry
-}
-import com.vesoft.nebula.exchange.reader.{
-  CSVReader,
-  ClickhouseReader,
-  HBaseReader,
-  HiveReader,
-  JSONReader,
-  JanusGraphReader,
-  JdbcReader,
-  KafkaReader,
-  MaxcomputeReader,
-  MySQLReader,
-  Neo4JReader,
-  ORCReader,
-  OracleReader,
-  ParquetReader,
-  PostgreSQLReader,
-  PulsarReader
-}
+import com.vesoft.exchange.common.config.{ClickHouseConfigEntry, Configs, DataSourceConfigEntry, EdgeConfigEntry, FileBaseSourceConfigEntry, FilterConfigEntry, HBaseSourceConfigEntry, HiveSourceConfigEntry, JanusGraphSourceConfigEntry, JdbcConfigEntry, KafkaSourceConfigEntry, MaxComputeConfigEntry, MySQLSourceConfigEntry, Neo4JSourceConfigEntry, OracleConfigEntry, PostgreSQLSourceConfigEntry, PulsarSourceConfigEntry, SchemaConfigEntry, SinkCategory, SourceCategory, TagConfigEntry, UdfConfigEntry}
+import com.vesoft.nebula.exchange.reader.{CSVReader, ClickhouseReader, HBaseReader, HiveReader, JSONReader, JanusGraphReader, JdbcReader, KafkaReader, MaxcomputeReader, MySQLReader, Neo4JReader, ORCReader, OracleReader, ParquetReader, PostgreSQLReader, PulsarReader}
 import com.vesoft.exchange.common.processor.ReloadProcessor
 import com.vesoft.exchange.common.utils.SparkValidate
 import com.vesoft.nebula.exchange.processor.{EdgeProcessor, VerticesProcessor}
@@ -124,7 +85,7 @@ object Exchange {
     var totalClientBatchFailure: Long  = 0L
     var totalClientRecordSuccess: Long = 0L
     var totalClientRecordFailure: Long = 0L
-    var totalSstRecordSuccess: Long    = 0l
+    var totalSstRecordSuccess: Long    = 0L
     var totalSstRecordFailure: Long    = 0L
 
     // reload for failed import tasks
@@ -170,10 +131,11 @@ object Exchange {
           data.get.show(truncate = false)
         }
         if (data.isDefined && !c.dry) {
-          val df = if (tagConfig.vertexUdf.isDefined) {
-            dataUdf(data.get, tagConfig.vertexUdf.get)
+          var df = filterDf(data.get, tagConfig.filterConfig)
+          df = if (tagConfig.vertexUdf.isDefined) {
+            dataUdf(df, tagConfig.vertexUdf.get)
           } else {
-            data.get
+            df
           }
           val batchSuccess =
             spark.sparkContext.longAccumulator(s"batchSuccess.${tagConfig.name}")
@@ -236,7 +198,7 @@ object Exchange {
           data.get.show(truncate = false)
         }
         if (data.isDefined && !c.dry) {
-          var df = data.get
+          var df = filterDf(data.get, edgeConfig.filterConfig)
           if (edgeConfig.srcVertexUdf.isDefined) {
             df = dataUdf(df, edgeConfig.srcVertexUdf.get)
           }
@@ -433,5 +395,14 @@ object Exchange {
     }
     finalColNames.append(concat_ws(sep, oldCols.map(c => col(c)): _*).cast(StringType).as(newCol))
     data.select(finalColNames: _*)
+  }
+
+
+  private[this] def filterDf(data: DataFrame, filter: Option[FilterConfigEntry]): DataFrame = {
+    if (filter.isDefined && filter.get != null && filter.get.filter != null) {
+      data.filter(filter.get.filter)
+    } else {
+      data
+    }
   }
 }
