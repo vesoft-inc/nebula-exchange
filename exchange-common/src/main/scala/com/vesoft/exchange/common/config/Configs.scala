@@ -109,7 +109,7 @@ case class UserConfigEntry(user: String, password: String) {
 case class ConnectionConfigEntry(timeout: Int, retry: Int) {
   require(timeout > 0 && retry > 0, "connection timeout or retry must be larger than 0")
 
-  override def toString: String = s"cConnectionConfigEntry:{timeout:$timeout, retry:$retry}"
+  override def toString: String = s"ConnectionConfigEntry:{timeout:$timeout, retry:$retry}"
 }
 
 /**
