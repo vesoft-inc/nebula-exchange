@@ -86,30 +86,3 @@ class CSVReader(override val session: SparkSession, csvConfig: FileBaseSourceCon
       .csv(path)
   }
 }
-
-/**
-  * The CustomReader extend the FileBaseReader and support read text file from HDFS.
-  * Transformation is a function convert a line into Row.
-  * The structure of the row should be specified.
-  *
-  * @param session
-  * @param customConfig
-  * @param transformation
-  * @param structType
-  */
-abstract class CustomReader(override val session: SparkSession,
-                            customConfig: FileBaseSourceConfigEntry,
-                            transformation: String => Row,
-                            filter: Row => Boolean,
-                            structType: StructType)
-    extends FileBaseReader(session, customConfig.path) {
-
-  override def read(): DataFrame = {
-    val encoder = RowEncoder.apply(structType)
-    session.read
-      .text(path)
-      .filter(!_.getString(0).isEmpty)
-      .map(row => transformation(row.getString(0)))(encoder)
-      .filter(filter)
-  }
-}
