@@ -36,15 +36,15 @@ class FileBaseWriterSuite {
 
     val fileBaseConfig =
       FileBaseSinkConfigEntry(SinkCategory.SST, "/tmp", "/tmp/remote", None)
-    val batchFailure = spark.sparkContext.longAccumulator(s"batchFailure.test}")
+    val recordFailure = spark.sparkContext.longAccumulator(s"recordFailure.test}")
 
     data
       .toDF("key", "value")
       .sortWithinPartitions("key")
       .foreachPartition { iterator: Iterator[Row] =>
-        generateSstFile.writeSstFiles(iterator, fileBaseConfig, 10, null, batchFailure)
+        generateSstFile.writeSstFiles(iterator, fileBaseConfig, 10, null, recordFailure)
       }
-    assert(batchFailure.value == 0)
+    assert(recordFailure.value == 0)
   }
 
 }

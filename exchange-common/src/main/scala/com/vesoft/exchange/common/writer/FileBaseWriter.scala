@@ -67,7 +67,7 @@ class GenerateSstFile extends Serializable {
                     fileBaseConfig: FileBaseSinkConfigEntry,
                     partitionNum: Int,
                     namenode: String,
-                    batchFailure: LongAccumulator): Unit = {
+                    recordFailure: LongAccumulator): Unit = {
     val taskID                  = TaskContext.get().taskAttemptId()
     var writer: NebulaSSTWriter = null
     var currentPart             = -1
@@ -109,7 +109,7 @@ class GenerateSstFile extends Serializable {
     } catch {
       case e: Throwable => {
         LOG.error(">>>>> sst file write error,", e)
-        batchFailure.add(1)
+        recordFailure.add(1)
       }
     } finally {
       if (writer != null) {

@@ -148,7 +148,7 @@ class EdgeProcessor(spark: SparkSession,
                                         fileBaseConfig,
                                         partitionNum,
                                         namenode,
-                                        batchFailure)
+                                        recordFailure)
         }
     } else {
       val streamFlag = data.isStreaming
