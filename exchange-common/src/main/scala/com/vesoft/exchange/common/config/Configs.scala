@@ -690,7 +690,7 @@ object Configs {
       case "POSTGRESQL" => SourceCategory.POSTGRESQL
       case "ORACLE"     => SourceCategory.ORACLE
       case "JDBC"       => SourceCategory.JDBC
-      case _            => throw new IllegalArgumentException(s"${category} not support")
+      case _            => SourceCategory.CUSTOM
     }
   }
 
