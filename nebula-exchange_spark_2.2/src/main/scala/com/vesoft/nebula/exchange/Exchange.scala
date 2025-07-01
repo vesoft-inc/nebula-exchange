@@ -11,6 +11,7 @@ import java.io.File
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.{CheckPointHandler, ErrorHandler}
 import com.vesoft.exchange.common.config.{ClickHouseConfigEntry, Configs, DataSourceConfigEntry, EdgeConfigEntry, FileBaseSourceConfigEntry, FilterConfigEntry, HBaseSourceConfigEntry, HiveSourceConfigEntry, JanusGraphSourceConfigEntry, JdbcConfigEntry, KafkaSourceConfigEntry, MaxComputeConfigEntry, MySQLSourceConfigEntry, Neo4JSourceConfigEntry, OracleConfigEntry, PostgreSQLSourceConfigEntry, PulsarSourceConfigEntry, SchemaConfigEntry, SinkCategory, SourceCategory, TagConfigEntry, UdfConfigEntry}
+import com.vesoft.exchange.common.plugin.DataSourcePlugin
 import com.vesoft.nebula.exchange.reader.{CSVReader, ClickhouseReader, HBaseReader, HiveReader, JSONReader, JanusGraphReader, JdbcReader, KafkaReader, MaxcomputeReader, MySQLReader, Neo4JReader, ORCReader, OracleReader, ParquetReader, PostgreSQLReader, PulsarReader}
 import com.vesoft.exchange.common.processor.ReloadProcessor
 import com.vesoft.exchange.common.utils.SparkValidate
@@ -127,7 +128,7 @@ object Exchange {
         LOG.info(s">>>>>> nebula keys: ${nebulaKeys.mkString(", ")}")
 
         val fields = tagConfig.vertexField :: tagConfig.fields
-        val data   = createDataSource(spark, tagConfig.dataSourceConfigEntry, fields)
+        val data   = createDataSource(spark, tagConfig.dataSourceConfigEntry, fields,tagConfig.name)
         if (data.isDefined && c.dry && !data.get.isStreaming) {
           data.get.show(truncate = false)
         }
@@ -195,7 +196,7 @@ object Exchange {
         } else {
           edgeConfig.sourceField :: edgeConfig.targetField :: edgeConfig.fields
         }
-        val data = createDataSource(spark, edgeConfig.dataSourceConfigEntry, fields)
+        val data = createDataSource(spark, edgeConfig.dataSourceConfigEntry, fields,edgeConfig.name)
         if (data.isDefined && c.dry && !data.get.isStreaming) {
           data.get.show(truncate = false)
         }
@@ -274,7 +275,8 @@ object Exchange {
   private[this] def createDataSource(
       session: SparkSession,
       config: DataSourceConfigEntry,
-      fields: List[String]
+      fields: List[String],
+      elemType:String
   ): Option[DataFrame] = {
     config.category match {
       case SourceCategory.PARQUET =>
@@ -357,6 +359,10 @@ object Exchange {
         val jdbcConfig = config.asInstanceOf[JdbcConfigEntry]
         val reader     = new JdbcReader(session, jdbcConfig)
         Some(reader.read())
+      }
+      case SourceCategory.CUSTOM => {
+        LOG.info(s">>>>> Failing down to custom data source mode")
+        DataSourcePlugin.ReadData(session, config, fields, elemType)
       }
       case _ => {
         LOG.error(s">>>>>> Data source ${config.category} not supported")

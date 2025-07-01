@@ -7,6 +7,7 @@ package com.vesoft.exchange.common.config
 
 import com.vesoft.exchange.common.utils.NebulaUtils
 import org.apache.spark.sql.SparkSession
+import com.typesafe.config.Config
 
 /**
   * Category use to explain the data source which the Spark application could reading.
@@ -34,6 +35,9 @@ object SourceCategory extends Enumeration {
   val SOCKET = Value("SOCKET")
   val KAFKA  = Value("KAFKA")
   val PULSAR = Value("PULSAR")
+
+  //add custom SourceCategory
+  val CUSTOM = Value("CUSTOM")
 }
 
 class SourceCategory
@@ -371,5 +375,25 @@ case class JdbcConfigEntry(override val category: SourceCategory.Value,
   require(table != null || sentence != null, "Either table or sentence must be config for JDBC.")
   override def toString: String = {
     s"Jdbc source {url:$url, driver:$driver, user:$user, passwd:$passwd, table:$table, sentence:$sentence}"
+  }
+}
+
+/**
+ * CustomSourceConfigEntry,this only for pass the rawConfig to plugin
+ * @param category
+ * @param rawConfig
+ * @param nebulaConfig
+ * @param variable
+ * @param paths
+ */
+case class CustomSourceConfigEntry(override val category: SourceCategory.Value,
+                                   rawConfig:Config,
+                                   nebulaConfig: Config,
+                                   variable: Boolean,
+                                   paths: Map[String, String])
+  extends DataSourceConfigEntry{
+  override def toString: String = {
+    //TODO modify the String content
+    s"raw config in custom mode"
   }
 }

@@ -10,6 +10,7 @@ import java.nio.file.Files
 import com.google.common.net.HostAndPort
 import com.typesafe.config.{Config, ConfigFactory}
 import com.vesoft.exchange.Argument
+import com.vesoft.exchange.common.plugin.DataSourcePlugin
 import com.vesoft.exchange.common.{KeyPolicy, PasswordEncryption}
 import com.vesoft.exchange.common.utils.NebulaUtils
 import com.vesoft.nebula.client.graph.data.HostAddress
@@ -960,6 +961,10 @@ object Configs {
           getStringOrNull(config, "table"),
           getStringOrNull(config, "sentence")
         )
+      }
+      case SourceCategory.CUSTOM => {
+        //config parse may use the CustomSourceConfigEntry to pass raw  config when the config option is not supported
+        DataSourcePlugin.HandleConfig(category, config, nebulaConfig, variable, paths)
       }
       case _ =>
         throw new IllegalArgumentException("Unsupported data source")
