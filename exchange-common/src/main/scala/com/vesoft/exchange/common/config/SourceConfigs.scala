@@ -388,9 +388,7 @@ case class JdbcConfigEntry(override val category: SourceCategory.Value,
  */
 case class CustomSourceConfigEntry(override val category: SourceCategory.Value,
                                    rawConfig:Config,
-                                   nebulaConfig: Config,
-                                   variable: Boolean,
-                                   paths: Map[String, String])
+                                   nebulaConfig: Config)
   extends DataSourceConfigEntry{
   override def toString: String = {
     //TODO modify the String content

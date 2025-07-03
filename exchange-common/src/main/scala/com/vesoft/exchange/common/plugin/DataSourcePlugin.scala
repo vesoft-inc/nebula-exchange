@@ -22,9 +22,7 @@ abstract class DataSourcePlugin {
   //configEntity parser
   def dataSourceConfigParser(category: SourceCategory.Value,
                              config: Config,
-                             nebulaConfig: Config,
-                             variable: Boolean,
-                             paths: Map[String, String]): DataSourceConfigEntry
+                             nebulaConfig: Config): DataSourceConfigEntry
 
   //load data
   def readData(session:SparkSession,config:DataSourceConfigEntry,fields:List[String]):Option[DataFrame]
@@ -79,9 +77,7 @@ object DataSourcePlugin{
   /*-----------------HandleConfig and create DataSource-------------*/
   def HandleConfig(category: SourceCategory.Value,
                    config: Config,
-                   nebulaConfig: Config,
-                   variable: Boolean,
-                   paths: Map[String, String]):DataSourceConfigEntry = {
+                   nebulaConfig: Config):DataSourceConfigEntry = {
     val name = config.getString("type.source")
     val elementName = config.getString("name")
     nameToCompanion.get(name) match {
@@ -89,7 +85,7 @@ object DataSourcePlugin{
         //already init
         LOG.info(s">>>>> parser config with ${name} that are already loaded")
         elementToCompanion += elementName -> companion
-        companion.getPlugin(name).get.dataSourceConfigParser(category, config, nebulaConfig, variable, paths)
+        companion.getPlugin(name).get.dataSourceConfigParser(category, config, nebulaConfig)
       }
       case None => {
         //first init
@@ -98,7 +94,7 @@ object DataSourcePlugin{
         elementToCompanion += elementName -> companion
         companion.initPlugin(name)
         LOG.info(s">>>>> parser config with ${name} that are first loaded")
-        companion.getPlugin(name).get.dataSourceConfigParser(category, config, nebulaConfig, variable, paths)
+        companion.getPlugin(name).get.dataSourceConfigParser(category, config, nebulaConfig)
       }
     }
   }

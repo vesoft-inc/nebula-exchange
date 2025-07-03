@@ -964,7 +964,7 @@ object Configs {
       }
       case SourceCategory.CUSTOM => {
         //config parse may use the CustomSourceConfigEntry to pass raw  config when the config option is not supported
-        DataSourcePlugin.HandleConfig(category, config, nebulaConfig, variable, paths)
+        DataSourcePlugin.HandleConfig(category, config, nebulaConfig)
       }
       case _ =>
         throw new IllegalArgumentException("Unsupported data source")
