@@ -387,11 +387,11 @@ case class JdbcConfigEntry(override val category: SourceCategory.Value,
  * @param paths
  */
 case class CustomSourceConfigEntry(override val category: SourceCategory.Value,
+                                   readerClazz:String,
                                    rawConfig:Config,
                                    nebulaConfig: Config)
   extends DataSourceConfigEntry{
   override def toString: String = {
-    //TODO modify the String content
-    s"raw config in custom mode"
+    s"custom reader:${readerClazz}"
   }
 }
