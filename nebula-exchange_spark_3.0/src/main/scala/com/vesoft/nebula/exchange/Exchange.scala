@@ -127,7 +127,7 @@ object Exchange {
         LOG.info(s">>>>> nebula keys: ${nebulaKeys.mkString(", ")}")
 
         val fields = tagConfig.vertexField :: tagConfig.fields
-        val data   = createDataSource(spark, tagConfig.dataSourceConfigEntry, fields,tagConfig.name)
+        val data   = createDataSource(spark, tagConfig.dataSourceConfigEntry, fields)
         if (data.isDefined && c.dry && !data.get.isStreaming) {
           data.get.show(truncate = false)
         }
@@ -194,7 +194,7 @@ object Exchange {
         } else {
           edgeConfig.sourceField :: edgeConfig.targetField :: edgeConfig.fields
         }
-        val data = createDataSource(spark, edgeConfig.dataSourceConfigEntry, fields,edgeConfig.name)
+        val data = createDataSource(spark, edgeConfig.dataSourceConfigEntry, fields)
         if (data.isDefined && c.dry && !data.get.isStreaming) {
           data.get.show(truncate = false)
         }
@@ -273,8 +273,7 @@ object Exchange {
   private[this] def createDataSource(
       session: SparkSession,
       config: DataSourceConfigEntry,
-      fields: List[String],
-      elemType:String
+      fields: List[String]
   ): Option[DataFrame] = {
     config.category match {
       case SourceCategory.PARQUET =>
