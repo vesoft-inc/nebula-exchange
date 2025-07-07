@@ -8,11 +8,14 @@ import scala.collection.mutable
 */
 
 object CompanionUtils {
-  private[this] val cl = getClass.getClassLoader
-  private[this] val mirror = ru.runtimeMirror(cl)
 
-  def lookupCompanion[T](name:String)(implicit ct: ClassTag[T]):T = {
-    Class.forName(name,false,cl)
+  def lookupCompanion[T](name:String,cl:ClassLoader = null)(implicit ct: ClassTag[T]):T = {
+    val currentClassLoader = {
+      if(cl == null) Thread.currentThread().getContextClassLoader
+      else cl
+    }
+    val mirror = ru.runtimeMirror(currentClassLoader)
+    Class.forName(name,false,currentClassLoader)
     val moduleSymbol = mirror.staticModule(name)
     mirror.reflectModule(moduleSymbol).instance.asInstanceOf[T]
   }

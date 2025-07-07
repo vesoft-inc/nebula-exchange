@@ -1,6 +1,7 @@
 package com.vesoft.exchange.common.plugin
 
-import com.vesoft.exchange.common.config.SourceCategory
+import com.vesoft.exchange.Argument
+import com.vesoft.exchange.common.config.{Configs, CustomSourceConfigEntry, SourceCategory}
 import com.vesoft.exchange.common.utils.CompanionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.SparkConf
@@ -9,7 +10,6 @@ import org.junit.{Before, Test}
 
 import java.io.File
 import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
-import scala.reflect.runtime.{universe => ru}
 
 
 class DataSourcePluginSuite {
@@ -23,6 +23,7 @@ class DataSourcePluginSuite {
     val classLoader = new URLClassLoader(Array(url), getClass.getClassLoader)
     Thread.currentThread().setContextClassLoader(classLoader)
   }
+
   @Test
   def externalPluginLoaderSuite():Unit = {
     val conf = new SparkConf().setJars(Array(pluginJarPath))
@@ -32,26 +33,33 @@ class DataSourcePluginSuite {
       .config(conf)
       .getOrCreate()
 
-    //force load for the default case
     try {
-      val configResolverName = "com.vesoft.nebula.exchange.plugin.fileBase.ConfigResolverImpl"
-      val readerClazzName    = "com.vesoft.nebula.exchange.plugin.fileBase.CustomReaderImpl"
-      //val name = "com.vesoft.nebula.exchange.plugin.fileBase.ParquetDataSourcePlugin"
-      val resolver = CompanionUtils.lookupCompanion[DataSourceConfigResolver](configResolverName)
-      val reader   = CompanionUtils.lookupCompanion[DataSourceCustomReader](readerClazzName)
-      //assert load success
-      assert(resolver.getClass.getName == configResolverName)
-      assert(reader.getClass.getName == readerClazzName)
+      val args    = List("-c", "src/test/resources/custom_csv_application.conf")
+      val options = Configs.parser(args.toArray, "test")
+      val c: Argument = options match {
+        case Some(config) => config
+        case _ =>
+          assert(false)
+          sys.exit(-1)
+      }
 
-      //assert class is the same
-      val resolver2 = CompanionUtils.lookupCompanion[DataSourceConfigResolver](configResolverName)
-      val reader2   = CompanionUtils.lookupCompanion[DataSourceCustomReader](readerClazzName)
+      val configs             = Configs.parse(c.config)
+      val tagsConfig          = configs.tagsConfig
 
-      assert(resolver2.getClass.getName == configResolverName)
-      assert(resolver.getClass.getClassLoader == resolver2.getClass.getClassLoader)
-      assert(reader2.getClass.getName == readerClazzName)
-      assert(reader.getClass.getClassLoader == reader2.getClass.getClassLoader)
+      val playerTagConfigEntry = tagsConfig.head
+      val sourceConfigEntry    = playerTagConfigEntry.dataSourceConfigEntry.asInstanceOf[CustomSourceConfigEntry]
+      assert(sourceConfigEntry.category == SourceCategory.CUSTOM)
 
+      LOG.info(sourceConfigEntry.readerClazz)
+      LOG.info(sourceConfigEntry.rawConfig)
+      LOG.info(sourceConfigEntry.nebulaConfig)
+
+      assert(sourceConfigEntry.readerClazz == "com.vesoft.nebula.exchange.plugin.fileBase.CustomReaderImpl")
+
+      val reader = CompanionUtils.lookupCompanion[DataSourceCustomReader](sourceConfigEntry.readerClazz)
+      assert(reader.getClass.getName == "com.vesoft.nebula.exchange.plugin.fileBase.CustomReaderImpl$")
+
+      LOG.info(">>>>> test end")
     } catch {
       case e: Exception => {
         LOG.error(s">>>>>${e}")
@@ -61,4 +69,5 @@ class DataSourcePluginSuite {
       session.stop()
     }
   }
+
 }
