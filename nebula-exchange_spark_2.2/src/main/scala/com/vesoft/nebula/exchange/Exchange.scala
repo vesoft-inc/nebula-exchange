@@ -11,7 +11,7 @@ import java.io.File
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.{CheckPointHandler, ErrorHandler}
 import com.vesoft.exchange.common.config.{ClickHouseConfigEntry, Configs, CustomSourceConfigEntry, DataSourceConfigEntry, EdgeConfigEntry, FileBaseSourceConfigEntry, FilterConfigEntry, HBaseSourceConfigEntry, HiveSourceConfigEntry, JanusGraphSourceConfigEntry, JdbcConfigEntry, KafkaSourceConfigEntry, MaxComputeConfigEntry, MySQLSourceConfigEntry, Neo4JSourceConfigEntry, OracleConfigEntry, PostgreSQLSourceConfigEntry, PulsarSourceConfigEntry, SchemaConfigEntry, SinkCategory, SourceCategory, TagConfigEntry, UdfConfigEntry}
-import com.vesoft.exchange.common.plugin.{DataSourceCustomReader, DataSourcePlugin}
+import com.vesoft.exchange.common.plugin.DataSourceCustomReader
 import com.vesoft.nebula.exchange.reader.{CSVReader, ClickhouseReader, HBaseReader, HiveReader, JSONReader, JanusGraphReader, JdbcReader, KafkaReader, MaxcomputeReader, MySQLReader, Neo4JReader, ORCReader, OracleReader, ParquetReader, PostgreSQLReader, PulsarReader}
 import com.vesoft.exchange.common.processor.ReloadProcessor
 import com.vesoft.exchange.common.utils.{CompanionUtils, SparkValidate}
