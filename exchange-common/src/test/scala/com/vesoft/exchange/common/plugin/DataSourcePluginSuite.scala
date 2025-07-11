@@ -14,7 +14,8 @@ import scala.reflect.internal.util.ScalaClassLoader.URLClassLoader
 
 class DataSourcePluginSuite {
   private[this] val LOG = Logger.getLogger(this.getClass)
-  private[this] val pluginJarPath = "../exchange-plugin-impl_spark_3.0/target/exchange-plugin-impl_spark_3.0-3.0-SNAPSHOT.jar"
+
+  private[this] val pluginJarPath = "src/test/resources/plugin-test.jar"
 
   @Before
   def setUp(): Unit = {
