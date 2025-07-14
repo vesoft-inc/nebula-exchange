@@ -10,6 +10,7 @@ import java.nio.file.Files
 import com.google.common.net.HostAndPort
 import com.typesafe.config.{Config, ConfigFactory}
 import com.vesoft.exchange.Argument
+import com.vesoft.exchange.common.plugin.DataSourceConfigResolver
 import com.vesoft.exchange.common.{KeyPolicy, PasswordEncryption}
 import com.vesoft.exchange.common.utils.NebulaUtils
 import com.vesoft.nebula.client.graph.data.HostAddress
@@ -22,6 +23,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConverters._
 import scala.util.control.Breaks.break
+import scala.reflect.runtime.{universe => ru}
+import com.vesoft.exchange.common.utils.CompanionUtils
 
 object Type extends Enumeration {
   type Type = Value
@@ -689,7 +692,7 @@ object Configs {
       case "POSTGRESQL" => SourceCategory.POSTGRESQL
       case "ORACLE"     => SourceCategory.ORACLE
       case "JDBC"       => SourceCategory.JDBC
-      case _            => throw new IllegalArgumentException(s"${category} not support")
+      case _            => SourceCategory.CUSTOM
     }
   }
 
@@ -960,6 +963,13 @@ object Configs {
           getStringOrNull(config, "table"),
           getStringOrNull(config, "sentence")
         )
+      }
+      case SourceCategory.CUSTOM => {
+        //config parse may use the CustomSourceConfigEntry to pass raw  config when the config option is not supported
+        val configResolverClazz = config.getString("configResolver")
+        CompanionUtils
+          .lookupCompanion[DataSourceConfigResolver](configResolverClazz)
+          .getDataSourceConfigEntry(category, config, nebulaConfig)
       }
       case _ =>
         throw new IllegalArgumentException("Unsupported data source")
