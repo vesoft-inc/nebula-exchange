@@ -80,7 +80,7 @@ object Exchange {
 
     val spark = session.getOrCreate()
     // check the spark version
-    SparkValidate.validate(spark.version, "3.0.*", "3.1.*", "3.2.*", "3.3.*")
+    SparkValidate.validate(spark.version, "3.0.*", "3.1.*", "3.2.*", "3.3.*", "3.4.*", "3.5.*")
     val startTime                      = System.currentTimeMillis()
     var totalClientBatchSuccess: Long  = 0L
     var totalClientBatchFailure: Long  = 0L
