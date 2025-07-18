@@ -227,6 +227,7 @@ class ServerBaseWriterSuite extends ServerBaseWriter {
         "`col_string`=\"name2\",`col_fixed_string`=\"name2\",`col_bool`=false,`col_int`=11," +
         "`col_int64`=101,`col_double`=2.0,`col_date`=2021-11-13," +
         "`col_geo`=POLYGON((0 1, 1 2, 2 3, 0 1))"
+    println(sentence)
     assert(expectSentence.equals(sentence))
   }
 
