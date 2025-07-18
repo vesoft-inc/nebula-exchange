@@ -14,17 +14,23 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, linux ]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v3
       with:
-        java-version: 1.8
+        distribution: "adopt"
+        java-version: "8"
+
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: 3.8.2
 
     - name: Cache the Maven packages to speed up build
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -32,13 +38,16 @@ jobs:
 
     - name: Install nebula-graph
       run: |
+        mkdir -p ./logs && chmod 777 ./logs
         mkdir tmp
         pushd tmp
         git clone https://github.com/vesoft-inc/nebula-docker-compose.git
         pushd nebula-docker-compose/
         cp ../../exchange-common/src/test/resources/docker-compose.yaml .
-        docker-compose up -d
-        sleep 10
+        docker compose up -d
+        sleep 180
+        docker compose ps
+        docker compose logs --tail 500
         popd
         popd
 

@@ -10,10 +10,11 @@ import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import java.io.File
 import com.vesoft.exchange.Argument
 import com.vesoft.exchange.common.{CheckPointHandler, ErrorHandler}
-import com.vesoft.exchange.common.config.{ClickHouseConfigEntry, Configs, DataSourceConfigEntry, EdgeConfigEntry, FileBaseSourceConfigEntry, FilterConfigEntry, HBaseSourceConfigEntry, HiveSourceConfigEntry, JanusGraphSourceConfigEntry, JdbcConfigEntry, KafkaSourceConfigEntry, MaxComputeConfigEntry, MySQLSourceConfigEntry, Neo4JSourceConfigEntry, OracleConfigEntry, PostgreSQLSourceConfigEntry, PulsarSourceConfigEntry, SchemaConfigEntry, SinkCategory, SourceCategory, TagConfigEntry, UdfConfigEntry}
+import com.vesoft.exchange.common.config.{ClickHouseConfigEntry, Configs, CustomSourceConfigEntry, DataSourceConfigEntry, EdgeConfigEntry, FileBaseSourceConfigEntry, FilterConfigEntry, HBaseSourceConfigEntry, HiveSourceConfigEntry, JanusGraphSourceConfigEntry, JdbcConfigEntry, KafkaSourceConfigEntry, MaxComputeConfigEntry, MySQLSourceConfigEntry, Neo4JSourceConfigEntry, OracleConfigEntry, PostgreSQLSourceConfigEntry, PulsarSourceConfigEntry, SchemaConfigEntry, SinkCategory, SourceCategory, TagConfigEntry, UdfConfigEntry}
+import com.vesoft.exchange.common.plugin.DataSourceCustomReader
 import com.vesoft.nebula.exchange.reader.{CSVReader, ClickhouseReader, HBaseReader, HiveReader, JSONReader, JanusGraphReader, JdbcReader, KafkaReader, MaxcomputeReader, MySQLReader, Neo4JReader, ORCReader, OracleReader, ParquetReader, PostgreSQLReader, PulsarReader}
 import com.vesoft.exchange.common.processor.ReloadProcessor
-import com.vesoft.exchange.common.utils.SparkValidate
+import com.vesoft.exchange.common.utils.{CompanionUtils, SparkValidate}
 import com.vesoft.nebula.exchange.processor.{EdgeProcessor, VerticesProcessor}
 import org.apache.log4j.Logger
 import org.apache.spark.sql.functions.{col, concat_ws}
@@ -357,6 +358,12 @@ object Exchange {
         val jdbcConfig = config.asInstanceOf[JdbcConfigEntry]
         val reader     = new JdbcReader(session, jdbcConfig)
         Some(reader.read())
+      }
+      case SourceCategory.CUSTOM => {
+        LOG.info(s">>>>> Failing down to custom data source mode")
+        val readerClazz = config.asInstanceOf[CustomSourceConfigEntry].readerClazz
+        val reader = CompanionUtils.lookupCompanion[DataSourceCustomReader](readerClazz)
+        reader.readData(session, config, fields)
       }
       case _ => {
         LOG.error(s">>>>>> Data source ${config.category} not supported")
