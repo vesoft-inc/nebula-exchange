@@ -43,6 +43,7 @@ object WriteMode extends Enumeration {
   val INSERT = Value("insert")
   val UPDATE = Value("update")
   val DELETE = Value("delete")
+  val UPSERT = Value("upsert")
 }
 
 /**
@@ -721,6 +722,7 @@ object Configs {
       case "INSERT" => WriteMode.INSERT
       case "UPDATE" => WriteMode.UPDATE
       case "DELETE" => WriteMode.DELETE
+      case "UPSERT" => WriteMode.UPSERT
       case _        => throw new IllegalArgumentException(s"${category} not support")
     }
   }
