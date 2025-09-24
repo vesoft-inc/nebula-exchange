@@ -240,4 +240,5 @@ class ServerBaseWriterSuite extends ServerBaseWriter {
   override def prepare(): Unit = ???
 
   override def close(): Unit = ???
+  
 }
