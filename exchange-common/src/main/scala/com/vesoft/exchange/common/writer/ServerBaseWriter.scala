@@ -37,6 +37,10 @@ abstract class ServerBaseWriter extends Writer {
   private[this] val UPDATE_EDGE_TEMPLATE   = "UPDATE %s ON `%s` %s->%s@%d SET %s"
   private[this] val UPDATE_VALUE_TEMPLATE  = "`%s`=%s"
 
+  private[this] val UPSERT_VERTEX_TEMPLATE = "UPSERT %s ON `%s` %s SET %s"
+  private[this] val UPSERT_EDGE_TEMPLATE   = "UPSERT %s ON `%s` %s->%s@%d SET %s"
+  private[this] val UPSERT_VALUE_TEMPLATE = "`%s`=%s"
+
   /**
     * construct insert statement for vertex
     */
@@ -260,6 +264,96 @@ abstract class ServerBaseWriter extends Writer {
       .mkString(";")
   }
 
+  /**
+    * construct upsert statement for vertices
+    *
+    * @param tagName
+    * @param vertices
+    * @return
+    */
+  def toUpsertExecuteSentence(tagName:String, vertices: Vertices):String = {
+    vertices.values
+      .map { vertex =>
+        var index = 0
+        UPSERT_VERTEX_TEMPLATE.format(
+          Type.VERTEX.toString,
+          tagName,
+          vertices.policy match {
+            case Some(KeyPolicy.HASH) =>
+              ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, vertex.vertexID)
+            case Some(KeyPolicy.UUID) =>
+              ENDPOINT_TEMPLATE.format(KeyPolicy.UUID.toString, vertex.vertexID)
+            case None =>
+              vertex.vertexID
+            case _ =>
+              throw new IllegalArgumentException(
+                s"vertex id policy ${vertices.policy.get} is not supported")
+          },
+          vertex.values
+            .map { value =>
+              val updateValue =
+                UPSERT_VALUE_TEMPLATE.format(vertices.names.get(index), value)
+              index += 1
+              updateValue
+            }
+            .mkString(",")
+        )
+      }
+      .mkString(";")
+  }
+
+  /**
+    * construct upsert statement for edge
+    *
+    * @param edgeName
+    * @param edges
+    * @return
+    */
+  def toUpsertExecuteSentence(edgeName:String, edges: Edges):String = {
+    edges.values
+      .map { edge =>
+        var index = 0
+        val rank  = if (edge.ranking.isEmpty) { 0 } else { edge.ranking.get }
+        UPSERT_EDGE_TEMPLATE.format(
+          Type.EDGE.toString,
+          edgeName,
+          edges.sourcePolicy match {
+            case Some(KeyPolicy.HASH) =>
+              ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.source)
+            case Some(KeyPolicy.UUID) =>
+              ENDPOINT_TEMPLATE.format(KeyPolicy.UUID.toString, edge.source)
+            case None =>
+              edge.source
+            case _ =>
+              throw new IllegalArgumentException(
+                s"source policy ${edges.sourcePolicy.get} is not supported")
+          },
+          edges.targetPolicy match {
+            case Some(KeyPolicy.HASH) =>
+              ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.destination)
+            case Some(KeyPolicy.UUID) =>
+              ENDPOINT_TEMPLATE.format(KeyPolicy.HASH.toString, edge.destination)
+            case None =>
+              edge.destination
+            case _ =>
+              throw new IllegalArgumentException(
+                s"target policy ${edges.targetPolicy.get} is not supported")
+          },
+          rank,
+          edge.values
+            .map { value =>
+              val updateValue =
+                UPSERT_VALUE_TEMPLATE.format(edges.names.get(index), value)
+              index += 1
+              updateValue
+            }
+            .mkString(",")
+        )
+      }
+      .mkString(";")
+  }
+
+
   def writeVertices(vertices: Vertices, ignoreIndex: Boolean): List[String]
 
   def writeEdges(edges: Edges, ignoreIndex: Boolean): List[String]
@@ -306,6 +400,8 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
         toUpdateExecuteSentence(config.name, vertices)
       case WriteMode.DELETE =>
         toDeleteExecuteSentence(vertices, config.asInstanceOf[TagConfigEntry].deleteEdge)
+      case WriteMode.UPSERT =>
+        toUpsertExecuteSentence(config.name, vertices)
       case _ =>
         throw new IllegalArgumentException(s"write mode ${writeMode} not supported.")
     }
@@ -320,6 +416,8 @@ class NebulaGraphClientWriter(dataBaseConfigEntry: DataBaseConfigEntry,
         toUpdateExecuteSentence(config.name, edges)
       case WriteMode.DELETE =>
         toDeleteExecuteSentence(config.name, edges)
+      case WriteMode.UPSERT =>
+        toUpsertExecuteSentence(config.name, edges)
       case _ =>
         throw new IllegalArgumentException(s"write mode ${writeMode} not supported.")
     }
