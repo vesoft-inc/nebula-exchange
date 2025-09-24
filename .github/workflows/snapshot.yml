@@ -66,3 +66,4 @@ jobs:
         name: nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar
         path:
           nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar
+           
