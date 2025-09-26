@@ -86,8 +86,8 @@ object Exchange {
     var totalClientBatchFailure: Long  = 0L
     var totalClientRecordSuccess: Long = 0L
     var totalClientRecordFailure: Long = 0L
-    var totalSstRecordSuccess: Long    = 0L
-    var totalSstRecordFailure: Long    = 0L
+    var totalSstBatchSuccess: Long    = 0L
+    var totalSstBatchFailure: Long    = 0L
 
     // reload for failed import tasks
     if (c.reload.nonEmpty) {
@@ -174,10 +174,10 @@ object Exchange {
             totalClientBatchSuccess += batchSuccess.value
             totalClientBatchFailure += batchFailure.value
           } else {
-            LOG.info(s">>>>> SST-Import: success.${tagConfig.name}: ${recordSuccess.value}")
-            LOG.info(s">>>>> SST-Import: failure.${tagConfig.name}: ${recordFailure.value}")
-            totalSstRecordSuccess += recordSuccess.value
-            totalSstRecordFailure += recordFailure.value
+            LOG.info(s">>>>> SST-Import: success.${tagConfig.name}: ${batchSuccess.value}")
+            LOG.info(s">>>>> SST-Import: failure.${tagConfig.name}: ${batchFailure.value}")
+            totalSstBatchSuccess += batchSuccess.value
+            totalSstBatchFailure += batchFailure.value
           }
         }
 
@@ -244,9 +244,9 @@ object Exchange {
             totalClientBatchSuccess += batchSuccess.value
             totalClientBatchFailure += batchFailure.value
           } else {
-            LOG.info(s">>>>> SST-Import: failure.${edgeConfig.name}: ${recordFailure.value}")
-            totalSstRecordSuccess += recordSuccess.value
-            totalSstRecordFailure += recordFailure.value
+            LOG.info(s">>>>> SST-Import: failure.${edgeConfig.name}: ${batchFailure.value}")
+            totalSstBatchSuccess += batchSuccess.value
+            totalSstBatchFailure += batchFailure.value
           }
         }
     }
@@ -259,8 +259,8 @@ object Exchange {
         s">>>>>> total client recordsSuccess:${totalClientRecordSuccess} \n" +
         s">>>>>> total client batchFailure:${totalClientBatchFailure} \n" +
         s">>>>>> total client recordsFailure:${totalClientRecordFailure} \n" +
-        s">>>>>> total SST failure:${totalSstRecordFailure} \n" +
-        s">>>>>> total SST Success:${totalSstRecordSuccess}")
+        s">>>>>> total SST batchFailure:${totalSstBatchFailure} \n" +
+        s">>>>>> total SST batchSuccess:${totalSstBatchSuccess}")
     LOG.info(
       s">>>>>> exchange import qps: ${(totalClientRecordSuccess / duration).formatted("%.2f")}/s")
   }
