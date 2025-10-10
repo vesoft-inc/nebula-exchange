@@ -192,6 +192,44 @@ class ServerBaseWriterSuite extends ServerBaseWriter {
     assert(sentence.equals(expectSentence))
   }
 
+  @Test
+  def toUpsertExecuteSentenceSuiteForVertex():Unit = {
+    val vertices: ListBuffer[Vertex] = new ListBuffer[Vertex]
+    val propNames = List("col_string",
+      "col_fixed_string",
+      "col_bool",
+      "col_int",
+      "col_int64",
+      "col_double",
+      "col_date",
+      "col_geo")
+
+    val props1 =
+      List("\"name\"", "\"name\"", true, 10, 100L, 1.0, "2021-11-12", "LINESTRING(1 2, 3 4)")
+    val props2 = List("\"name2\"",
+      "\"name2\"",
+      false,
+      11,
+      101L,
+      2.0,
+      "2021-11-13",
+      "POLYGON((0 1, 1 2, 2 3, 0 1))")
+
+    vertices.append(Vertex("\"vid1\"", props1))
+    vertices.append(Vertex("\"vid2\"", props2))
+    val nebulaVertices = Vertices(propNames, vertices.toList, None)
+
+    val sentence = toUpsertExecuteSentence("person", nebulaVertices)
+    val expectSentence =
+      "UPSERT VERTEX ON `person` \"vid1\" SET `col_string`=\"name\",`col_fixed_string`=\"name\"," +
+        "`col_bool`=true,`col_int`=10,`col_int64`=100,`col_double`=1.0,`col_date`=2021-11-12," +
+        "`col_geo`=LINESTRING(1 2, 3 4);UPSERT VERTEX ON `person` \"vid2\" SET " +
+        "`col_string`=\"name2\",`col_fixed_string`=\"name2\",`col_bool`=false,`col_int`=11," +
+        "`col_int64`=101,`col_double`=2.0,`col_date`=2021-11-13," +
+        "`col_geo`=POLYGON((0 1, 1 2, 2 3, 0 1))"
+    println(sentence)
+    assert(expectSentence.equals(sentence))
+  }
 
   override def writeVertices(vertices: Vertices, ignoreIndex: Boolean): List[String] = ???
 
@@ -202,4 +240,5 @@ class ServerBaseWriterSuite extends ServerBaseWriter {
   override def prepare(): Unit = ???
 
   override def close(): Unit = ???
+  
 }

@@ -42,3 +42,6 @@ spark-importer.iws
 
 # mac
 .DS_Store
+
+# add test jar
+!exchange-common/src/test/resources/plugin-test.jar
