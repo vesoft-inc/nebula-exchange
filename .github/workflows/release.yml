@@ -79,3 +79,9 @@ jobs:
             -i ${{ secrets.OSS_ID }} \
             -k ${{ secrets.OSS_SECRET }} \
             -f cp nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-${{ steps.get_version.outputs.tagnum }}.jar oss://nebula-graph/maven2/nebula-exchange/${{ steps.get_version.outputs.tagnum }}/
+
+      - name: stop nebula
+        if: always()
+        run: |
+          pushd tmp/nebula-docker-compose/
+          docker compose down
