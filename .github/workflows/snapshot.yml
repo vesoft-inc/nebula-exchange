@@ -67,3 +67,8 @@ jobs:
         path:
           nebula-exchange_spark_3.0/target/nebula-exchange_spark_3.0-3.0-SNAPSHOT.jar
            
+    - name: stop nebula
+      if: always()
+      run: |
+        pushd tmp/nebula-docker-compose/
+        docker compose down
